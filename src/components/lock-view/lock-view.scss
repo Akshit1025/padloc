@@ -1,0 +1,57 @@
+@import "../../config.scss";
+@import "compass/css3";
+
+:host {}
+
+.wrapper {
+    height: 300px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto 0;
+    text-align: center;
+}
+
+.header {
+    font-size: 50px;
+    font-weight: 300;
+    padding: 40px;
+    color: $color-primary;
+}
+
+input {
+    text-align: center;
+    width: 100%;
+}
+
+.enter-button {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.error-message {
+    color: $color-negative;
+    padding: 20px;
+    opacity: 0;
+
+    @include transform(translate(0, 100%));
+    @include transition(transform 0.5s, opacity 0.5s);
+}
+
+.error  {
+    .error-message {
+        opacity: 1;
+
+        @include transform(translate(0, 0));
+    }
+
+    input {
+        color: $color-negative;
+    }
+
+    ::-webkit-input-placeholder {
+       color: $color-negative;
+    }
+}

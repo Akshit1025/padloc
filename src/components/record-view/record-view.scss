@@ -1,0 +1,45 @@
+@import "../../config.scss";
+@import "../../mixins.scss";
+@import "compass/css3/box";
+@import "compass/css3";
+
+:host {
+    display: block;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
+.field {
+    background: #ffffff;
+    height: $row-height;
+    width: 100%;
+    padding: 0 15px;
+    margin-top: 5px;
+    cursor: pointer;
+
+    @include display-box;
+    @include box-align(center);
+    @include box-sizing(border-box);
+
+    > * {
+        text-overflow: ellipsis;
+    }
+
+    > .label {
+        max-width: 100px;
+        text-align: right;
+        color: $color-primary;
+        @include ellipsis();
+    }
+
+    > .value {
+        margin-right: 15px;
+        @include box-flex(1);
+        @include ellipsis();
+    }
+}
+
+.add-button {
+    width: 100%;
+    margin: 5px 0;
+}
