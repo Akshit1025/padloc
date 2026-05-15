@@ -98,10 +98,12 @@
 
 @include keyframes(bounceIn) {
   0% {
-    @include transform(scale(0));
+    @include transform(scale(0.1));
+    opacity: 0;
   }
   30% {
     @include transform(scale(1.1));
+    opacity: 1;
   }
   70% {
     @include transform(scale(0.95));

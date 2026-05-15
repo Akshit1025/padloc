@@ -47,10 +47,10 @@ gem install compass
 
 ## Run the app
 
-Start a local static server:
+Start a local static server from the project root. This repo no longer includes `server.js`, so use any static server you prefer:
 
 ```powershell
-node server.js
+python -m http.server 8080
 ```
 
 Then open:
@@ -59,10 +59,10 @@ Then open:
 http://localhost:8080
 ```
 
-You can also specify a different folder or port:
+You can also use a different folder or port, for example:
 
 ```powershell
-node server.js . 3000
+python -m http.server 3000
 ```
 
 ## Build the styles
@@ -90,7 +90,7 @@ npx grunt
 In another terminal:
 
 ```powershell
-node server.js
+python -m http.server 8080
 ```
 
 The default Grunt task starts `watch`; file changes then trigger Compass and QUnit.
@@ -98,7 +98,6 @@ The default Grunt task starts `watch`; file changes then trigger Compass and QUn
 ## Important files
 
 - `index.html` - app entry point
-- `server.js` - local static server
 - `Gruntfile.js` - build and watch tasks
 - `config.js` - RequireJS configuration
 - `src/` - app source code, styles, and Polymer components

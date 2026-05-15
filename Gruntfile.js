@@ -20,6 +20,13 @@ module.exports = function (grunt) {
     watch: {
       files: ["src/*.js", "src/**/*.scss", "test/*.js", "test/*.html"],
       tasks: ["compass", "qunit"]
+    },
+    connect: {
+      demo: {
+        options: {
+          keepalive: true
+        }
+      }
     }
   });
 
@@ -27,6 +34,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks("grunt-contrib-compass");
   grunt.loadNpmTasks("grunt-contrib-qunit");
   grunt.loadNpmTasks("grunt-contrib-watch");
+  grunt.loadNpmTasks("grunt-contrib-connect");
 
   grunt.registerTask("default", ["watch"]);
 };

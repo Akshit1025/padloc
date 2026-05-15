@@ -1,25 +1,40 @@
 Polymer("padlock-app", {
   ready: function () {
-    require(["padlock/model"], function (model) {
+    require(["padlock/model", "padlock/platform"], function (model, platform) {
       this.categories = new model.Categories(null, 3);
       this.categories.fetch();
       this.$.categoriesView.updateCategories();
       this.collection = new model.Collection();
+
       // If there already is data in the local storage ask for password
       // Otherwise start with choosing a new one
-      this.openView(
-        this.collection.exists() ? this.$.lockView : this.$.passwordView,
-        {
-          inAnimation: "floatUp",
-          inDuration: 1000
-        }
-      );
-    }.bind(this));
+      var initialView = this.collection.exists()
+        ? this.$.lockView
+        : this.$.passwordView;
 
-    // Add a special class in case the app is lanchend from the home screen in iOS
-    if (window.navigator.standalone) {
-      this.classList.add("ios-standalone");
-    }
+      // iOS gets a special treatment since it has the ability to run a website
+      // as a 'standalone' web app and we want to use that!
+      if (platform.isIOS()) {
+        // Add a special class in case the app is lanchend from the home screen in iOS,
+        // otherwise as the user to add the site to their home screen.
+        if (platform.isIOSStandalone()) {
+          this.classList.add("ios-standalone");
+          // On most browsers the mousedown event is coupled to triggering focus on
+          // the clicked elements. Since we're directly handling focussing inputs
+          // with the padlock-input element we need to disable the native mechanism
+          // to prevent conflicts.
+          this.preventMousedownDefault = true;
+        } else {
+          initialView = this.$.homescreenView;
+        }
+      }
+
+      // open the first view
+      this.openView(initialView, {
+        inAnimation: "floatUp",
+        inDuration: 1000
+      });
+    }.bind(this));
 
     // If we want to capture all keydown events, we have to add the listener
     // directly to the document
@@ -186,11 +201,7 @@ Polymer("padlock-app", {
     this.$.alertDialog.open = false;
   },
   mousedown: function () {
-    if ("ontouchstart" in window) {
-      // On most browsers the mousedown event is coupled to triggering focus on
-      // the clicked elements. Since we're directly handling focussing inputs
-      // with the fast-input element we need to disable the native mechanism
-      // to prevent conflicts.
+    if (this.preventMousedownDefault) {
       event.preventDefault();
       event.stopPropagation();
     }
