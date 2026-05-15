@@ -1,14 +1,17 @@
 {
-  "name": "safe",
-  "version": "0.0.0",
+  "name": "Padlock",
+  "version": "0.4.0",
   "homepage": "https://github.com/Akshit1025/padloc",
   "authors": ["Akshit Gupta <problemsolver687@gmail.com>"],
   "main": "index.html",
-  "license": "MIT",
+  "license": "GPL",
   "ignore": ["**/.*", "node_modules", "bower_components", "test", "tests"],
   "dependencies": {
-    "polymer": "~0.1.4",
+    "polymer": "~0.2.1",
     "requirejs": "~2.1.9"
   },
-  "private": true
+  "private": true,
+  "resolutions": {
+    "platform": "0.2.1"
+  }
 }

@@ -5,7 +5,7 @@
   src:
     local("Clear Sans Thin"),
     local("ClearSans-Thin"),
-    url(../assets/fonts/ClearSans-Thin.woff) format("woff");
+    url(../../assets/fonts/ClearSans-Thin.woff) format("woff");
 }
 @font-face {
   font-family: "Clear Sans";
@@ -14,7 +14,7 @@
   src:
     local("Clear Sans Light"),
     local("ClearSans-Light"),
-    url(../assets/fonts/ClearSans-Light.woff) format("woff");
+    url(../../assets/fonts/ClearSans-Light.woff) format("woff");
 }
 @font-face {
   font-family: "Clear Sans";
@@ -23,7 +23,7 @@
   src:
     local("Clear Sans Regular"),
     local("ClearSans-Regular"),
-    url(../assets/fonts/ClearSans-Regular.woff) format("woff");
+    url(../../assets/fonts/ClearSans-Regular.woff) format("woff");
 }
 @font-face {
   font-family: "Clear Sans";
@@ -32,5 +32,5 @@
   src:
     local("Clear Sans Bold"),
     local("ClearSans-Bold"),
-    url(../assets/fonts/ClearSans-Bold.woff) format("woff");
+    url(../../assets/fonts/ClearSans-Bold.woff) format("woff");
 }

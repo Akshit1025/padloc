@@ -1,66 +1,66 @@
-@import "../../config.scss";
+@import "../../styles/config.scss";
 @import "compass/css3";
 
 :host {
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background-color: transparent;
-    display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: transparent;
+  display: none;
 
-    @include transition(background-color 0.5s);
+  @include transition(background-color 0.5s);
 
-    &.open {
-        background-color: rgba(0, 0, 0, 0.3);
+  &.open {
+    background-color: rgba(0, 0, 0, 0.3);
 
-        .inner > * {
-            @include transform(translate3d(0, 0, 0));
-            opacity: 1;
-        }
+    .inner > * {
+      @include transform(translate3d(0, 0, 0));
+      opacity: 1;
     }
+  }
 
-    // Failsafe in case the out animation get interrupted and
-    // the dialog fails to set 'display: none'
-    &:not(.open) {
-        pointer-events: none;
-    }
+  // Failsafe in case the out animation get interrupted and
+  // the dialog fails to set 'display: none'
+  &:not(.open) {
+    pointer-events: none;
+  }
 }
 
 .inner {
-    display: block;
-    position: absolute;
-    bottom: 0;
+  display: block;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 0;
+
+  @include box-sizing(border-box);
+
+  > * {
+    margin-bottom: 5px;
+    text-align: center;
+    opacity: 0;
+    cursor: pointer;
     width: 100%;
-    padding: 0;
 
     @include box-sizing(border-box);
+    @include transform(translate3d(0, 100%, 0));
 
-    > * {
-        margin-bottom: 5px;
-        text-align: center;
-        opacity: 0;
-        cursor: pointer;
-        width: 100%;
-
-        @include box-sizing(border-box);
-        @include transform(translate3d(0, 100%, 0)); 
-
-        &.title {
-            background: transparent;
-            color: $text-color-light;
-            cursor: default;
-            border: none;
-            padding: 10px;
-            line-height: 25px;
-            word-wrap: break-word;
-            font-weight: $font-weight-bold;
-        }
+    &.title {
+      background: transparent;
+      color: $text-color-light;
+      cursor: default;
+      border: none;
+      padding: 10px;
+      line-height: 25px;
+      word-wrap: break-word;
+      font-weight: $font-weight-bold;
     }
+  }
 
-    > input {
-        cursor: text;
-    }
+  > input {
+    cursor: text;
+  }
 }
