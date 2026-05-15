@@ -1,3 +1,5 @@
+Polymer("padlock-option");
+
 Polymer("padlock-select", {
     //* Determines wheter the select options are shown or not
     open: false,
@@ -10,7 +12,7 @@ Polymer("padlock-select", {
     attached: function() {
         // Initially select the first item with the _selected_ attribute
         for (var i=0; i<this.children.length; i++) {
-            if (this.children[i].getAttribute("selected")) {
+            if (this.children[i].selected) {
                 this.selected = this.children[i];
                 break;
             }
@@ -24,6 +26,9 @@ Polymer("padlock-select", {
                 rowHeight = options[0] && options[0].offsetHeight || 0,
                 gutterWidth = 5;
 
+            // Apparently firefox doesnt want a prefix when setting the style directly
+            prefix = prefix == "-moz-" ? "" : prefix;
+
             // Show all options except the selected one by making them opaque
             // and lining them up via a css transform
             for (var i=0, j=0, o; i<options.length; i++) {
@@ -33,7 +38,7 @@ Polymer("padlock-select", {
                 if (!this.open || o != this.selected) {
                     var y = (j + 1) * (rowHeight + gutterWidth);
                     y = this.openUpwards ? -y : y;
-                    var trans = this.open ? "translate(0, " + y + "px)" : "";
+                    var trans = this.open ? "translate(0px, " + y + "px)" : "";
                     o.style[prefix + "transform"] = trans;
                     o.style.opacity = this.open ? 1 : 0;
                     j++;

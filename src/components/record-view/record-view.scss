@@ -4,42 +4,70 @@
 @import "compass/css3";
 
 :host {
-    display: block;
-    overflow: scroll;
-    -webkit-overflow-scrolling: touch;
+  display: block;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
 .field {
-    background: #ffffff;
-    height: $row-height;
-    width: 100%;
-    padding: 0 15px;
-    margin-top: 5px;
-    cursor: pointer;
+  background: #ffffff;
+  height: $row-height;
+  width: 100%;
+  padding: 0 15px;
+  margin-top: 5px;
+  cursor: pointer;
 
-    @include display-box;
-    @include box-align(center);
-    @include box-sizing(border-box);
+  @include display-box;
+  @include box-align(center);
+  @include box-sizing(border-box);
 
-    > * {
-        text-overflow: ellipsis;
-    }
+  > * {
+    text-overflow: ellipsis;
+  }
 
-    > .label {
-        max-width: 100px;
-        text-align: right;
-        color: $color-primary;
-        @include ellipsis();
-    }
+  > .label {
+    max-width: 100px;
+    text-align: right;
+    color: $color-primary;
+    @include ellipsis;
+  }
 
-    > .value {
-        margin-right: 15px;
-        @include box-flex(1);
-        @include ellipsis();
-    }
+  > .value {
+    margin-right: 15px;
+    @include box-flex(1);
+    @include ellipsis;
+  }
 }
 
 .add-button {
-    width: 100%;
-    margin: 5px 0;
+  width: 100%;
+  margin: 5px 0;
+}
+
+.category {
+  background: #fff;
+  color: #c5c5c5;
+  text-align: center;
+  font-size: 16px;
+  padding: 10px;
+  cursor: pointer;
+  @include ellipsis;
+
+  &.color1 {
+    background: $cat-color-1;
+    color: $text-color-light;
+    font-weight: $font-weight-bold;
+  }
+
+  &.color2 {
+    background: $cat-color-2;
+    color: $text-color-light;
+    font-weight: $font-weight-bold;
+  }
+
+  &.color3 {
+    background: $cat-color-3;
+    color: $text-color-light;
+    font-weight: $font-weight-bold;
+  }
 }

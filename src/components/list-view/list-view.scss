@@ -1,86 +1,138 @@
 @import "../../config.scss";
+@import "../../mixins.scss";
+@import "compass/css3/box";
 @import "compass/css3";
 
 :host {
-    overflow: scroll;
-    -webkit-overflow-scrolling: touch;
-    height: 100%;
-    font-size: 0;
-    padding-bottom: 5px;
-    @include box-sizing(border-box);
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+  font-size: 0;
+  padding-bottom: 5px;
+  @include box-sizing(border-box);
 }
 
 .record-item {
-    display: block;
-    cursor: pointer;
-    @include box-sizing(border-box);
+  display: block;
+  cursor: pointer;
+  padding: 5px 0 0 0;
+  vertical-align: top;
+  @include box-sizing(border-box);
 
-    padding: 5px 0 0 0;
+  .record-item-inner {
+    height: $row-height;
+    background: #ffffff;
+    width: 100%;
 
-    .record-item-inner {
-        height: $row-height;
-        line-height: $row-height;
-        padding: 0 15px;
-        background: #ffffff;
+    @include display-box;
+    @include box-align(center);
+  }
+
+  .record-item-name {
+    padding: 0 15px;
+    @include box-flex(1);
+    @include ellipsis;
+  }
+
+  .record-item-category {
+    font-size: 14px;
+    background: #ddd;
+    color: $text-color-light;
+    border: solid transparent;
+    border-width: 0 5px;
+    line-height: $row-height/2;
+    max-width: 80px;
+    border-radius: 4px;
+    margin-right: 15px;
+    font-weight: $font-weight-bold;
+    @include ellipsis;
+
+    &.color1 {
+      background: $cat-color-1;
     }
+
+    &.color2 {
+      // background: rgb(35, 172, 243);
+      background: $cat-color-2;
+    }
+
+    &.color3 {
+      background: $cat-color-3;
+    }
+  }
 }
 
-.record-item, .section-header, .empty {
-    font-size: $font-size-default;
+.record-item,
+.section-header,
+.empty {
+  font-size: $font-size-default;
 }
 
 .section-header {
-    padding: 0 15px;
-    color: $color-primary;
-    margin-top: 5px;
-    font-weight: 400;
+  padding: 0 15px;
+  color: $color-primary;
+  margin-top: 5px;
+  font-weight: $font-weight-bold;
+
+  &.color1 {
+    color: $cat-color-1;
+  }
+
+  &.color2 {
+    // color: rgb(35, 172, 243);
+    color: $cat-color-2;
+  }
+
+  &.color3 {
+    color: $cat-color-3;
+  }
 }
 
 .list {
-    min-height: 100%;
+  min-height: 100%;
 }
 
 .empty {
-    position: absolute;
-    height: 150px;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    text-align: center;
+  position: absolute;
+  height: 150px;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  text-align: center;
 
-    > button {
-        width: 100%;
-        margin-top: 15px;
-    }
+  > button {
+    width: 100%;
+    margin-top: 15px;
+  }
 }
 
 @media (min-width: 700px) {
-    :host {
-        padding-left: 5px;
-    }
+  :host {
+    padding-left: 5px;
+  }
 
-    .record-item {
-        display: inline-block;
-        padding-right: 5px;
-    }
+  .record-item {
+    display: inline-block;
+    padding-right: 5px;
+  }
 }
 
 @media (min-width: 700px) and (max-width: 1000px) {
-    .record-item {
-        width: 50%;
-    }
+  .record-item {
+    width: 50%;
+  }
 }
 
 @media (min-width: 1000px) and (max-width: 1300px) {
-    .record-item {
-        width: 33.33%;
-    }
+  .record-item {
+    width: 33.33%;
+  }
 }
 
 @media (min-width: 1300px) {
-    .record-item {
-        width: 25%;
-    }
+  .record-item {
+    width: 25%;
+  }
 }

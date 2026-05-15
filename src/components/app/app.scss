@@ -16,8 +16,6 @@
     -webkit-tap-highlight-color: transparent;
     background: $color-grey;
     overflow: hidden;
-    
-    @include transition(background 1s);
 
     &.ios-standalone {
         padlock-header > div {
@@ -80,6 +78,7 @@ button {
     cursor: pointer;
     // color: darken($color-primary, 0.3);
     color: $color-primary;
+    font-weight: $font-weight-bold;
 }
 
 button.primary {
@@ -111,5 +110,5 @@ input {
 }
 
 strong {
-    font-weight: 400;
+    font-weight: $font-weight-bold;
 }
