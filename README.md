@@ -28,6 +28,7 @@ From the project root:
 ```powershell
 npm install
 bower install
+bundle install
 ```
 
 If Bower is not installed yet:
@@ -92,7 +93,7 @@ In another terminal:
 node server.js
 ```
 
-The default Grunt task watches source files and runs Compass plus tests.
+The default Grunt task starts `watch`; file changes then trigger Compass and QUnit.
 
 ## Important files
 
@@ -111,7 +112,7 @@ The default Grunt task watches source files and runs Compass plus tests.
 Usually means one of the generated CSS files is missing. Run:
 
 ```powershell
-npx grunt compass
+bundle exec compass compile
 ```
 
 ### Compass installation fails on Windows
