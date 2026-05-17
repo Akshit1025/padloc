@@ -64,6 +64,12 @@ define(["padlock/util"], function (util) {
         function (r) {
           // Generate uuid if the record doesn't have one yet
           r.uuid = r.uuid || util.uuid();
+
+          // If the record does not have and 'updated' property, use the current time
+          var updated = r.updated || new Date();
+          // If the updated property is not a Date object, convert it to one.
+          r.updated = updated instanceof Date ? updated : new Date(updated);
+
           // If a record with the same uuid exists but the new one is more
           // recent, replace the existing one. Otherwise just add it.
           var existing = this.uuidMap[r.uuid];
@@ -118,9 +124,10 @@ define(["padlock/util"], function (util) {
     /**
      * Empties the collection and removes the stored password
      */
-    lock: function () {
+    clear: function () {
       this.records = [];
-      this.store.password = null;
+      this.uuidMap = {};
+      this.store.clear();
     },
     /**
      * Synchronizes the collection with a different source

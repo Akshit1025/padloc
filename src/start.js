@@ -1,30 +1,31 @@
 window.addEventListener("polymer-ready", function () {
   require([
-    "padlock/LocalStorageSource",
+    "padlock/LocalSource",
     "padlock/CloudSource",
     "padlock/Store",
     "padlock/Collection",
     "padlock/Categories",
     "padlock/Settings"
   ], function (
-    LocalStorageSource,
+    LocalSource,
     CloudSource,
     Store,
     Collection,
     Categories,
     Settings
   ) {
-    var source = new LocalStorageSource(),
+    var source = new LocalSource(),
       store = new Store(source),
-      cloudHost =
-        window.location.protocol + "//" + window.location.host + "/cloud/",
+      cloudHost = "https://cloud.padlock.io/",
       settings = new Settings(
         {
           sync_host: cloudHost,
           sync_email: "",
           sync_key: "",
+          sync_device: "",
           sync_connected: false,
-          sync_auto: true
+          sync_auto: true,
+          default_fields: ["username", "password"]
         },
         source
       ),

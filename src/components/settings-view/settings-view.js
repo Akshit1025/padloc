@@ -1,7 +1,7 @@
 Polymer("padlock-settings-view", {
   headerOptions: {
     show: true,
-    leftIconShape: "arrow-left",
+    leftIconShape: "left",
     rightIconShape: ""
   },
   titleText: "Settings",
@@ -69,19 +69,25 @@ Polymer("padlock-settings-view", {
       email = this.$.emailInput.value,
       deviceName = this.$.deviceNameInput.value;
 
+    // Show progress indicator
+    this.$.progress.show();
+
     req.onreadystatechange = function () {
       if (req.readyState === 4) {
         if (req.status === 200) {
+          // Hide progress indicator
+          this.$.progress.hide();
+          var apiKey = JSON.parse(req.responseText);
           // We're getting back the api key directly, but it will valid only
           // after the user has visited the activation link in the email he was sent
-          this.settings.sync_key = req.response.key;
+          this.settings.sync_key = apiKey.key;
           this.settings.sync_connected = true;
           this.settings.save();
           this.alert(
-            "An email was sent to " +
+            "Almost done! An email was sent to " +
               email +
               ". Please follow the " +
-              "activation link in the message to complete the connection process!"
+              "instructions to complete the connection process!"
           );
         } else {
           this.alert(
@@ -92,7 +98,6 @@ Polymer("padlock-settings-view", {
       }
     }.bind(this);
 
-    req.responseType = "json";
     req.open("POST", url, true);
     req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     req.setRequestHeader("Accept", "application/json");
@@ -110,12 +115,15 @@ Polymer("padlock-settings-view", {
   toggleAutoSync: function (event, detail, sender) {
     // Make sure the event is not coming from the toggle element itself as this
     // would result in the element being toggled twice
-    if (event.impl.target != this.$.autoSyncToggle.impl) {
+    if (event.target != this.$.autoSyncToggle) {
       this.$.autoSyncToggle.toggle();
     }
   },
   //* Saves the current settings
   save: function () {
     this.settings.save();
+  },
+  import: function () {
+    this.fire("import");
   }
 });

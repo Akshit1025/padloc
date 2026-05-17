@@ -1,5 +1,6 @@
 @import "../../styles/config.scss";
 @import "../../styles/mixins.scss";
+@import "../view/view.scss";
 
 .settings-button {
   display: block;
@@ -21,6 +22,7 @@
   background: #fff;
   line-height: $row-height;
   padding: 0 15px;
+  cursor: pointer;
 
   padlock-toggle {
     float: right;

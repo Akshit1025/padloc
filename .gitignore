@@ -4,6 +4,5 @@ node_modules
 
 # Sass generated css files
 src/components/**/*.css
-src/styles/animations.css
 src/styles/mixins.css
 src/styles/config.css

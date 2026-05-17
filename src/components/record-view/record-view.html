@@ -1,12 +1,12 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../view/view.html">
-<link rel="import" href="../padlock-input.html">
+<link rel="import" href="../input/input.html">
 
 <polymer-element name="padlock-record-view" extends="padlock-view" attributes="record" touch-action="pan-y">
     <template>
         <!-- STYLES -->
-        <link href="src/components/record-view/record-view.css" rel="stylesheet" type="text/css">
+        <link href="record-view.css" rel="stylesheet" type="text/css">
         <div id="animated">
             <div class="category color{{record.catColor}}" on-tap='{{openCategories}}'>{{record.category ?
                 record.category : "Add a Category"}}</div>

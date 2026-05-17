@@ -1,8 +1,107 @@
+@import "compass/css3/animation";
+@import "compass/css3/transform";
+@import "../../styles/config.scss";
+
+@include keyframes(slideInFromRight) {
+  from {
+    @include transform(translate3d(100%, 0, 0));
+    opacity: 0;
+  }
+  to {
+    @include transform(translate3d(0, 0, 0));
+    opacity: 1;
+  }
+}
+
+@include keyframes(slideInFromLeft) {
+  from {
+    @include transform(translate3d(-100%, 0, 0));
+    opacity: 0;
+  }
+  to {
+    @include transform(translate3d(0, 0, 0));
+    opacity: 1;
+  }
+}
+
+@include keyframes(slideOutToRight) {
+  from {
+    @include transform(translate3d(0, 0, 0));
+    opacity: 1;
+  }
+  to {
+    @include transform(translate3d(100%, 0, 0));
+    opacity: 0;
+  }
+}
+
+@include keyframes(slideOutToLeft) {
+  from {
+    @include transform(translate3d(0, 0, 0));
+    opacity: 1;
+  }
+  to {
+    @include transform(translate3d(-100%, 0, 0));
+    opacity: 0;
+  }
+}
+
+@include keyframes(slideInFromBottom) {
+  from {
+    @include transform(translate3d(0, 100%, 0));
+    opacity: 0;
+  }
+  to {
+    @include transform(translate3d(0, 0, 0));
+    opacity: 1;
+  }
+}
+
+@include keyframes(slideOutToBottom) {
+  from {
+    @include transform(translate3d(0, 0, 0));
+    opacity: 1;
+  }
+  to {
+    @include transform(translate3d(0, 100%, 0));
+    opacity: 0;
+  }
+}
+
+@include keyframes(floatUp) {
+  from {
+    @include transform(translate3d(0, 5%, 0));
+    opacity: 0;
+  }
+  to {
+    @include transform(translate3d(0, 0, 0));
+    opacity: 1;
+  }
+}
+
+@include keyframes(fadeIn) {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@include keyframes(fadeOut) {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 :host {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding-top: $row-height;
 }

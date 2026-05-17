@@ -2,6 +2,7 @@
 @import "../../styles/mixins.scss";
 @import "compass/css3/box";
 @import "compass/css3";
+@import "../view/view.scss";
 
 :host {
   display: block;
@@ -37,6 +38,11 @@
     margin-right: 15px;
     @include box-flex(1);
     @include ellipsis;
+
+    &:empty:after {
+      content: "(Tap to Edit)";
+      color: $text-color-faint;
+    }
   }
 }
 
@@ -47,7 +53,7 @@
 
 .category {
   background: #fff;
-  color: #c5c5c5;
+  color: $text-color-faint;
   text-align: center;
   font-size: 16px;
   padding: 10px;

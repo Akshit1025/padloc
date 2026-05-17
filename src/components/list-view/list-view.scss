@@ -2,6 +2,7 @@
 @import "../../styles/mixins.scss";
 @import "compass/css3/box";
 @import "compass/css3";
+@import "../view/view.scss";
 
 :host {
   overflow-x: hidden;

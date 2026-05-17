@@ -1,7 +1,40 @@
 @import "../../styles/config.scss";
-@import "../../styles/animations.scss";
 @import "../../styles/mixins.scss";
 @import "compass/css3";
+@import "compass/css3/animation";
+@import "../view/view.scss";
+
+@include keyframes(bounceIn) {
+  0% {
+    @include transform(scale(0.1));
+    opacity: 0;
+  }
+  30% {
+    @include transform(scale(1.1));
+    opacity: 1;
+  }
+  70% {
+    @include transform(scale(0.95));
+  }
+  100% {
+    @include transform(scale(1));
+  }
+}
+
+@include keyframes(bounce) {
+  0% {
+    @include transform(scale(1));
+  }
+  30% {
+    @include transform(scale(1.1));
+  }
+  70% {
+    @include transform(scale(0.95));
+  }
+  100% {
+    @include transform(scale(1));
+  }
+}
 
 :host {
   overflow: scroll;
@@ -69,27 +102,29 @@
 padlock-select {
   line-height: 0;
 
-  button {
-    color: $text-color-light;
+  /deep/ .color1 {
+    background: $cat-color-1;
+  }
+
+  /deep/ .color2 {
+    background: $cat-color-2;
+  }
+
+  /deep/ .color3 {
+    background: $cat-color-3;
+  }
+
+  &::shadow {
+    button {
+      color: $text-color-light;
+    }
+
+    shape-shifter::shadow line {
+      stroke: $text-color-light;
+    }
   }
 
   padlock-option {
     color: transparent;
-  }
-
-  padlock-shapeshifter line {
-    stroke: $text-color-light;
-  }
-
-  .color1 {
-    background: $cat-color-1;
-  }
-
-  .color2 {
-    background: $cat-color-2;
-  }
-
-  .color3 {
-    background: $cat-color-3;
   }
 }

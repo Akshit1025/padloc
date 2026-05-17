@@ -2,11 +2,13 @@ define(["padlock/crypto"], function (crypto) {
   module("padlock/crypto");
 
   test("key generation", function () {
-    var keyLength = 256,
-      pwd = "password";
+    var pwd = "password",
+      salt = crypto.rand(),
+      keyLength = 256,
+      iter = 1000;
 
-    var p = crypto.genKey(pwd);
-    var p2 = crypto.genKey(pwd, p.salt);
+    var p = crypto.genKey(pwd, salt, keyLength, iter);
+    var p2 = crypto.genKey(pwd, salt, keyLength, iter);
 
     equal(
       p.key,
@@ -19,7 +21,7 @@ define(["padlock/crypto"], function (crypto) {
       "The correct salt should be passed back with the key object."
     );
 
-    p2 = crypto.genKey(pwd);
+    p2 = crypto.genKey(pwd, crypto.rand(), keyLength, iter);
 
     notEqual(
       p.key,
@@ -30,12 +32,15 @@ define(["padlock/crypto"], function (crypto) {
 
   test("encrypt/decrypt roundtrip", function () {
     var pwd = "password",
+      salt = crypto.rand(),
+      keyLength = 256,
+      iter = 1000,
       pt = "Hello World!";
-    var p = crypto.genKey(pwd);
+    var p = crypto.genKey(pwd, salt, keyLength, iter);
 
-    var c = crypto.encrypt(p.key, pt);
+    var c = crypto.encrypt(p, pt);
 
-    var newC = crypto.encrypt(p.key, pt);
+    var newC = crypto.encrypt(p, pt);
     notEqual(
       newC.ct,
       c.ct,
@@ -43,24 +48,67 @@ define(["padlock/crypto"], function (crypto) {
         "in two different cipher texts."
     );
 
-    var dec = crypto.decrypt(p.key, c);
+    var dec = crypto.decrypt(p, c);
     equal(dec, pt, "The decrypted value should be equal to the original value");
   });
 
-  test("pwdEncrypt/pwdDecrypt roundtrip", function () {
+  asyncTest("worker keyGen", function () {
+    expect(1);
+
     var pwd = "password",
-      pt = "Hello World!";
+      salt = crypto.rand(),
+      keyLength = 256,
+      iter = 1000,
+      p = crypto.genKey(pwd, salt, keyLength, iter);
 
-    var c = crypto.pwdEncrypt(pwd, pt);
-    var pt2 = crypto.pwdDecrypt(pwd, c);
+    crypto.workerGenKey(pwd, salt, keyLength, iter, function (keyData) {
+      deepEqual(
+        keyData,
+        p,
+        "Key obtained through the worker version should be identical to the one obtained " +
+          "through the regular one."
+      );
+      start();
+    });
+  });
 
-    equal(pt2, pt, "The decrypted value should be equal to original value.");
+  asyncTest("worker encrypt", function () {
+    var pwd = "password",
+      salt = crypto.rand(),
+      keyLength = 256,
+      iter = 1000,
+      pt = "Hello World!",
+      p = crypto.genKey(pwd, salt, keyLength, iter);
 
-    c2 = crypto.pwdEncrypt(pwd, pt);
-    notEqual(
-      c2.ct,
-      c.ct,
-      "The same plaintext/password pair should not result in the same cypher text"
-    );
+    crypto.workerEncrypt(p, pt, function (c) {
+      var pt2 = crypto.decrypt(p, c);
+      equal(
+        pt2,
+        pt,
+        "Worker version should work the same as the regular one, just asyncronously. I.e. the " +
+          "result should be decryptable with the same key."
+      );
+      start();
+    });
+  });
+
+  asyncTest("worker encrypt", function () {
+    var pwd = "password",
+      salt = crypto.rand(),
+      keyLength = 256,
+      iter = 1000,
+      pt = "Hello World!",
+      p = crypto.genKey(pwd, salt, keyLength, iter),
+      c = crypto.encrypt(p, pt);
+
+    crypto.workerDecrypt(p, c, function (pt2) {
+      equal(
+        pt2,
+        pt,
+        "Worker version should work the same as the regular one, just asyncronously. I.e. it " +
+          "should be able to decrypt a cipher text encrypted with the same key."
+      );
+      start();
+    });
   });
 });

@@ -1,7 +1,7 @@
 Polymer("padlock-import-view", {
   headerOptions: {
     show: true,
-    leftIconShape: "arrow-left",
+    leftIconShape: "left",
     rightIconShape: ""
   },
   titleText: "Import Records",
@@ -45,16 +45,19 @@ Polymer("padlock-import-view", {
   //* Starts the import using the raw input and the provided password
   importSecuStoreBackup: function () {
     this.$.pwdDialog.open = false;
+    this.$.progress.show();
     require(["padlock/import"], function (imp) {
-      var records = imp.importSecuStoreBackup(
+      imp.importSecuStoreBackup(
         this.$.rawInput.value,
-        this.$.pwdInput.value
+        this.$.pwdInput.value,
+        function (records) {
+          this.fire("import", { records: records });
+        }.bind(this),
+        function (e) {
+          this.$.errorDialog.open = true;
+        }.bind(this)
       );
-      if (records) {
-        this.fire("import", { records: records });
-      } else {
-        this.$.errorDialog.open = true;
-      }
+      this.$.progress.hide();
     }.bind(this));
   },
   importCancel: function () {

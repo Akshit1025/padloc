@@ -22,7 +22,7 @@
   @include transition(transform 0.5s, background 1s);
   @include transform(translate3d(0, -100%, 0));
 
-  padlock-shapeshifter {
+  shape-shifter {
     display: block;
     $padding: 10px;
     padding: $padding;
@@ -30,7 +30,7 @@
     height: $row-height - $padding * 2;
     cursor: pointer;
 
-    line {
+    &::shadow line {
       stroke: $text-color-light;
     }
   }
@@ -113,6 +113,7 @@
 }
 
 .title {
+  pointer-events: none;
   opacity: 1;
   @include transform(translate(0, 0));
   @include ellipsis();

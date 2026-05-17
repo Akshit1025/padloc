@@ -1,24 +1,25 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../shapeshifter/shapeshifter.html">
-<link rel="import" href="../padlock-input.html">
+<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
+<link rel="import" href="../input/input.html">
 
 <polymer-element name="padlock-header" attributes="view showFilter filterString">
     <template>
         <!-- STYLES -->
-        <link href="src/components/header/header.css" rel="stylesheet" type="text/css">
+        <link href="header.css" rel="stylesheet" type="text/css">
         <div
-            class="{{ {'showing': view ? view.headerOptions.show : false, 'show-filter': view ? view.headerOptions.showFilter : false, 'filtering': filterString, 'scrim': scrim} | tokenList }}">
+            class="{{ {'showing': view ? view.headerOptions.show : false, 'show-filter': view ? view.headerOptions.showFilter : false, 'filtering': filterActive, 'scrim': scrim} | tokenList }}">
             <!-- LEFT BUTTON -->
-            <padlock-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></padlock-shapeshifter>
+            <shape-shifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></shape-shifter>
             <div class="middle">
                 <!-- FILTER INPUT -->
                 <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString }}" type="search"
-                    placeholder="type to filter..." disabled?="{{ view ? !view.headerOptions.showFilter : true }}" />
+                    placeholder="type to filter..." disabled?="{{ view ? !view.headerOptions.showFilter : true }}"
+                    on-focus="{{ filterGotFocus }}" />
                 <!-- HEADER TITLE -->
                 <div class="title">{{ view.titleText }}</div>
             </div>
             <!-- RIGHT BUTTON -->
-            <padlock-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></padlock-shapeshifter>
+            <shape-shifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></shape-shifter>
         </div>
     </template>
     <script src="header.js"></script>

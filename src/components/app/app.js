@@ -7,7 +7,6 @@ Polymer("padlock-app", {
     this.settings.fetch();
 
     this.categories.fetch();
-    this.$.categoriesView.updateCategories();
 
     this.collection.exists({
       success: this.initView.bind(this),
@@ -57,34 +56,31 @@ Polymer("padlock-app", {
   },
   //* Tries to unlock the current collection with the provided password
   unlock: function (password) {
+    this.$.decrypting.show();
     this.collection.fetch({
       password: password,
       success: function () {
-        this.updateCategories(this.collection.records);
         this.$.lockView.errorMessage = null;
         this.openView(this.$.listView);
+        this.$.decrypting.hide();
         if (this.settings.sync_connected && this.settings.sync_auto) {
           this.synchronize();
         }
       }.bind(this),
       fail: function () {
         this.$.lockView.errorMessage = "Wrong password!";
+        this.$.decrypting.hide();
       }.bind(this)
     });
   },
   //* Locks the collection and opens the lock view
   lock: function () {
     this.$.mainMenu.open = false;
-    this.openView(
-      this.$.lockView,
-      {
-        inAnimation: "floatUp",
-        inDuration: 1000
-      },
-      function () {
-        this.collection.lock();
-      }.bind(this)
-    );
+    this.openView(this.$.lockView, {
+      inAnimation: "floatUp",
+      inDuration: 1000,
+      outCallback: this.collection.clear.bind(this.collection)
+    });
   },
   //* Change handler for the selected property; Opens the record view when record is selected
   selectedChanged: function () {
@@ -151,7 +147,9 @@ Polymer("padlock-app", {
     this.$.addDialog.open = false;
     var record = {
       name: this.$.addInput.value,
-      fields: []
+      fields: this.settings.default_fields.map(function (field) {
+        return { name: field, value: "" };
+      })
     };
 
     this.collection.add(record);
@@ -166,12 +164,15 @@ Polymer("padlock-app", {
     this.collection.save();
     this.$.listView.prepareRecords();
     this.recordViewBack();
+    // Auto sync
+    if (this.settings.sync_connected && this.settings.sync_auto) {
+      this.synchronize();
+    }
   },
   recordViewBack: function (event, detail, sender) {
     this.selected = null;
     this.openView(this.$.listView);
   },
-  //* Opens the main menu (duh)
   openMainMenu: function () {
     this.$.mainMenu.open = true;
   },
@@ -183,19 +184,19 @@ Polymer("padlock-app", {
   settingsBack: function () {
     this.openView(this.$.listView);
   },
-  //* Opens the import view
   openImportView: function () {
-    this.$.mainMenu.open = false;
-    // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
     this.openView(this.$.importView);
   },
   //* Add the records imported with the import view to the collection
   saveImportedRecords: function (event, detail) {
-    this.updateCategories(detail.records);
     this.collection.add(detail.records);
     this.collection.save();
     this.alert(detail.records.length + " records imported!");
     this.openView(this.$.listView);
+    // Auto sync
+    if (this.settings.sync_connected && this.settings.sync_auto) {
+      this.synchronize();
+    }
   },
   importBack: function () {
     this.openView(this.$.listView);
@@ -222,25 +223,19 @@ Polymer("padlock-app", {
       event.stopPropagation();
     }
   },
-  //* Captures all keydown events and brings focus to the filter input if it is showing
+  //* Keyboard shortcuts
   keydown: function (event) {
-    // We don't want to steal focus from any other input elements so we'll only focus
-    // the filter input if the event does not come from a input or textarea element.
-    // Unfortunately Polymer obscures the actual event target so we'll have to access
-    // the orginial event (event.impl) to get the actual target. This might break
-    // with future versions of polymer or the native web components implementation.
-    var isInput =
-      event.impl.target.toString() == "[object HTMLInputElement]" ||
-      event.impl.target.toString() == "[object HTMLTextAreaElement]";
+    var shortcut;
 
-    // Focus the filter input if the event does not come from an input element and
-    // if the filter input is currently showing.
-    if (
-      !isInput &&
-      this.currentView &&
-      this.currentView.headerOptions.showFilter
-    ) {
-      this.$.header.focusFilterInput();
+    // CTRL/CMD + F
+    if ((event.ctrlKey || event.metaKey) && event.keyCode === 70) {
+      shortcut = this.$.header.focusFilterInput.bind(this.$.header);
+    }
+
+    // If one of the shortcuts matches, execute it and prevent the default behaviour
+    if (shortcut) {
+      shortcut();
+      event.preventDefault();
     }
   },
   //* Adds any categories inside of _records_ that don't exist yet
@@ -277,28 +272,6 @@ Polymer("padlock-app", {
       }
     });
   },
-  //* Starts a spinner animation on the menu icon
-  startSpinner: function () {
-    this.spinnerStarted = new Date();
-    this.$.listView.headerOptions.leftIconShape = "spinner";
-    this.$.header.updateIcons();
-  },
-  //* Stops the spinner animation on the menu icon
-  stopSpinner: function () {
-    // Make sure the spinner animates at least for a certain amount of time,
-    // because otherwise it will look weird.
-    var minDur = 2000,
-      timePassed = new Date().getTime() - this.spinnerStarted.getTime(),
-      delay = Math.max(minDur - timePassed, 0);
-
-    setTimeout(
-      function () {
-        this.$.listView.headerOptions.leftIconShape = "menu";
-        this.$.header.updateIcons();
-      }.bind(this),
-      delay
-    );
-  },
   //* Synchronizes the data with a remote source
   synchronize: function () {
     // In case this was called from the menu
@@ -312,24 +285,20 @@ Polymer("padlock-app", {
       this.remoteSource.email = this.settings.sync_email;
       this.remoteSource.apiKey = this.settings.sync_key;
 
-      this.startSpinner();
+      this.$.synchronizing.show();
 
       this.collection.sync(this.remoteSource, {
         success: function () {
-          this.stopSpinner();
-          // Update the local set of categories with the categories from any
-          // newly added records
-          this.updateCategories(this.collection.records);
-          // Rerender items in list view
-          this.$.listView.prepareRecords();
+          this.$.synchronizing.hide();
         }.bind(this),
         fail: function (req) {
           var msg =
             req.status == 401
-              ? "Authentication failed. Have you visited the link in the activation email yet?"
+              ? "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
+                "If the problem persists, try to disconnect and reconnect under settings!"
               : "An error occurred while synchronizing. Please try again later!";
           this.alert(msg);
-          this.stopSpinner();
+          this.$.synchronizing.hide();
         }.bind(this)
       });
     } else {
