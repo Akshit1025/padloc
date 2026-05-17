@@ -76,6 +76,10 @@ Polymer("padlock-app", {
   //* Locks the collection and opens the lock view
   lock: function () {
     this.$.mainMenu.open = false;
+    // Remove the stored password from the remote source if we've created on yet
+    if (this.remoteSource) {
+      delete this.remoteSource.password;
+    }
     this.openView(this.$.lockView, {
       inAnimation: "floatUp",
       inDuration: 1000,
@@ -273,7 +277,10 @@ Polymer("padlock-app", {
     });
   },
   //* Synchronizes the data with a remote source
-  synchronize: function () {
+  synchronize: function (remotePassword) {
+    // Ignore the remotePassword argument if it is not a string.
+    remotePassword =
+      typeof remotePassword === "string" ? remotePassword : undefined;
     // In case this was called from the menu
     this.$.mainMenu.open = false;
 
@@ -288,16 +295,37 @@ Polymer("padlock-app", {
       this.$.synchronizing.show();
 
       this.collection.sync(this.remoteSource, {
+        remotePassword: remotePassword,
         success: function () {
           this.$.synchronizing.hide();
+
+          // If we explicitly used a differen password for the remote source than for the local source,
+          // ask the user if he wants to update the remote password
+          if (
+            remotePassword !== undefined &&
+            this.collection.defaultPassword !== remotePassword
+          ) {
+            this.$.updateRemotePasswordDialog.open = true;
+          }
         }.bind(this),
-        fail: function (req) {
-          var msg =
-            req.status == 401
-              ? "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
-                "If the problem persists, try to disconnect and reconnect under settings!"
-              : "An error occurred while synchronizing. Please try again later!";
-          this.alert(msg);
+        fail: function (e) {
+          if (
+            e &&
+            e.message &&
+            e.message.indexOf("CORRUPT: ccm: tag doesn't match") !== -1
+          ) {
+            // Decryption failed, presumably on the remote data. This means that the local master
+            // password does not match the one that was used for encrypting the remote data so
+            // we need to prompt the user for the correct password.
+            this.$.remotePasswordDialog.open = true;
+          } else {
+            var msg =
+              e.status == 401
+                ? "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
+                  "If the problem persists, try to disconnect and reconnect under settings!"
+                : "An error occurred while synchronizing. Please try again later!";
+            this.alert(msg);
+          }
           this.$.synchronizing.hide();
         }.bind(this)
       });
@@ -307,5 +335,26 @@ Polymer("padlock-app", {
   },
   dismissNotConnectedDialog: function () {
     this.$.notConnectedDialog.open = false;
+  },
+  remotePasswordEntered: function () {
+    this.$.remotePasswordDialog.open = false;
+    this.synchronize(this.$.remotePasswordInput.value);
+    this.$.remotePasswordInput.value = "";
+  },
+  confirmUpdateRemotePassword: function () {
+    this.$.updateRemotePasswordDialog.open = false;
+    this.$.synchronizing.show();
+    this.collection.save({
+      source: this.remoteSource,
+      password: this.collection.defaultPassword,
+      success: this.$.synchronizing.hide.bind(this.$.synchronizing),
+      fail: function () {
+        this.$.synchronizing.hide();
+        this.alert("Failed to update remote password. Try again later!");
+      }.bind(this)
+    });
+  },
+  cancelUpdateRemotePassword: function () {
+    this.$.updateRemotePasswordDialog.open = false;
   }
 });

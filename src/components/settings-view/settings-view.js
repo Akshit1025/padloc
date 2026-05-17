@@ -8,6 +8,9 @@ Polymer("padlock-settings-view", {
   leftHeaderButton: function () {
     this.fire("back");
   },
+  getAnimationElement: function () {
+    return this.shadowRoot.querySelector(".content");
+  },
   //* Opens the change password dialog and resets the corresponding input elements
   changePassword: function () {
     this.$.changePasswordErrorDialog.open = false;
@@ -18,7 +21,8 @@ Polymer("padlock-settings-view", {
   },
   confirmChangePassword: function () {
     this.$.changePasswordDialog.open = false;
-    if (this.$.currPwdInput.value != this.collection.store.password) {
+    // TODO: Add a better check for current password.
+    if (this.$.currPwdInput.value != this.collection.defaultPassword) {
       this.$.changePasswordErrorMsg.innerHTML =
         "You entered the wrong current password.";
       this.$.changePasswordErrorDialog.open = true;
