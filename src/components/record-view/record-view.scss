@@ -38,10 +38,20 @@
     margin-right: 15px;
     @include box-flex(1);
     @include ellipsis;
+  }
 
-    &:empty:after {
-      content: "(Tap to Edit)";
-      color: $text-color-faint;
+  &:not(.marked) > .value:empty:after {
+    content: "(tap to edit)";
+    color: $text-color-faint;
+  }
+
+  &.marked {
+    background: $color-blue;
+    color: #fff;
+
+    > .label {
+      color: inherit;
+      font-weight: $font-weight-bold;
     }
   }
 }

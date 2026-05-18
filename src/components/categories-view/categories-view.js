@@ -9,7 +9,7 @@ Polymer("padlock-categories-view", {
     "record.name": "updateTitleText"
   },
   leftHeaderButton: function () {
-    this.fire("done");
+    this.fire("back");
   },
   updateCategories: function () {
     this.categoryList = this.categories.asArray();
@@ -84,7 +84,7 @@ Polymer("padlock-categories-view", {
   },
   editEnter: function () {
     var name = this.$.nameInput.value;
-    color = parseInt(this.$.colorSelect.selected.value, 10);
+    color = parseInt(this.$.colorSelect.value, 10);
 
     if (name) {
       this.$.editDialog.open = false;
@@ -144,5 +144,8 @@ Polymer("padlock-categories-view", {
     // Trigger style recalculation
     el.offsetLeft;
     el.style[prefix + "animation"] = "bounce 0.5s ease 0s both";
+  },
+  editDialogClosed: function () {
+    this.$.colorSelect.open = false;
   }
 });

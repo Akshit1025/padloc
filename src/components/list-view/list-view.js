@@ -1,5 +1,4 @@
 Polymer("padlock-list-view", {
-  orderByCategory: false,
   headerOptions: {
     show: true,
     leftIconShape: "menu",
@@ -9,8 +8,9 @@ Polymer("padlock-list-view", {
   observe: {
     filterString: "bufferedPrepareRecords",
     "collection.records": "prepareRecords",
-    orderBy: "prepareRecords"
+    "settings.order_by": "prepareRecords"
   },
+  marked: null,
   leftHeaderButton: function () {
     this.fire("menu");
   },
@@ -67,13 +67,13 @@ Polymer("padlock-list-view", {
 
       // Give it a section property for the rendering of the section headers
       rec.section =
-        this.orderBy == "category"
+        this.settings.order_by == "category"
           ? rec.category || "other"
           : rec.name.toUpperCase()[0];
 
       // Add properties for rendering the category
       rec.catColor = this.categories.get(rec.category) || "";
-      rec.showCategory = this.orderBy != "category";
+      rec.showCategory = this.settings.order_by != "category";
     }
 
     // Save the categories in case any new ones have been added
@@ -111,7 +111,8 @@ Polymer("padlock-list-view", {
       section.records.push(records[i]);
     }
 
-    // Update _records_
+    // Update records
+    this.records = records;
     this.sections = sections;
     this.empty = !(
       this.collection && this.collection.records.length > removedCount
@@ -124,14 +125,66 @@ Polymer("padlock-list-view", {
     this.fire("import");
   },
   show: function (animation, duration, callback) {
+    this.marked = null;
     this.super([animation, duration, callback]);
-    // This solves a problem in iOS where scrolling would sometimes not work
-    // on iOS after unlocking the app
-    this.style.overflow = "visible";
-    this.offsetLeft;
-    this.style.overflow = "";
   },
   synchronize: function () {
     this.fire("synchronize");
+  },
+  recordsChanged: function () {
+    this.marked = null;
+  },
+  markNext: function () {
+    if (this.records.length) {
+      if (this.marked === null) {
+        this.marked = 0;
+      } else {
+        this.marked =
+          (this.marked + 1 + this.records.length) % this.records.length;
+      }
+    }
+  },
+  markPrev: function () {
+    if (this.records.length) {
+      if (this.marked === null) {
+        this.marked = this.records.length - 1;
+      } else {
+        this.marked =
+          (this.marked - 1 + this.records.length) % this.records.length;
+      }
+    }
+  },
+  markedChanged: function (markedOld, markedNew) {
+    var elements = this.shadowRoot.querySelectorAll(".record-item"),
+      oldEl = elements[markedOld],
+      newEl = elements[markedNew];
+
+    if (oldEl) {
+      oldEl.classList.remove("marked");
+    }
+    if (newEl) {
+      newEl.classList.add("marked");
+      this.scrollIntoView(newEl);
+    }
+  },
+  //* Scrolls a given element in the list into view
+  scrollIntoView: function (el) {
+    if (el.offsetTop < this.scrollTop) {
+      // The element is off to the top; Scroll it into view, aligning it at the top
+      el.scrollIntoView();
+    } else if (
+      el.offsetTop + el.offsetHeight >
+      this.scrollTop + this.offsetHeight
+    ) {
+      // The element is off to the bottom; Scroll it into view, aligning it at the bottom
+      el.scrollIntoView(false);
+    }
+  },
+  selectMarked: function () {
+    this.selected = this.records[this.marked];
+  },
+  selectedChanged: function () {
+    var ind = this.records.indexOf(this.selected);
+    this.marked = ind !== -1 ? ind : null;
   }
 });

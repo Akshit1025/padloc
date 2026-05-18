@@ -1,5 +1,5 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../header/header.html">
+<link rel="import" href="../shutter/shutter.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../list-view/list-view.html">
 <link rel="import" href="../record-view/record-view.html">
@@ -14,24 +14,18 @@
 <link rel="import" href="../progress/progress.html">
 <link rel="stylesheet" href="../../styles/fonts.css" type='text/css'>
 
-<polymer-element name="padlock-app" touch-action="none" on-showheader="{{ showHeader }}"
+<polymer-element name="padlock-app" touch-action="none" on-showheader="{{ showHeader }}" on-trackstart='{{trackStart}}'
     on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}"
     attributes='settings categories collection' constructor='Padlock'>
     <template>
         <!-- STYLES -->
         <link href="app.css" rel="stylesheet" type="text/css">
-        <!-- HEADER -->
-        <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"></padlock-header>
-        <!-- ADD-TO-HOMESCREEN MESSAGE -->
-        <padlock-homescreen-view class="view" id='homescreenView'></padlock-homescreen-view>
-        <!-- PASSWORD VIEW -->
-        <padlock-start-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}"></padlock-start-view>
-        <!-- LOCK VIEW -->
-        <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}"></padlock-lock-view>
+        <padlock-shutter id='shutter' on-newpwd='{{newPwd}}' on-pwdenter='{{pwdEnter}}' currentView='{{currentView}}'
+            filterString='{{filterString}}'></padlock-shutter>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}"
-            categories="{{ categories }}" selected="{{ selected }}" on-add="{{ addRecord }}"
-            orderBy="{{ orderOption.value }}" on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}"
+            categories="{{ categories }}" selected="{{ selected }}" on-add="{{ addRecord }}" settings="{{ settings }}"
+            on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}"
             on-synchronize='{{synchronize}}'></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
@@ -45,14 +39,14 @@
             on-back="{{ importBack }}"></padlock-import-view>
         <!-- CATEGORIES VIEW -->
         <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ selected }}"
-            on-done="{{ categoriesDone }}" on-categorychanged="{{ categoryChanged }}"></padlock-categories-view>
+            on-back="{{ categoriesDone }}" on-categorychanged="{{ categoryChanged }}"></padlock-categories-view>
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id='decrypting'>Decrypting...</padlock-progress>
         <padlock-progress id='synchronizing'>Synchronizing...</padlock-progress>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
-            <padlock-select openUpwards="true" selected="{{ orderOption }}">
-                <padlock-option selected="true" value="name">Order by Name</padlock-option>
+            <padlock-select openUpwards="true" value="{{ settings.order_by }}">
+                <padlock-option value="name">Order by Name</padlock-option>
                 <padlock-option value="category">Order by Category</padlock-option>
             </padlock-select>
             <button on-tap="{{ synchronize }}">Synchronize</button>

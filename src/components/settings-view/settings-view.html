@@ -17,7 +17,7 @@
                 style="{{ settings.sync_connected ? 'display: none' : ''}}">Connect To Padlock Cloud</button>
             <button class="settings-button" on-tap="{{ cloudDisconnect }}"
                 style="{{ settings.sync_connected ? '' : 'display: none'}}">
-                <div>Disconnect <span class="email">({{ settings.settings.sync_email }})</span></div>
+                <div>Disconnect <span class="email">({{ settings.sync_email }})</span></div>
             </button>
             <div class="settings-row" style="{{ settings.sync_connected ? '' : 'display: none'}}"
                 on-tap="{{ toggleAutoSync }}">
@@ -38,7 +38,7 @@
         <padlock-progress id="progress">Connecting...</padlock-progress>
         <!-- CONNECT DIALOG -->
         <padlock-dialog id="connectDialog">
-            <input is="padlock-input" placeholder="Email Address" id="emailInput" />
+            <input is="padlock-input" placeholder="Email Address" id="emailInput" type='email' />
             <input is="padlock-input" placeholder="Device Name (e.g. 'Bens iPhone')" id="deviceNameInput" />
             <button class="primary" on-tap="{{ confirmConnect }}">OK</button>
         </padlock-dialog>

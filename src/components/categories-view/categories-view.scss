@@ -37,7 +37,7 @@
 }
 
 :host {
-  overflow: scroll;
+  overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -64,7 +64,6 @@
   cursor: pointer;
 
   @include animation(bounceIn 0.5s ease 0s both);
-  @include transition(border-color 0.2s);
 
   .category-inner {
     width: 100%;

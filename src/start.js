@@ -27,7 +27,8 @@ window.addEventListener("polymer-ready", function () {
           sync_device: "",
           sync_connected: false,
           sync_auto: true,
-          default_fields: ["username", "password"]
+          default_fields: ["username", "password"],
+          order_by: "name"
         },
         source
       ),

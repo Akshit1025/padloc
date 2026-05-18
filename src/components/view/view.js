@@ -109,7 +109,12 @@ Polymer("padlock-view", {
     // are applied before rendering the element
     this.offsetLeft;
     // Show the element
-    this.style.display = "";
+    setTimeout(
+      function () {
+        this.style.display = "";
+      }.bind(this),
+      50
+    );
   },
   //* Hides the view
   hide: function (opts) {
@@ -126,5 +131,21 @@ Polymer("padlock-view", {
     // We have to wait until the out animation is done before
     // we can set _display: none_.
     this.startAnimation(opts);
+  },
+  //* Closes any dialogs first, if no dialogs are open, fires `back` event
+  back: function () {
+    var dialogs = this.shadowRoot.querySelectorAll("padlock-dialog"),
+      dialogClosed = false;
+
+    Array.prototype.forEach.call(dialogs, function (dialog) {
+      if (dialog.open) {
+        dialog.open = false;
+        dialogClosed = true;
+      }
+    });
+
+    if (!dialogClosed) {
+      this.fire("back");
+    }
   }
 });

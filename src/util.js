@@ -47,6 +47,7 @@ define(function () {
     return Object.prototype.toString.call(obj) === "[object Array]";
   };
 
+  // RFC4122-compliant uuid generator
   var uuid = function () {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
       /[xy]/g,

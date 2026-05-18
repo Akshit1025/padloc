@@ -18,9 +18,6 @@
   pointer-events: auto;
 
   @include display-box;
-  @include transform(translate3d(0, 0, 0));
-  @include transition(transform 0.5s, background 1s);
-  @include transform(translate3d(0, -100%, 0));
 
   shape-shifter {
     display: block;
@@ -33,10 +30,6 @@
     &::shadow line {
       stroke: $text-color-light;
     }
-  }
-
-  &.showing {
-    @include transform(translate3d(0, 0, 0));
   }
 
   &.show-filter {
@@ -56,7 +49,7 @@
     padding-left: 0;
   }
 
-  &:after {
+  &::after {
     content: "";
     display: block;
     position: absolute;
@@ -64,7 +57,7 @@
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: $scrim-color;
+    background-color: #000;
     pointer-events: none;
     opacity: 0;
     @include transition(opacity 0.5s);
@@ -73,8 +66,8 @@
   &.scrim {
     pointer-events: none;
 
-    &:after {
-      opacity: 1;
+    &::after {
+      opacity: $scrim-opacity;
     }
   }
 }

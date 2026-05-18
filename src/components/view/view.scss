@@ -5,66 +5,54 @@
 @include keyframes(slideInFromRight) {
   from {
     @include transform(translate3d(100%, 0, 0));
-    opacity: 0;
   }
   to {
     @include transform(translate3d(0, 0, 0));
-    opacity: 1;
   }
 }
 
 @include keyframes(slideInFromLeft) {
   from {
     @include transform(translate3d(-100%, 0, 0));
-    opacity: 0;
   }
   to {
     @include transform(translate3d(0, 0, 0));
-    opacity: 1;
   }
 }
 
 @include keyframes(slideOutToRight) {
   from {
     @include transform(translate3d(0, 0, 0));
-    opacity: 1;
   }
   to {
     @include transform(translate3d(100%, 0, 0));
-    opacity: 0;
   }
 }
 
 @include keyframes(slideOutToLeft) {
   from {
     @include transform(translate3d(0, 0, 0));
-    opacity: 1;
   }
   to {
     @include transform(translate3d(-100%, 0, 0));
-    opacity: 0;
   }
 }
 
 @include keyframes(slideInFromBottom) {
   from {
     @include transform(translate3d(0, 100%, 0));
-    opacity: 0;
   }
   to {
     @include transform(translate3d(0, 0, 0));
-    opacity: 1;
   }
 }
 
 @include keyframes(slideOutToBottom) {
   from {
     @include transform(translate3d(0, 0, 0));
-    opacity: 1;
   }
   to {
     @include transform(translate3d(0, 100%, 0));
-    opacity: 0;
   }
 }
 
