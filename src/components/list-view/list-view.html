@@ -8,26 +8,27 @@
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <!-- LIST CONTAINER -->
         <div class="list" id="list">
-            <template repeat="{{ records }}">
-                <!-- SECTION HEADER -->
-                <template if="{{ firstInSection }}">
-                    <div class="section-header {{ showCategory ? '' : 'color' + catColor }}">{{ section }}</div>
-                </template>
-                <!-- RECORD ITEM -->
-                <div class="record-item" on-tap="{{ recordClicked }}">
-                    <div class="record-item-inner">
-                        <div class="record-item-name">{{ name }}</div>
-                        <template if="{{ showCategory }}">
-                            <div class="record-item-category color{{ catColor }}">{{ category }}</div>
-                        </template>
-                    </div>
+            <template repeat="{{ sections }}">
+                <div>
+                    <!-- SECTION HEADER -->
+                    <div class="section-header {{ showCategory ? '' : 'color' + color }}">{{ name }}</div>
+                    <!-- RECORD ITEM -->
+                    <template repeat="{{ records }}">
+                        <div class="record-item" on-tap="{{ recordClicked }}">
+                            <div class="record-item-inner">
+                                <div class="record-item-name">{{ name }}</div>
+                                <div class="record-item-category color{{ catColor }}"
+                                    style="{{ showCategory ? '' : 'display:none' }}">{{ category }}</div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </template>
             <!-- ACTIONS FOR EMPTY LIST -->
             <template if="{{ empty }}">
                 <div class="empty">
                     <button on-tap="{{ import }}">Import Data</button>
-                    <button on-tap='{{synchronize}}'>Synchronize</button>
+                    <button on-tap="{{ synchronize }}">Synchronize</button>
                     <button on-tap="{{ rightHeaderButton }}">Create Record</button>
                 </div>
             </template>

@@ -7,7 +7,7 @@ Polymer("padlock-list-view", {
     showFilter: true
   },
   observe: {
-    filterString: "prepareRecords",
+    filterString: "bufferedPrepareRecords",
     "collection.records": "prepareRecords",
     orderBy: "prepareRecords"
   },
@@ -17,8 +17,14 @@ Polymer("padlock-list-view", {
   rightHeaderButton: function () {
     this.fire("add");
   },
-  getAnimationElement: function () {
-    return this.$.list;
+  bufferedPrepareRecords: function () {
+    if (this.prepareRecordsTimeout) {
+      clearTimeout(this.prepareRecordsTimeout);
+    }
+    this.prepareRecordsTimeout = setTimeout(
+      this.prepareRecords.bind(this),
+      300
+    );
   },
   prepareRecords: function () {
     if (!this.collection) {
@@ -90,14 +96,23 @@ Polymer("padlock-list-view", {
       }
     });
 
-    // Set _firstInSection_ property so we know were to display section headers
+    var sections = [],
+      section;
     for (i = 0; i < records.length; i++) {
-      records[i].firstInSection =
-        !records[i - 1] || records[i - 1].section != records[i].section;
+      if (!records[i - 1] || records[i - 1].section != records[i].section) {
+        section = {
+          name: records[i].section,
+          color: records[i].catColor,
+          showCategory: records[i].showCategory,
+          records: []
+        };
+        sections.push(section);
+      }
+      section.records.push(records[i]);
     }
 
     // Update _records_
-    this.records = records;
+    this.sections = sections;
     this.empty = !(
       this.collection && this.collection.records.length > removedCount
     );

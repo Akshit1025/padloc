@@ -8,9 +8,6 @@ Polymer("padlock-settings-view", {
   leftHeaderButton: function () {
     this.fire("back");
   },
-  getAnimationElement: function () {
-    return this.shadowRoot.querySelector(".content");
-  },
   //* Opens the change password dialog and resets the corresponding input elements
   changePassword: function () {
     this.$.changePasswordErrorDialog.open = false;
@@ -21,7 +18,7 @@ Polymer("padlock-settings-view", {
   },
   confirmChangePassword: function () {
     this.$.changePasswordDialog.open = false;
-    // TODO: Add a better check for current password.
+    // TODO: Add a better check for the current password
     if (this.$.currPwdInput.value != this.collection.defaultPassword) {
       this.$.changePasswordErrorMsg.innerHTML =
         "You entered the wrong current password.";
@@ -130,6 +127,9 @@ Polymer("padlock-settings-view", {
   import: function () {
     this.fire("import");
   },
+  openWebsite: function () {
+    window.open("/", "_system");
+  },
   sendMail: function () {
     require(["padlock/platform"], function (platform) {
       var url = "mailto:problemsolver687@gmail.com";
@@ -141,5 +141,8 @@ Polymer("padlock-settings-view", {
         window.location = url;
       }
     });
+  },
+  openGithub: function () {
+    window.open("http://github.com/Akshit1025", "_system");
   }
 });

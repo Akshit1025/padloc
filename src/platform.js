@@ -59,20 +59,20 @@ define(function () {
     return animationEndEventNames[getVendorPrefix().lowercase];
   };
 
-  // Names for animation iteration events on various platforms
-  var animationIterationEventNames = {
-    webkit: "webkitAnimationIteration",
-    moz: "animationiteration",
-    ms: "MSAnimationIteration",
-    o: "oanimationiteration"
+  // Names for animation start events on various platforms
+  var animationStartEventNames = {
+    webkit: "webkitAnimationStart",
+    moz: "animationstart",
+    ms: "MSAnimationStart",
+    o: "oanimationstart"
   };
 
   /**
-   * Returns the appropriate animation end event name for the current platform
+   * Returns the appropriate animation start event name for the current platform
    * @return {String} Name of the animation end event name on this platform
    */
-  var getAnimationIterationEventName = function () {
-    return animationIterationEventNames[getVendorPrefix().lowercase];
+  var getAnimationStartEventName = function () {
+    return animationStartEventNames[getVendorPrefix().lowercase];
   };
 
   // All the devices running iOS
@@ -83,7 +83,9 @@ define(function () {
    * running iOS
    */
   var isIOS = function () {
-    return iDevices.indexOf(navigator.platform) != -1;
+    return iDevices.reduce(function (match, dev) {
+      return match || navigator.platform.indexOf(dev) !== -1;
+    }, false);
   };
 
   /**
@@ -114,10 +116,16 @@ define(function () {
     getVendorPrefix: getVendorPrefix,
     getTransitionEndEventName: getTransitionEndEventName,
     getAnimationEndEventName: getAnimationEndEventName,
-    getAnimationIterationEventName: getAnimationIterationEventName,
+    getAnimationStartEventName: getAnimationStartEventName,
     isIOS: isIOS,
     isIOSStandalone: isIOSStandalone,
     isChromeApp: isChromeApp,
-    setClipboard: setClipboard
+    // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
+    setClipboard:
+      typeof cordova !== "undefined" &&
+      cordova.plugins &&
+      cordova.plugins.clipboard
+        ? cordova.plugins.clipboard.copy
+        : setClipboard
   };
 });

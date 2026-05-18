@@ -5,7 +5,7 @@
   from {
     @include transform(translate(-100%, 0));
   }
-  60% {
+  80% {
     @include transform(translate(100%, 0));
   }
   to {
@@ -17,7 +17,7 @@
   from {
     @include transform(translate(50%, 0));
   }
-  60% {
+  80% {
     @include transform(translate(-50%, 0));
   }
   to {
@@ -39,10 +39,10 @@
 }
 
 :host(.animated) {
-  @include animation(leftToRight 3s cubic-bezier(0.2, 1, 0.8, 0) infinite);
+  @include animation(leftToRight 2.5s cubic-bezier(0.2, 1, 0.8, 0));
 
   span {
-    @include animation(rightToLeft 3s cubic-bezier(0.2, 1, 0.8, 0) infinite);
+    @include animation(rightToLeft 2.5s cubic-bezier(0.2, 1, 0.8, 0));
   }
 }
 
