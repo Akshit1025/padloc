@@ -18,25 +18,31 @@
     <!-- Polymer platform layer -->
     <script src="bower_components/platform/platform.js"></script>
 
-    <!-- require.js -->
-    <script src="bower_components/requirejs/require.js"></script>
-    <script src="config.js"></script>
-
     <!-- Custom app element -->
     <link rel="import" href="src/components/app/app.html">
 
     <!-- This is the ENTRY POINT -->
-    <script src="src/start.js"></script>
+    <link rel="import" href="src/padlock.html">
+    <script src="src/init.js"></script>
 
     <style>
-        body {
-            padding: 0;
-            margin: 0;
-            background: #f5f5f5;
+        html {
+            background: #59c6ff;
         }
     </style>
+
+    <!-- Load the cordova api if applicable -->
+    <script src="cordova.js"></script>
+    <script>
+        document.addEventListener("deviceready", function () {
+            navigator.splashscreen.hide();
+            cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+        });
+    </script>
 </head>
 
-<body></body>
+<body unresolved>
+    <padlock-app unresolved></padlock-app>
+</body>
 
 </html>

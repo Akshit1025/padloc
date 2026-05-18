@@ -1,4 +1,4 @@
-define(["padlock/import"], function (imp) {
+(function (imp) {
   module("padlock/import");
 
   asyncTest("import secustore set", function () {
@@ -43,4 +43,4 @@ define(["padlock/import"], function (imp) {
     xmlhttp.open("GET", sample, true);
     xmlhttp.send();
   });
-});
+})(padlock.import);

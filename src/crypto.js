@@ -1,7 +1,12 @@
+/* jshint worker: true, browser: true */
+/* global padlock, sjcl */
+
 /**
  * Cyptrographic module for encrypting and decrypting content
  */
 (function () {
+  "use strict";
+
   // Whether or not the script was loaded in the context of a web worker instance
   // Perhaps there is a more reliable way to detect this?
   var isWorker = !!self.importScripts;
@@ -82,9 +87,9 @@
     var keyCache = {};
 
     //* Same as genKey, but fetches the data from cache if possible
-    function cachedGenKey(passphrase, salt, size, iter) {
+    function cachedGenKey() {
       var prop = Array.prototype.join.call(arguments, "_");
-      keyCache[prop] = keyCache[prop] || genKey.apply(this, arguments);
+      keyCache[prop] = keyCache[prop] || genKey.apply(null, arguments);
       return keyCache[prop];
     }
 
@@ -140,7 +145,7 @@
 
     //* Spawns a worker instance using this same script and returns it.
     function spawnWorker() {
-      return new Worker(require.toUrl("padlock/crypto.js"));
+      return new Worker("src/crypto.js");
     }
 
     //* Helper function for delegating the call to a certain _method_ to a worker instance
@@ -233,7 +238,7 @@
   if (isWorker) {
     // We're in a web worker! Let's create an interface for calling some of the modules methods
 
-    // Load the sjcl dependency. This could be done with requirejs but that would probably be overkill
+    // Load the sjcl dependency.
     importScripts("../lib/sjcl.js");
     // Create the module (Inject the dependy manually)
     var crypto = modFunc(sjcl);
@@ -249,8 +254,7 @@
       self.postMessage(result);
     });
   } else {
-    // The script was not loaded in the context of a web worker so we're assuming it was loaded
-    // as an amd module, so we'll register it via _define_
-    define(["sjcl"], modFunc);
+    // The script was not loaded in the context of a web worker so we're assuming it was loaded in a script tag
+    padlock.crypto = modFunc(sjcl);
   }
 })();

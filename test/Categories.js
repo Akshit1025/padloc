@@ -1,4 +1,4 @@
-define(["padlock/Categories"], function (Categories) {
+(function (Categories) {
   module("padlock/Categories");
 
   test("set/get category", function () {
@@ -95,4 +95,4 @@ define(["padlock/Categories"], function (Categories) {
       "Array should contain the correct information"
     );
   });
-});
+})(padlock.Categories);

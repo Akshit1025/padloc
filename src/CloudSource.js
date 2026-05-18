@@ -1,12 +1,15 @@
-define(function (require) {
-  var Source = require("./Source");
+/* jshint browser: true */
+/* global padlock */
+
+padlock.CloudSource = (function (Source) {
+  "use strict";
 
   /**
    * This source uses the Padlock cloud api to fetch and store data.
    * @param String host  Base url for AJAX calls
    * @param String email Email for identifying a user
    */
-  CloudSource = function (host, email, apiKey) {
+  var CloudSource = function (host, email, apiKey) {
     this.host = host;
     this.email = email;
     this.apiKey = apiKey;
@@ -61,4 +64,4 @@ define(function (require) {
   };
 
   return CloudSource;
-});
+})(padlock.Source);

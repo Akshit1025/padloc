@@ -1,5 +1,8 @@
-define(function (require) {
-  var Source = require("./Source");
+/* jshint browser: true */
+/* global padlock */
+
+padlock.LocalStorageSource = (function (Source) {
+  "use strict";
 
   /**
    * This source uses the _localStorage_ api to fetch and store data. Although
@@ -23,4 +26,4 @@ define(function (require) {
   };
 
   return LocalStorageSource;
-});
+})(padlock.Source);

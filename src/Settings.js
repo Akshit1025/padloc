@@ -1,4 +1,7 @@
-define(function () {
+/* global padlock */
+
+padlock.Settings = (function () {
+  "use strict";
   /**
    * Object for storing settings.
    * @param Object settings Object containing predefined setings with default values.
@@ -10,6 +13,7 @@ define(function () {
     this.source = source;
     this.defaults = settings;
     this.settings = {};
+    this.loaded = false;
 
     // Define properties with getters and setters for all properties specified
     // in the _settings_ object. This allows direct access to settings without
@@ -30,6 +34,7 @@ define(function () {
       var success = opts.success;
       opts.success = function (data) {
         this.settings = data || this.settings;
+        this.loaded = true;
         if (success) {
           success();
         }
@@ -66,4 +71,4 @@ define(function () {
   };
 
   return Settings;
-});
+})();

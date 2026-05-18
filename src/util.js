@@ -1,7 +1,11 @@
+/* global padlock */
+
 /**
  * Module containing various utility functions
  */
-define(function () {
+padlock.util = (function () {
+  "use strict";
+
   /**
    * Inserts an object or an array at the specified index
    * @param  {Array}   arr The array that the object(s) should be inserted into
@@ -66,4 +70,4 @@ define(function () {
     isArray: isArray,
     uuid: uuid
   };
-});
+})();

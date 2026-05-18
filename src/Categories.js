@@ -1,5 +1,7 @@
-define(function (require) {
-  var util = require("./util");
+/* Global padlock */
+
+padlock.Categories = (function (util) {
+  "use strict";
 
   /**
    * Manager object for a categories. Each category has a name
@@ -82,4 +84,4 @@ define(function (require) {
   };
 
   return Categories;
-});
+})(padlock.util);

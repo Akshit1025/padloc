@@ -1,4 +1,4 @@
-define(["padlock/Collection"], function (Collection) {
+(function (Collection) {
   module("padlock/Collection");
 
   test("add records", function () {
@@ -33,4 +33,4 @@ define(["padlock/Collection"], function (Collection) {
     ok(!rec.name, "Name property should have been removed");
     ok(!rec.fields, "Fields should have been removed");
   });
-});
+})(padlock.Collection);

@@ -1,4 +1,7 @@
-define(function () {
+/* global padlock */
+padlock.Source = (function () {
+  "use strict";
+
   /**
    * The _Source_ object is responsible for fetching/saving data from/to a persistent
    * storage like localStorage or a cloud. It is meant as a base object to be extended
@@ -29,7 +32,7 @@ define(function () {
      * - success: Success callback. Retrieved data will be passed as only argument
      * - fail: Fail callback
      */
-    fetch: function (opts) {
+    fetch: function () {
       // Not implemented
     },
     /**
@@ -40,10 +43,10 @@ define(function () {
      * - collName (required): Name of the collection to save data for
      * - success: Success callback.
      */
-    save: function (opts) {
+    save: function () {
       // Not implemented
     }
   };
 
   return Source;
-});
+})();

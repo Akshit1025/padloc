@@ -1,8 +1,10 @@
 bower_components
 node_modules
-.sass-cache
+deploy
+build.html
+build.js
 
-# Sass generated css files
+# Stylus generated css files
 src/components/**/*.css
 src/styles/mixins.css
 src/styles/config.css

@@ -1,8 +1,7 @@
-@import "../../styles/config.scss";
-@import "../../styles/mixins.scss";
-@import "compass/css3/box";
-@import "compass/css3";
-@import "../view/view.scss";
+@import '../../styles/config';
+@import '../../styles/mixins';
+@import '../view/view';
+@import 'nib';
 
 :host {
   overflow-x: hidden;
@@ -10,7 +9,7 @@
   -webkit-overflow-scrolling: touch;
   font-size: 0;
   padding-bottom: 5px;
-  @include box-sizing(border-box);
+  box-sizing: border-box;
 }
 
 .record-item {
@@ -18,21 +17,20 @@
   cursor: pointer;
   padding: 5px 0 0 0;
   vertical-align: top;
-  @include box-sizing(border-box);
+  box-sizing: border-box;
 
   .record-item-inner {
     height: $row-height;
     background: #ffffff;
     width: 100%;
-
-    @include display-box;
-    @include box-align(center);
+    display: flex;
+    align-items: center;
   }
 
   .record-item-name {
     padding: 0 15px;
-    @include box-flex(1);
-    @include ellipsis;
+    flex: 1;
+    overflow: ellipsis;
   }
 
   .record-item-category {
@@ -41,12 +39,12 @@
     color: $text-color-light;
     border: solid transparent;
     border-width: 0 5px;
-    line-height: $row-height/2;
+    line-height: 27px;
     max-width: 80px;
     border-radius: 4px;
     margin-right: 15px;
     font-weight: $font-weight-bold;
-    @include ellipsis;
+    overflow: ellipsis;
 
     &.color1 {
       background: $cat-color-1;
@@ -68,9 +66,7 @@
   }
 }
 
-.record-item,
-.section-header,
-.empty {
+.record-item, .section-header, .empty {
   font-size: $font-size-default;
 }
 
@@ -79,8 +75,9 @@
   margin-bottom: -5px;
   color: $color-primary;
   top: 0;
-  background: transparentize($color-grey, 0.1);
-  @include position-sticky;
+  // background: transparentify($color-grey, 0.9);
+  background: $color-grey;
+  position-sticky();
 
   &.color1 {
     color: $cat-color-1;

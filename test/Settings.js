@@ -1,4 +1,4 @@
-define(["padlock/Settings"], function (Settings) {
+(function (Settings) {
   module("padlock/Settings");
 
   test("Set/get settings", function () {
@@ -71,4 +71,4 @@ define(["padlock/Settings"], function (Settings) {
       }
     });
   });
-});
+})(padlock.Settings);

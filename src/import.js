@@ -1,7 +1,11 @@
+/* global padlock, unescape */
+
 /**
  * Module for importing data from various formats.
  */
-define(["padlock/crypto", "padlock/util"], function (crypto, util) {
+padlock.import = (function (crypto) {
+  "use strict";
+
   //* Detects if a string contains a SecuStore backup
   var isSecuStoreBackup = function (rawData) {
     // Very simply check but I think it should do.
@@ -90,7 +94,8 @@ define(["padlock/crypto", "padlock/util"], function (crypto, util) {
 
   /**
    * Parses a raw CSV string into an 2-dimensional array.
-   * Taken from http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
+   * Taken from
+   * http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
    * @param  String   strData      Raw CSV string
    * @param  String   strDelimiter Row delimiter
    * @return Array                 2-dimensional array containing rows & columns
@@ -203,4 +208,4 @@ define(["padlock/crypto", "padlock/util"], function (crypto, util) {
     parseCsv: parseCsv,
     importTable: importTable
   };
-});
+})(padlock.crypto);

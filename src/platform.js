@@ -1,4 +1,9 @@
-define(function () {
+/* jshint browser: true */
+/* global padlock, chrome, cordova */
+
+padlock.platform = (function () {
+  "use strict";
+
   var vPrefix;
   /**
    *  Detects the vendor prefix to be used in the current browser
@@ -13,7 +18,7 @@ define(function () {
    */
   var getVendorPrefix = function () {
     if (!vPrefix) {
-      var styles = window.getComputedStyle(document.documentElement, "");
+      var styles = getComputedStyle(document.documentElement, "");
       var pre = (Array.prototype.slice
         .call(styles)
         .join("")
@@ -89,7 +94,7 @@ define(function () {
   };
 
   /**
-   * Checks if the app is running on an iOS device in 'standalone' mode,
+   * Checks if the app is running on an iOS device in "standalone" mode,
    * i.e. when the user has added the app to the home screen
    */
   var isIOSStandalone = function () {
@@ -102,14 +107,36 @@ define(function () {
   };
 
   var clipboardTextArea;
-  //* Sets the clipboard text to a given string
-  var setClipboard = function (text) {
+  var domSetClipboard = function (text) {
     clipboardTextArea = clipboardTextArea || document.createElement("textarea");
     clipboardTextArea.value = text;
     document.body.appendChild(clipboardTextArea);
     clipboardTextArea.select();
     document.execCommand("cut");
     document.body.removeChild(clipboardTextArea);
+  };
+
+  //* Sets the clipboard text to a given string
+  var setClipboard = function (text) {
+    // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
+    if (
+      typeof cordova !== "undefined" &&
+      cordova.plugins &&
+      cordova.plugins.clipboard
+    ) {
+      cordova.plugins.clipboard.copy(text);
+    } else {
+      domSetClipboard(text);
+    }
+  };
+
+  var isTouch = function () {
+    try {
+      document.createEvent("TouchEvent");
+      return true;
+    } catch (e) {
+      return false;
+    }
   };
 
   return {
@@ -120,12 +147,7 @@ define(function () {
     isIOS: isIOS,
     isIOSStandalone: isIOSStandalone,
     isChromeApp: isChromeApp,
-    // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
-    setClipboard:
-      typeof cordova !== "undefined" &&
-      cordova.plugins &&
-      cordova.plugins.clipboard
-        ? cordova.plugins.clipboard.copy
-        : setClipboard
+    isTouch: isTouch,
+    setClipboard: setClipboard
   };
-});
+})();

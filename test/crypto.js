@@ -1,4 +1,4 @@
-define(["padlock/crypto"], function (crypto) {
+(function (crypto) {
   module("padlock/crypto");
 
   test("key generation", function () {
@@ -111,4 +111,4 @@ define(["padlock/crypto"], function (crypto) {
       start();
     });
   });
-});
+})(padlock.crypto);

@@ -1,4 +1,8 @@
-define(["padlock/crypto"], function (crypto) {
+/* global padlock */
+
+padlock.Store = (function () {
+  "use strict";
+
   /**
    * The _Store_ acts as a proxy between the persistence layer (e.g. _LocalStorageSource_)
    * and a _Collection_ object it mainly handles encryption and decryption of data
@@ -29,7 +33,7 @@ define(["padlock/crypto"], function (crypto) {
      */
     fetch: function (coll, opts) {
       opts = opts || {};
-      source = opts.source || this.defaultSource;
+      var source = opts.source || this.defaultSource;
       // Use password argument if provided, otherwise use the password stored in the source object
       var password = (source.password =
         opts.password !== undefined && opts.password !== null
@@ -99,7 +103,7 @@ define(["padlock/crypto"], function (crypto) {
     save: function (coll, opts) {
       opts = opts || {};
       opts.key = this.getKey(coll);
-      source = opts.source || this.defaultSource;
+      var source = opts.source || this.defaultSource;
       source.keyOpts = source.keyOpts || {};
       // Use password argument if provided, otherwise use the password stored in the source object
       var password = (source.password =
@@ -143,7 +147,7 @@ define(["padlock/crypto"], function (crypto) {
      * - source:   Source to check for the collection. If not provided, _defaultSource_ is used.
      */
     exists: function (coll, opts) {
-      source = opts.source || this.defaultSource;
+      var source = opts.source || this.defaultSource;
       opts = opts || {};
       opts.key = this.getKey(coll);
       var success = opts.success;
@@ -162,4 +166,4 @@ define(["padlock/crypto"], function (crypto) {
   };
 
   return Store;
-});
+})(padlock.crypto);
