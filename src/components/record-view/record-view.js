@@ -119,7 +119,7 @@
     },
     markNext: function () {
       if (this.record.fields.length && !this.selectedField) {
-        if (this.marked === null) {
+        if (typeof this.marked !== "number") {
           this.marked = 0;
         } else {
           this.marked =
@@ -130,7 +130,7 @@
     },
     markPrev: function () {
       if (this.record.fields.length && !this.selectedField) {
-        if (this.marked === null) {
+        if (typeof this.marked !== "number") {
           this.marked = this.record.fields.length - 1;
         } else {
           this.marked =

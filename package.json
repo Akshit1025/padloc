@@ -1,6 +1,6 @@
 {
   "name": "padloc",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "devDependencies": {
     "gulp": "^3.8.7",
     "gulp-jshint": "^1.8.4",
