@@ -1,6 +1,6 @@
 /* global padlock */
 
-padlock.Store = (function () {
+padlock.Store = (function (crypto) {
   "use strict";
 
   /**
@@ -14,6 +14,7 @@ padlock.Store = (function () {
   };
 
   Store.prototype = {
+    // Constructs the key used for persistent storage based on the collection name
     getKey: function (coll) {
       return "coll_" + coll.name;
     },
@@ -54,16 +55,16 @@ padlock.Store = (function () {
               iter: data.iter
             };
 
-            // Construct a cryptographic key using the password provided by the user and the metadata
-            // from the fetched container. The whole thing happens in a web worker which is why it's asynchronous
-            padlock.crypto.cachedWorkerGenKey(
+            // Construct a cryptographic key using the password provided by the user and the metadata from
+            // the fetched container. The whole thing happens in a web worker which is why it's asynchronous
+            crypto.cachedWorkerGenKey(
               password,
               data.salt,
               data.keySize,
               data.iter,
               function (keyData) {
                 // Use the generated key to decrypt the data. Again, this is done in a web worker.
-                padlock.crypto.workerDecrypt(
+                crypto.workerDecrypt(
                   keyData,
                   data,
                   function (pt) {
@@ -103,7 +104,10 @@ padlock.Store = (function () {
     save: function (coll, opts) {
       opts = opts || {};
       opts.key = this.getKey(coll);
+      // Use source specified in options if any, otherwise use the default source
       var source = opts.source || this.defaultSource;
+      // Default `keyOpts` property to empty object. This will be filled with key derivation
+      // parameters later
       source.keyOpts = source.keyOpts || {};
       // Use password argument if provided, otherwise use the password stored in the source object
       var password = (source.password =
@@ -114,23 +118,22 @@ padlock.Store = (function () {
       var pt = JSON.stringify(coll.records),
         // Take the existing parameters for the key generation from the source kind if they are set.
         // Otherwise generate a new, random salt and use the defaults for key size and iteration count.
-        salt = (source.keyOpts.salt =
-          source.keyOpts.salt || padlock.crypto.rand()),
+        salt = (source.keyOpts.salt = source.keyOpts.salt || crypto.rand()),
         keySize = (source.keyOpts.size =
-          source.keyOpts.size || padlock.crypto.defaults.keySize),
+          source.keyOpts.size || crypto.defaults.keySize),
         iter = (source.keyOpts.iter =
-          source.keyOpts.iter || padlock.crypto.defaults.iter);
+          source.keyOpts.iter || crypto.defaults.iter);
 
       // Construct a cryptographic key using the password provided by the user and the metadata
       // from the source. The whole thing happens in a web worker which is why it's asynchronous
-      padlock.crypto.cachedWorkerGenKey(
+      crypto.cachedWorkerGenKey(
         password,
         salt,
         keySize,
         iter,
         function (keyData) {
           // Encrypt the data. Again, this happens in a web worker.
-          padlock.crypto.workerEncrypt(keyData, pt, function (c) {
+          crypto.workerEncrypt(keyData, pt, function (c) {
             opts.data = c;
             source.save(opts);
           });
@@ -177,7 +180,7 @@ padlock.Store = (function () {
     //* Deletes the stored password and resets the key cache
     clear: function () {
       delete this.defaultSource.password;
-      padlock.crypto.clearKeyCache();
+      crypto.clearKeyCache();
     }
   };
 

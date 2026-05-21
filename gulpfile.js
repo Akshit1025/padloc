@@ -15,7 +15,8 @@ var gulp = require("gulp"),
   rmdir = require("rimraf"),
   ncp = require("ncp").ncp,
   path = require("path"),
-  mkdirp = require("mkdirp");
+  mkdirp = require("mkdirp"),
+  insertLines = require("gulp-insert-lines");
 
 function compileCss() {
   var deferred = Q.defer();
@@ -40,6 +41,13 @@ function build(dest) {
         inlineScripts: true,
         inlineCss: true,
         excludes: ["overrides.css", "cordova.js"]
+      })
+    )
+    .pipe(
+      insertLines({
+        after: /<head>/,
+        lineAfter:
+          "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'self' gap: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' http://localhost:5500 ws://localhost:5500 https://cloud.padlock.io;\">"
       })
     )
     .pipe(crisper())

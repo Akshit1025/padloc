@@ -1,147 +1,170 @@
 # Padloc
 
-Padloc is a minimal password manager app built with Polymer, RequireJS, Grunt, and Compass.
+Padloc is a lightweight, browser-based password manager built with Polymer, RequireJS, and Gulp. It allows users to securely store and manage passwords locally in their browser.
 
-## What this repo is
+## Features
 
-This project is an older front-end web app. It uses:
+- **Local Storage**: Passwords are stored securely in the browser using local storage.
+- **Master Password**: Protect your data with a master password.
+- **Category Management**: Organize passwords into categories.
+- **Import/Export**: Easily import and export password data.
+- **Customizable UI**: Built with Polymer components for modularity and customization.
 
-- `node` and `npm` for the development server and build tooling
-- `bower` for browser dependencies
-- `grunt` for watch/build tasks
-- `compass` for compiling SCSS into CSS
-- `connect` for serving the app locally
+## Tech Stack
 
-## Requirements
+- **Frontend**: Polymer, RequireJS
+- **Build Tools**: Gulp
+- **Testing**: QUnit
+- **Dependencies**: Managed with npm and Bower
 
-Install these before running the app:
+## Installation
 
-- Node.js and npm
-- Bower
-- Ruby 2.7.x with DevKit/MSYS2 on Windows
-- Compass Ruby gem
+### Prerequisites
 
-## Install
+Ensure the following are installed on your system:
 
-From the project root:
+- **Node.js** and **npm**
+- **Bower** (install globally with `npm install -g bower`)
+- **Ruby 2.7.x** with DevKit/MSYS2 (for Windows users)
+- **Compass** Ruby gem (install with `gem install compass`)
 
-```powershell
-npm install
-bower install
-bundle install
-```
+### Steps
 
-If Bower is not installed yet:
+1. Clone the repository:
 
-```powershell
-npm install -g bower
-```
+   ```bash
+   git clone https://github.com/Akshit1025/padloc.git
+   cd padloc
+   ```
 
-If Compass is not installed yet, use RubyGems:
+2. Install dependencies:
 
-```powershell
-gem install multi_json -v 1.15.0
-gem install ffi -v 1.15.5
-gem install compass
-```
+   ```bash
+   npm install
+   bower install
+   bundle install
+   ```
 
-## Run the app
+3. If Compass is not installed, run:
 
-Start a local static server from the project root. This repo no longer includes `server.js`, so use any static server you prefer:
+   ```bash
+   gem install multi_json -v 1.15.0
+   gem install ffi -v 1.15.5
+   gem install compass
+   ```
 
-```powershell
+## Usage
+
+### Run the App
+
+Start a local static server from the project root:
+
+```bash
 python -m http.server 8080
 ```
 
-Then open:
+Then open the app in your browser:
 
 ```text
 http://localhost:8080
 ```
 
-You can also use a different folder or port, for example:
+You can specify a different port if needed:
 
-```powershell
+```bash
 python -m http.server 3000
 ```
 
-## Build the styles
+### Build Styles
 
-This app needs generated CSS files from the SCSS sources in `src/`.
+Compile the SCSS files into CSS:
 
-Run:
-
-```powershell
+```bash
 bundle exec compass compile
 ```
 
-That generates the CSS files required by `index.html` and the Polymer components.
+This generates the CSS files required by `index.html` and the Polymer components.
 
-If `grunt-contrib-compass` shows a Windows warning such as `spawn EINVAL`, skip Grunt and use the `bundle exec compass compile` command above.
+### Development Workflow
 
-## Development workflow
+1. **Stylus Compilation**:
+   - Compile `.styl` files into CSS:
+     ```bash
+     gulp stylus
+     ```
+   - Watch for changes and recompile automatically:
+     ```bash
+     gulp stylus --watch
+     ```
 
-In one terminal:
+2. **Testing**:
+   - Run QUnit tests:
+     ```bash
+     gulp test
+     ```
 
-```powershell
-npx grunt
-```
+3. **Linting**:
+   - Lint JavaScript and HTML files:
+     ```bash
+     gulp lint
+     ```
+   - Watch for changes and lint automatically:
+     ```bash
+     gulp lint --watch
+     ```
 
-In another terminal:
+4. **Deployment**:
+   - Build and deploy the app to a specified folder:
+     ```bash
+     gulp deploy --dest <destination-folder>
+     ```
 
-```powershell
-python -m http.server 8080
-```
+## Testing
 
-The default Grunt task starts `watch`; file changes then trigger Compass and QUnit.
+Unit tests are located in the `test/` directory. Open `test/runner.html` in your browser to run the tests.
 
-## Important files
+## Project Structure
 
-- `index.html` - app entry point
-- `Gruntfile.js` - build and watch tasks
-- `config.js` - RequireJS configuration
-- `src/` - app source code, styles, and Polymer components
-- `lib/` - shared libraries, including `sjcl`
-- `test/` - test runner and unit tests
+- `index.html`: Main entry point of the app
+- `src/`: Application source code and Polymer components
+  - `components/`: Modular UI components
+- `lib/`: Shared libraries (e.g., `sjcl` for cryptography)
+- `test/`: Unit tests and test runner
+- `bower_components/`: Frontend dependencies
+- `node_modules/`: Development dependencies
 
 ## Troubleshooting
 
-### Blank page in the browser
+### Blank Page in Browser
 
-Usually means one of the generated CSS files is missing. Run:
+This usually indicates missing CSS files. Run:
 
-```powershell
+```bash
 bundle exec compass compile
 ```
 
-### Compass installation fails on Windows
+### Compass Installation Issues on Windows
 
-Use Ruby 2.7.x with DevKit/MSYS2. Older front-end build tools like Compass often do not work well with Ruby 3.x.
+Use Ruby 2.7.x with DevKit/MSYS2. If you encounter errors, install the required gems explicitly:
 
-If `gem install compass` fails with an `ffi` version error on Ruby 2.7, install the compatible `ffi` gem first:
-
-```powershell
+```bash
 gem install multi_json -v 1.15.0
 gem install ffi -v 1.15.5
 gem install compass
 ```
 
-If the error mentions `multi_json` instead, install it explicitly first:
+### Missing Dependencies
 
-```powershell
-gem install multi_json -v 1.15.0
-gem install ffi -v 1.15.5
-gem install compass
-```
+If `bower_components/` is empty, run:
 
-### Missing browser dependencies
-
-If files under `bower_components/` are missing, run:
-
-```powershell
+```bash
 bower install
 ```
 
-## App overview
+## License
 
-Padloc is a password manager for storing and managing records locally in the browser. The UI starts with a master password screen and then lets the user lock, unlock, and manage records inside the app.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Feel free to submit issues or pull requests to improve the project.

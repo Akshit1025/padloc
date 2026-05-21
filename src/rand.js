@@ -1,5 +1,9 @@
 /* global padlock */
 
+/**
+ * Module for generating random strings
+ */
+
 padlock.rand = (function () {
   "use strict";
 

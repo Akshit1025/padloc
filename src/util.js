@@ -4,7 +4,7 @@
  * Module containing various utility functions
  */
 padlock.util = (function () {
-  "use strict";
+  ("use strict");
 
   /**
    * Inserts an object or an array at the specified index
@@ -47,6 +47,7 @@ padlock.util = (function () {
     return target;
   };
 
+  //* Checks whether or not an object is an Array
   var isArray = function (obj) {
     return Object.prototype.toString.call(obj) === "[object Array]";
   };
