@@ -141,7 +141,7 @@ padlock.Collection = (function (util) {
      */
     setPassword: function (password) {
       // Setting a new password effectively just means reencrypting the data with the new password
-      this.save({ password: password });
+      this.save({ password: password, rememberPassword: true });
     },
     /**
      * Checks whether or not data for the collection exists
@@ -197,7 +197,12 @@ padlock.Collection = (function (util) {
 
       // Update remote source
       var saveRemote = function () {
-        this.save({ source: source, success: done, fail: opts.fail });
+        this.save({
+          source: source,
+          success: done,
+          fail: opts.fail,
+          password: opts.remotePassword
+        });
       }.bind(this);
 
       // We're done!

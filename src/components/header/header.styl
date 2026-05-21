@@ -1,4 +1,5 @@
 @import '../../styles/config.styl';
+@import '../../styles/mixins.styl';
 @import 'nib';
 
 @keyframes titleIn {
@@ -106,6 +107,7 @@
         cursor: pointer;
         position: relative;
         z-index: 1;
+        --shape-shifter-secondary-color: $color-primary;
         tap-highlight();
     }
 }
@@ -116,13 +118,14 @@
     }
 
     .title {
+        pointer-events: none;
         animation: titleOut 0.5s ease 0s both;
     }
 }
 
 :host(.show-filter[filter-active]) #leftIcon {
     width: 0;
-    padding-left: 0;
+    padding: 0;
 }
 
 :host(:not([showing])) {
@@ -135,16 +138,11 @@
 }
 
 .middle > * {
-    $line-height = 22px;
     display: block;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    // height: 100%;
-    line-height: $line-height;
-    padding: (($row-height - $line-height) / 2) 0;
-    box-sizing: border-box;
 }
 
 .filter-input {
@@ -162,8 +160,8 @@
 }
 
 .title {
-    pointer-events: none;
     animation: titleIn 0.5s ease 0s both;
     overflow: ellipsis;
     text-align: center;
+    line-height: $row-height;
 }

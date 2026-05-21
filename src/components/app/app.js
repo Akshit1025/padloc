@@ -119,6 +119,9 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     _pwdEnter: function (event, detail) {
       this._unlock(detail.password);
     },
+    _changePwd: function () {
+      this._openStartView(true);
+    },
     // Submit handler for start view. A new master password was selected so we have to update it
     _newPwd: function (event, detail) {
       // Update master password
@@ -153,6 +156,7 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       // Attempt to fetch data from storage and decrypt it
       this.collection.fetch({
         password: password,
+        rememberPassword: true,
         success: function () {
           // Hide progress indicator
           this.$.decrypting.hide();
@@ -177,6 +181,7 @@ padlock.App = (function (Polymer, platform, CloudSource) {
             // If there is more than ten records in the collection and no backup reminder has been
             // shown, show it.
             if (
+              !this.settings.sync_connected &&
               this._records.filter(function (rec) {
                 return !rec.removed;
               }).length > 10 &&
@@ -243,11 +248,6 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     },
     //* Locks the collection and opens the lock view
     _lock: function () {
-      // Remove the stored password from the remote source if we've created on yet
-      if (this.remoteSource) {
-        delete this.remoteSource.password;
-      }
-
       // Remember current view so we can navigate back to it after unlocking the app again
       // TODO: Does this make sense in case of the record view, since we're trying to remove all
       // data from memory and the record view will be displaying on of the records?
@@ -422,6 +422,11 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     },
     //* Keyboard shortcuts
     _keydown: function (event) {
+      // Don't do anything if we're currently in a input field
+      if (padlock.currentInput) {
+        return;
+      }
+
       var shortcut;
       var dialogsOpen = !!Polymer.dom(this.root).querySelectorAll(
         "padlock-dialog.open"
@@ -720,7 +725,8 @@ padlock.App = (function (Polymer, platform, CloudSource) {
         this.notifyPath("settings." + prop, this.settings[prop]);
       }
     },
-    _openStartView: function () {
+    _openStartView: function (changingPwd) {
+      this.$.startView.changingPwd = changingPwd === true;
       this.$.header.showing = false;
       this._openView(
         this.$.startView,
@@ -774,8 +780,8 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     },
     // Back / cancel handler for generator view. Behaves differently based on where the generator view
     // was openened from
-    _generatorBack: function () {
-      if (this.$.generatorView.field) {
+    _generatorBack: function (e) {
+      if (e.detail.field) {
         // The value was to be generated for an existing field, meaning the generator was invoked from
         // the record view but then canceled. Go back to the record view and call the `generateConfirm`
         // method, but without the value argument, indicating that the generate action was canceled
@@ -785,21 +791,12 @@ padlock.App = (function (Polymer, platform, CloudSource) {
           { animation: "slideOutToBottom" }
         );
         this.async(function () {
-          this.$.recordView.generateConfirm(this.$.generatorView.field);
+          this.$.recordView.generateConfirm(e.detail.field, e.detail.value);
         }, 100);
       } else {
         // The generator view had been opened from the list view, so simply go back there
         this._openView(this.$.listView);
       }
-    },
-    // Confirmation handler for generator view
-    _generateConfirm: function (e) {
-      this._generatorBack();
-      // The confirm event can only be fired if the value was generated for a specific field so
-      // we can just call the `generateConfirm` method with the generated value.
-      this.async(function () {
-        this.$.recordView.generateConfirm(e.detail.field, e.detail.value);
-      }, 100);
     },
     // Opens a dialog with a dynamic form based on the provided arguments
     _openForm: function (components, title, submitCallback, cancelCallback) {
@@ -829,7 +826,7 @@ padlock.App = (function (Polymer, platform, CloudSource) {
         var input = form.querySelector("input[auto-focus]");
         // Instantly focusing an input look kind of jumpy if a virtual keyboard is shown so only
         // do the focus if not on a smartphone/tablet
-        if (input && !platform.isTouch()) {
+        if (input && !platform.isIOS()) {
           input.focus();
         }
       }, 50);

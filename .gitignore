@@ -8,3 +8,6 @@ build.js
 src/components/**/*.css
 src/styles/mixins.css
 src/styles/config.css
+
+# generated html modules
+src/**/*-styles.html

@@ -16,7 +16,8 @@ var gulp = require("gulp"),
   ncp = require("ncp").ncp,
   path = require("path"),
   mkdirp = require("mkdirp"),
-  insertLines = require("gulp-insert-lines");
+  insertLines = require("gulp-insert-lines"),
+  stylemod = require("gulp-style-modules");
 
 function compileCss() {
   var deferred = Q.defer();
@@ -24,6 +25,7 @@ function compileCss() {
   gulp
     .src("./src/**/*.styl")
     .pipe(stylus({ use: [nib()] }))
+    .pipe(stylemod())
     .pipe(gulp.dest("./src"))
     .on("end", function () {
       deferred.resolve();
@@ -65,7 +67,10 @@ function lint(files) {
 gulp.task("stylus", function () {
   if (argv.watch) {
     watch({ glob: "src/**/*.styl" }, function (files) {
-      return files.pipe(stylus({ use: [nib()] })).pipe(gulp.dest("./src"));
+      return files
+        .pipe(stylus({ use: [nib()] }))
+        .pipe(stylemod())
+        .pipe(gulp.dest("./src"));
     });
   } else {
     return compileCss();

@@ -25,8 +25,7 @@ Ensure the following are installed on your system:
 
 - **Node.js** and **npm**
 - **Bower** (install globally with `npm install -g bower`)
-- **Ruby 2.7.x** with DevKit/MSYS2 (for Windows users)
-- **Compass** Ruby gem (install with `gem install compass`)
+- **Gulp CLI** (optional, install with `npm install -g gulp-cli`)
 
 ### Steps
 
@@ -39,11 +38,10 @@ Ensure the following are installed on your system:
 
 2. Install dependencies:
 
-   ```bash
-   npm install
-   bower install
-   bundle install
-   ```
+```bash
+npm install
+bower install
+```
 
 3. If Compass is not installed, run:
 
@@ -77,11 +75,13 @@ python -m http.server 3000
 
 ### Build Styles
 
-Compile the SCSS files into CSS:
+Compile the Stylus files into CSS using the Gulp task:
 
 ```bash
-bundle exec compass compile
+gulp stylus
 ```
+
+Use `gulp stylus --watch` to watch and recompile on file changes.
 
 This generates the CSS files required by `index.html` and the Polymer components.
 
@@ -143,14 +143,19 @@ This usually indicates missing CSS files. Run:
 bundle exec compass compile
 ```
 
-### Compass Installation Issues on Windows
+### Stylus / Gulp Issues on Windows
 
-Use Ruby 2.7.x with DevKit/MSYS2. If you encounter errors, install the required gems explicitly:
+If styles are not generated, ensure `node_modules` is installed and the Gulp dependencies are present:
 
 ```bash
-gem install multi_json -v 1.15.0
-gem install ffi -v 1.15.5
-gem install compass
+npm install
+gulp stylus
+```
+
+If you rely on a global `gulp` command and it's missing, install the Gulp CLI:
+
+```bash
+npm install -g gulp-cli
 ```
 
 ### Missing Dependencies
