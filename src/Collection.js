@@ -3,7 +3,7 @@
 /**
  * Module containing logic for records, collections and the data store.
  */
-padlock.Collection = (function () {
+padlock.Collection = (function (util) {
   "use strict";
 
   /**
@@ -18,6 +18,7 @@ padlock.Collection = (function () {
     this.records = [];
     // This is to keep track of all existing records via their uuid.
     this.uuidMap = {};
+    this.dispatcher = document.createElement("div");
   };
 
   Collection.prototype = {
@@ -45,10 +46,6 @@ padlock.Collection = (function () {
       var rec = opts && opts.record;
       if (rec) {
         rec.name = rec.name || "Unnamed";
-        // Filter out fields that have neither a name nor a value
-        rec.fields = rec.fields.filter(function (field) {
-          return field.name || field.value;
-        });
         rec.updated = new Date();
       }
       this.store.save(this, opts);
@@ -64,6 +61,14 @@ padlock.Collection = (function () {
     destroy: function (opts) {
       this.store.destroy(this, opts);
     },
+    splice: function () {
+      var rem = Array.prototype.splice.apply(this.records, arguments);
+      var e = new CustomEvent("update", {
+        detail: Array.prototype.slice.apply(arguments)
+      });
+      this.dispatcher.dispatchEvent(e);
+      return rem;
+    },
     /**
      * Adds a record or an array of records to the collection. If the record does not
      * have a _uuid_ yet, it will be generated. If two records with the same _uuid_ exist, i.e.
@@ -72,7 +77,7 @@ padlock.Collection = (function () {
      * @param {Object}  rec A record object or an array of record objects to be added to the collection
      */
     add: function (rec) {
-      var records = this.records.slice();
+      var records = [];
 
       rec = util.isArray(rec) ? rec : [rec];
       rec.forEach(
@@ -98,7 +103,7 @@ padlock.Collection = (function () {
         }.bind(this)
       );
 
-      this.records = records;
+      this.splice.apply(this, [this.records.length, 0].concat(records));
     },
     /**
      * Removes a record from this collection. This does not actually remove the record from
@@ -139,7 +144,7 @@ padlock.Collection = (function () {
      * Empties the collection and removes the stored password
      */
     clear: function () {
-      this.records = [];
+      this.splice(0, this.records.length);
       this.uuidMap = {};
       this.store.clear();
     },
@@ -192,6 +197,9 @@ padlock.Collection = (function () {
     // * The password associated with the default source.
     get defaultPassword() {
       return this.store.defaultSource.password;
+    },
+    addEventListener: function () {
+      this.dispatcher.addEventListener.apply(this.dispatcher, arguments);
     }
   };
 

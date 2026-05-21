@@ -3,7 +3,7 @@
 /**
  * Module for importing data from various formats.
  */
-padlock.import = (function (crypto) {
+padlock.import = (function (crypto, DisposableSource) {
   "use strict";
 
   //* Detects if a string contains a SecuStore backup
@@ -22,7 +22,13 @@ padlock.import = (function (crypto) {
    * @param  {String}   password Password to be used for decryption
    * @return {Array}             A list of records
    */
-  var importSecuStoreBackup = function (rawData, password, success, fail) {
+  var importSecuStoreBackup = function (
+    collection,
+    rawData,
+    password,
+    success,
+    fail
+  ) {
     var begin = "#begin",
       end = "#end",
       objJSON,
@@ -83,6 +89,8 @@ padlock.import = (function (crypto) {
                 fields: fields
               };
             });
+
+            collection.add(records);
 
             success(records);
           },
@@ -177,11 +185,11 @@ padlock.import = (function (crypto) {
    *                               no categories will be used
    * @return Array                 An array or records
    */
-  var importTable = function (data, nameColIndex, catColIndex) {
+  var importTable = function (collection, data, nameColIndex, catColIndex) {
     var colNames = data[0];
     nameColIndex = nameColIndex || 0;
 
-    return data.slice(1).map(function (row) {
+    var records = data.slice(1).map(function (row) {
       var fields = [];
 
       for (var i = 0; i < row.length; i++) {
@@ -195,17 +203,54 @@ padlock.import = (function (crypto) {
       }
 
       return {
-        name: row[nameColIndex],
-        category: row[catColIndex],
+        name: row[nameColIndex] || "Unnamed",
+        category: row[catColIndex] || "",
         fields: fields
       };
+    });
+
+    collection.add(records);
+    return records;
+  };
+
+  var isPadlockBackup = function (string) {
+    try {
+      var data = JSON.parse(string);
+      return crypto.validateContainer(data);
+    } catch (e) {
+      return false;
+    }
+  };
+
+  var importPadlockBackup = function (
+    collection,
+    data,
+    password,
+    success,
+    fail
+  ) {
+    try {
+      data = JSON.parse(data);
+    } catch (e) {
+      fail(e);
+      return;
+    }
+
+    var source = new DisposableSource(data);
+    collection.fetch({
+      source: source,
+      password: password,
+      success: success,
+      fail: fail
     });
   };
 
   return {
     isSecuStoreBackup: isSecuStoreBackup,
+    isPadlockBackup: isPadlockBackup,
     importSecuStoreBackup: importSecuStoreBackup,
+    importPadlockBackup: importPadlockBackup,
     parseCsv: parseCsv,
     importTable: importTable
   };
-})(padlock.crypto);
+})(padlock.crypto, padlock.DisposableSource);

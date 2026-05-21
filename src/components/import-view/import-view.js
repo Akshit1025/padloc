@@ -1,131 +1,198 @@
-/* global Polymer, Platform, padlock, PadlockView, cordova */
+/* global Polymer, padlock */
 
-(function (Polymer, Platform, util, imp) {
+(function (Polymer, ViewBehavior, util, imp, platform) {
   "use strict";
 
-  Polymer("padlock-import-view", {
-    headerOptions: {
-      show: true,
-      leftIconShape: "left",
-      rightIconShape: ""
+  var inputPlaceholder =
+    "Paste your data here! It should be in CSV format, like this:\n" +
+    "\n" +
+    "Name,Category,Url,Username,Password\n" +
+    "Gmail,Work,google.com,Martin,j83jaDK\n" +
+    "Twitter,,twitter.com,mclovin,dj83$j\n" +
+    "\n" +
+    "Encrypted Padlock backups are also supported.";
+
+  Polymer({
+    is: "padlock-import-view",
+    behaviors: [ViewBehavior],
+    properties: {
+      collection: Object
     },
-    titleText: "Import Records",
-    inputPlaceholder:
-      "Paste your data here! It should be in CSV format, like this:\n" +
-      "\n" +
-      "Name,Category,Url,Username,Password\n" +
-      "Gmail,Work,google.com,Martin,j83jaDK\n" +
-      "Twitter,,twitter.com,mclovin,dj83$j\n" +
-      "\n" +
-      "SecuStore backups are also supported.",
+    ready: function () {
+      this.leftHeaderIcon = "left";
+      this.rightHeaderIcon = "copy";
+      this.headerTitle = "Import Records";
+    },
     leftHeaderButton: function () {
       this.fire("back");
     },
-    show: function () {
-      this.$.rawInput.value = this.inputPlaceholder;
-      if (typeof cordova !== "undefined") {
-        setTimeout(function () {
-          cordova.plugins.Keyboard.hideKeyboardAccessoryBar(false);
-        }, 10);
-      }
-      PadlockView.prototype.show.apply(this, arguments);
+    rightHeaderButton: function () {
+      platform.getClipboard(
+        function (text) {
+          this.$.rawInput.value = text;
+        }.bind(this)
+      );
     },
-    hide: function () {
-      if (typeof cordova !== "undefined") {
-        cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-      }
-      PadlockView.prototype.hide.apply(this, arguments);
+    show: function () {
+      this.$.rawInput.value = inputPlaceholder;
+      ViewBehavior.show.apply(this, arguments);
     },
     //* Shows password dialog
-    requirePassword: function () {
-      this.$.errorDialog.open = false;
-      this.$.pwdInput.value = "";
-      this.$.pwdDialog.open = true;
+    _requirePassword: function (callback) {
+      this.fire("open-form", {
+        title:
+          "Encrypted backup detected. Please enter the password for this backup.",
+        components: [
+          {
+            element: "input",
+            type: "password",
+            placeholder: "Enter Password",
+            name: "password",
+            autofocus: true
+          },
+          { element: "button", label: "Decrypt", submit: true },
+          { element: "button", label: "Cancel", cancel: true }
+        ],
+        submit: callback
+      });
     },
-    startImport: function () {
+    _startImport: function (e) {
+      e && e.preventDefault();
       // this.$.nameColDialog.open = true;
       var rawStr = this.$.rawInput.value;
-      if (!rawStr) {
+      if (!rawStr || rawStr == inputPlaceholder) {
+        this.fire("notify", {
+          message: "Please enter some data!",
+          type: "error",
+          duration: 1500
+        });
         return;
       }
 
       if (imp.isSecuStoreBackup(rawStr)) {
-        this.requirePassword();
+        this._requirePassword(this._importSecuStoreBackup.bind(this));
+      } else if (imp.isPadlockBackup(rawStr)) {
+        this._requirePassword(this._importPadlockBackup.bind(this));
       } else {
-        this.csvData = imp.parseCsv(rawStr);
-        this.getNameCol();
+        this._csvData = imp.parseCsv(rawStr);
+        this._getNameCol();
       }
     },
+    _importPadlockBackup: function (data) {
+      this.$$("padlock-progress").show();
+      imp.importPadlockBackup(
+        this.collection,
+        this.$.rawInput.value,
+        data.password,
+        function (records) {
+          this.collection.save();
+          this.fire("imported", { count: records.length });
+        }.bind(this),
+        this._promptDecryptionFailed.bind(this)
+      );
+      this.$$("padlock-progress").hide();
+    },
     //* Starts the import using the raw input and the provided password
-    importSecuStoreBackup: function () {
-      this.$.pwdDialog.open = false;
-      this.$.progress.show();
+    _importSecuStoreBackup: function (data) {
+      this.$$("padlock-progress").show();
 
       imp.importSecuStoreBackup(
+        this.collection,
         this.$.rawInput.value,
-        this.$.pwdInput.value,
+        data.password,
         function (records) {
-          this.fire("import", { records: records });
+          this.collection.save();
+          this.fire("imported", { count: records.length });
         }.bind(this),
-        function () {
-          this.$.errorDialog.open = true;
-        }.bind(this)
+        this._promptDecryptionFailed.bind(this)
       );
-      this.$.progress.hide();
+      this.$$("padlock-progress").hide();
     },
-    importCancel: function () {
-      this.$.errorDialog.open = false;
-      this.fire("back");
+    _promptDecryptionFailed: function () {
+      this.fire("open-form", {
+        title:
+          "Decrypting the data failed. Either the password you entered was incorrect or the " +
+          "data provided is incomplete or corrupted.",
+        components: [
+          {
+            element: "button",
+            label: "Retry",
+            submit: true,
+            tap: this._startImport.bind(this)
+          },
+          { element: "button", label: "Cancel", cancel: true }
+        ]
+      });
     },
     //* Opens a dialog for selecting a column for record names
-    getNameCol: function () {
-      this.colNames = this.csvData[0].slice();
-      this.nameColOptions = this.colNames;
-      // This is to make sure the option elements are generated right away
-      // so we can select the first one.
-      Platform.performMicrotaskCheckpoint();
-      // Select the first column by default
-      this.$.nameColSelect.selected = this.$.nameColSelect.options[0];
-      this.$.nameColDialog.open = true;
+    _getNameCol: function () {
+      this._colNames = this._csvData[0].slice();
+      this.fire("open-form", {
+        title: "Which column would you like to use for record names?",
+        components: this._colNames.map(
+          function (col) {
+            return {
+              element: "button",
+              label: col,
+              submit: true,
+              tap: this._selectNameCol.bind(this, col)
+            };
+          }.bind(this)
+        )
+      });
     },
-    confirmNameCol: function () {
-      var colName = this.$.nameColSelect.selected.innerHTML;
-
-      this.nameColIndex = this.colNames.indexOf(colName);
-      this.$.nameColDialog.open = false;
-      this.getCatCol();
+    _selectNameCol: function (colName) {
+      this._nameColIndex = this._colNames.indexOf(colName);
+      this._getCatCol();
     },
     //* Opens the dialog for selecting a column for the category
-    getCatCol: function () {
-      var select = this.$.catColSelect;
-
+    _getCatCol: function () {
       // One column is already taken by the record name
-      this.catColOptions = util.remove(this.colNames, this.nameColIndex);
-      // The category is optional so we need an option for selecting none of the columns
-      this.catColOptions.push("(none)");
-      // This is to make sure the option elements are generated right away
-      // so we can select the first one.
-      Platform.performMicrotaskCheckpoint();
-      // Select 'none' by default
-      select.selected = select.options[select.options.length - 1];
-      this.$.catColDialog.open = true;
-    },
-    confirmCatCol: function () {
-      var colName = this.$.catColSelect.selected.innerHTML;
-
-      this.catColIndex =
-        colName == "(none)" ? undefined : this.colNames.indexOf(colName);
-      this.$.catColDialog.open = false;
-      this.importCsv();
-    },
-    importCsv: function () {
-      var records = imp.importTable(
-        this.csvData,
-        this.nameColIndex,
-        this.catColIndex
+      var opts = util.remove(this._colNames, this._nameColIndex);
+      var components = [
+        {
+          element: "button",
+          label: "(none)",
+          submit: true,
+          tap: this._selectCatCol.bind(this, null)
+        }
+      ].concat(
+        opts.map(
+          function (col) {
+            return {
+              element: "button",
+              label: col,
+              submit: true,
+              tap: this._selectCatCol.bind(this, col)
+            };
+          }.bind(this)
+        )
       );
 
-      this.fire("import", { records: records });
+      this.fire("open-form", {
+        title: "Which column would you like to use for categories?",
+        components: components
+      });
+    },
+    _selectCatCol: function (colName) {
+      this._catColIndex = this._colNames.indexOf(colName);
+      this.async(this._importCsv, 100);
+    },
+    _importCsv: function () {
+      var records = imp.importTable(
+        this.collection,
+        this._csvData,
+        this._nameColIndex,
+        this._catColIndex
+      );
+      this.collection.save();
+      this.fire("imported", { count: records.length });
     }
   });
-})(Polymer, Platform, padlock.util, padlock.import);
+})(
+  Polymer,
+  padlock.ViewBehavior,
+  padlock.util,
+  padlock.import,
+  padlock.platform
+);

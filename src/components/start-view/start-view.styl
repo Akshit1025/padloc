@@ -21,17 +21,13 @@
 :host {
   display: block;
   background-color: $color-primary;
-}
-
-:host(.error) {
-  .error-message {
-    opacity: 1;
-    transform: translate(0, 0);
-  }
+  overflow: hidden;
+  top: 0;
+  color: #fff;
 }
 
 .wrapper {
-  height: 310px;
+  height: 450px;
   position: absolute;
   left: 0;
   right: 0;
@@ -40,44 +36,53 @@
   margin: auto 0;
   text-align: center;
 
-  input {
+  input, padlock-password-input {
     text-align: center;
     width: 100%;
-    margin-bottom: 15px;
   }
+}
+
+.tap-highlight {
+  margin-bottom: 10px;
 }
 
 .header {
   font-size: 50px;
   font-weight: 300;
-  color: #fff;
   margin-bottom: 30px;
   font-weight: $font-weight-thin;
-  animation: reveal 0.5s ease 0.25s both;
+  animation: reveal 0.5s ease 0.2s both;
 }
 
 .pwdinput-first {
-  animation: reveal 0.5s ease 0.5s both;
+  animation: reveal 0.5s ease 0.4s both;
 }
 
 .pwdinput-second {
-  animation: reveal 0.5s ease 0.75s both;
-}
-
-p {
-  padding: 15px;
-}
-
-.error-message {
-  color: $color-red;
-  padding: 20px;
-  opacity: 0;
-  transform: translate(0, 100%);
-  transition: transform 0.5s, opacity 0.5s;
+  animation: reveal 0.5s ease 0.6s both;
 }
 
 .enter-button {
   width: 100%;
-  margin-top: 30px;
-  animation: reveal 0.5s ease 1s both;
+  margin-top: 10px;
+  animation: reveal 0.5s ease 0.8s both;
+}
+
+padlock-lock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -50px;
+  margin: 0 auto;
+  animation: reveal 0.5s ease 1.25s both;
+}
+
+@media (max-height: 500px) {
+  padlock-lock {
+    height: 0;
+  }
+
+  .wrapper {
+    height: 330px;
+  }
 }

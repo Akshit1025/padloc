@@ -9,7 +9,9 @@
 
   // Whether or not the script was loaded in the context of a web worker instance
   // Perhaps there is a more reliable way to detect this?
-  var isWorker = !!self.importScripts;
+  var isWorker =
+    typeof WorkerGlobalScope !== "undefined" &&
+    self instanceof WorkerGlobalScope;
 
   // The function defining the module
   var modFunc = function (sjcl) {
@@ -23,6 +25,11 @@
       CCM: "ccm",
       OCB2: "ocb2"
     };
+
+    // Available key sizes
+    var keySizes = [128, 192, 256];
+    // Available authentication tag sizes
+    var atSizes = [64, 96, 128];
 
     // Various default parameters
     var defaults = {
@@ -217,6 +224,23 @@
       workerDo("encrypt", [keyData, value], success, fail);
     }
 
+    /**
+     * Checks if a given crypto container has a set of valid properties
+     */
+    function validateContainer(cont) {
+      return (
+        cont.cipher in ciphers && // valid cipher
+          cont.mode.toUpperCase() in modes && // exiting mode
+          keySizes.indexOf(cont.keySize) !== -1, // valid key size
+        typeof cont.iv == "string" && // valid initialisation vector
+          typeof cont.salt == "string" && //valid salt
+          typeof cont.iter == "number" && // valid PBKDF2 iteration count
+          typeof cont.ct == "string" && // valid cipher text
+          typeof cont.adata == "string" && // valid authorisation data
+          atSizes.indexOf(cont.ts) !== -1
+      ); // valid authorisation tag length
+    }
+
     return {
       ciphers: ciphers,
       modes: modes,
@@ -231,7 +255,8 @@
       workerGenKey: workerGenKey,
       cachedWorkerGenKey: cachedWorkerGenKey,
       workerDecrypt: workerDecrypt,
-      workerEncrypt: workerEncrypt
+      workerEncrypt: workerEncrypt,
+      validateContainer: validateContainer
     };
   };
 

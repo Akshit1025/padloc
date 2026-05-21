@@ -56,14 +56,14 @@ padlock.Store = (function () {
 
             // Construct a cryptographic key using the password provided by the user and the metadata
             // from the fetched container. The whole thing happens in a web worker which is why it's asynchronous
-            crypto.cachedWorkerGenKey(
+            padlock.crypto.cachedWorkerGenKey(
               password,
               data.salt,
               data.keySize,
               data.iter,
               function (keyData) {
                 // Use the generated key to decrypt the data. Again, this is done in a web worker.
-                crypto.workerDecrypt(
+                padlock.crypto.workerDecrypt(
                   keyData,
                   data,
                   function (pt) {
@@ -72,7 +72,7 @@ padlock.Store = (function () {
                     var records = JSON.parse(pt);
                     coll.add(records);
                     if (opts.success) {
-                      opts.success(coll);
+                      opts.success(records);
                     }
                   },
                   function (e) {
@@ -114,22 +114,23 @@ padlock.Store = (function () {
       var pt = JSON.stringify(coll.records),
         // Take the existing parameters for the key generation from the source kind if they are set.
         // Otherwise generate a new, random salt and use the defaults for key size and iteration count.
-        salt = (source.keyOpts.salt = source.keyOpts.salt || crypto.rand()),
+        salt = (source.keyOpts.salt =
+          source.keyOpts.salt || padlock.crypto.rand()),
         keySize = (source.keyOpts.size =
-          source.keyOpts.size || crypto.defaults.keySize),
+          source.keyOpts.size || padlock.crypto.defaults.keySize),
         iter = (source.keyOpts.iter =
-          source.keyOpts.iter || crypto.defaults.iter);
+          source.keyOpts.iter || padlock.crypto.defaults.iter);
 
       // Construct a cryptographic key using the password provided by the user and the metadata
       // from the source. The whole thing happens in a web worker which is why it's asynchronous
-      crypto.cachedWorkerGenKey(
+      padlock.crypto.cachedWorkerGenKey(
         password,
         salt,
         keySize,
         iter,
         function (keyData) {
           // Encrypt the data. Again, this happens in a web worker.
-          crypto.workerEncrypt(keyData, pt, function (c) {
+          padlock.crypto.workerEncrypt(keyData, pt, function (c) {
             opts.data = c;
             source.save(opts);
           });
@@ -176,7 +177,7 @@ padlock.Store = (function () {
     //* Deletes the stored password and resets the key cache
     clear: function () {
       delete this.defaultSource.password;
-      crypto.clearKeyCache();
+      padlock.crypto.clearKeyCache();
     }
   };
 

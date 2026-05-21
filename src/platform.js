@@ -107,6 +107,7 @@ padlock.platform = (function () {
   };
 
   var clipboardTextArea;
+
   var domSetClipboard = function (text) {
     clipboardTextArea = clipboardTextArea || document.createElement("textarea");
     clipboardTextArea.value = text;
@@ -114,6 +115,16 @@ padlock.platform = (function () {
     clipboardTextArea.select();
     document.execCommand("cut");
     document.body.removeChild(clipboardTextArea);
+  };
+
+  var domGetClipboard = function (cb) {
+    clipboardTextArea = clipboardTextArea || document.createElement("textarea");
+    document.body.appendChild(clipboardTextArea);
+    clipboardTextArea.value = "";
+    clipboardTextArea.select();
+    document.execCommand("paste");
+    document.body.removeChild(clipboardTextArea);
+    return clipboardTextArea.value;
   };
 
   //* Sets the clipboard text to a given string
@@ -130,6 +141,20 @@ padlock.platform = (function () {
     }
   };
 
+  //* Retrieves the clipboard text
+  var getClipboard = function (cb) {
+    // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
+    if (
+      typeof cordova !== "undefined" &&
+      cordova.plugins &&
+      cordova.plugins.clipboard
+    ) {
+      cordova.plugins.clipboard.paste(cb);
+    } else {
+      cb(domGetClipboard());
+    }
+  };
+
   var isTouch = function () {
     try {
       document.createEvent("TouchEvent");
@@ -137,6 +162,13 @@ padlock.platform = (function () {
     } catch (e) {
       return false;
     }
+  };
+
+  var keyboardDisableScroll = function (disable) {
+    typeof cordova != "undefined" &&
+      cordova.plugins &&
+      cordova.plugins.Keyboard &&
+      cordova.plugins.Keyboard.disableScroll(disable);
   };
 
   return {
@@ -148,6 +180,8 @@ padlock.platform = (function () {
     isIOSStandalone: isIOSStandalone,
     isChromeApp: isChromeApp,
     isTouch: isTouch,
-    setClipboard: setClipboard
+    setClipboard: setClipboard,
+    getClipboard: getClipboard,
+    keyboardDisableScroll: keyboardDisableScroll
   };
 })();

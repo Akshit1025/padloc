@@ -4,45 +4,83 @@
 <head>
     <title>Padlock</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self' gap: data: blob:;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' data:;
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data: blob:;
+    font-src 'self' data:;
+    connect-src 'self' http://localhost:5500 ws://localhost:5500 https://cloud.padlock.io;
+    ">
     <link rel="shortcut icon" type="image/png" href="assets/icon16.png" />
 
-    <!-- Settings for running as standalone iOS web app (from homescreen) -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Padlock">
-    <link rel="apple-touch-icon" href="assets/app-icon.png">
-
-    <!-- Overrides for platform-specific styles -->
-    <link rel="stylesheet" href="src/styles/overrides.css" type='text/css'>
-
-    <!-- Polymer platform layer -->
-    <script src="bower_components/platform/platform.js"></script>
-
-    <!-- Custom app element -->
-    <link rel="import" href="src/components/app/app.html">
-
-    <!-- This is the ENTRY POINT -->
-    <link rel="import" href="src/padlock.html">
-    <script src="src/init.js"></script>
-
+    <!-- Fonts -->
+    <link href="assets/fonts/fonts.css" rel="stylesheet" type="text/css">
     <style>
         html {
             background: #59c6ff;
         }
     </style>
 
-    <!-- Load the cordova api if applicable -->
-    <script src="cordova.js"></script>
+    <!-- Overrides for platform-specific styling -->
+    <link href="overrides.css" rel="stylesheet" type="text/css">
+
+    <!-- Define padlock globally before anything else relies on it -->
     <script>
-        document.addEventListener("deviceready", function () {
-            navigator.splashscreen.hide();
-            cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+        window.padlock = {};
+    </script>
+
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+
+    <link rel="import" href="src/padlock.html">
+    <!-- Import Polymer before other custom elements -->
+    <link rel="import" href="bower_components/polymer/polymer.html">
+    <link rel="import" href="src/components/app/app.html">
+
+    <!-- This is the ENTRY POINT -->
+    <script>
+        /* global padlock, chrome */
+        window.addEventListener("WebComponentsReady", function () {
+            "use strict";
+
+            var source = (typeof chrome !== "undefined") && chrome.storage ?
+                new padlock.ChromeStorageSource() : new padlock.LocalStorageSource(),
+                store = new padlock.Store(source),
+                cloudHost = "https://cloud.padlock.io/",
+                settings = new padlock.Settings({
+                    "sync_host": cloudHost,
+                    "sync_email": "",
+                    "sync_key": "",
+                    "sync_device": "",
+                    "sync_connected": false,
+                    "sync_auto": true,
+                    "default_fields": ["username", "password"],
+                    "obfuscate_fields": false,
+                    "showed_backup_reminder": 0
+                }, source),
+                collection = new padlock.Collection("default", store);
+
+            var app = new padlock.App(collection, settings);
+            document.body.appendChild(app);
         });
     </script>
+
+    <!-- Load the cordova api if available -->
+    <script src="cordova.js"></script>
+    <script>
+        /* global cordova */
+        document.addEventListener("deviceready", function () {
+            "use strict";
+            navigator.splashscreen.hide();
+            cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+            cordova.plugins.Keyboard.disableScroll(true);
+        });
+    </script>
+
 </head>
 
-<body unresolved>
-    <padlock-app unresolved></padlock-app>
+<body>
 </body>
 
 </html>

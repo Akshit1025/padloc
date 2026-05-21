@@ -2,28 +2,40 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../password-input/password-input.html">
+<link rel="import" href="../lock/lock.html">
 
-<polymer-element name="padlock-start-view" on-keydown="{{ keyDown }}">
+<dom-module id="padlock-start-view">
+
+    <link href="../view/view.css" rel="import" type="css">
+    <link href="start-view.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="start-view.css" rel="stylesheet" type="text/css">
+
+        <padlock-lock></padlock-lock>
+
         <!-- WRAPPER (for centering) -->
-        <div class="wrapper">
+        <form class="wrapper">
             <!-- HEADER -->
             <div class="header">
                 Padlock
             </div>
             <!-- NEW PASSWORD INPUT -->
-            <input is="padlock-input" class='ghost pwdinput-first' type="password" placeholder="Enter Master Password"
-                id="pwdInput" selectAllOnFocus='true' />
+            <div class="tap-highlight">
+                <padlock-password-input class="ghost pwdinput-first" placeholder="Enter Master Password" id="pwdInput"
+                    on-enter="enter" select-all-on-focus obfuscate></padlock-password-input>
+            </div>
             <!-- CONFIRM PASSWORD INPUT -->
-            <input is="padlock-input" class='ghost pwdinput-second' type="password"
-                placeholder="Confirm Master Password" id="confirmInput" selectAllOnFocus='true' />
+            <div class="tap-highlight">
+                <input is="padlock-input" class="ghost pwdinput-second" type="password"
+                    placeholder="Confirm Master Password" id="confirmInput" on-enter="enter" select-all-on-focus />
+            </div>
             <!-- ENTER BUTTON -->
-            <button class="enter-button ghost" on-tap="{{ enter }}">OK</button>
-            <!-- ERROR MESSAGE -->
-            <div class="error-message">Passwords do not match!</div>
-        </div>
+            <button class="enter-button ghost" on-click="enter" type="button">OK</button>
+        </form>
+
     </template>
+
     <script src="start-view.js"></script>
-    </polymer>
+
+</dom-module>

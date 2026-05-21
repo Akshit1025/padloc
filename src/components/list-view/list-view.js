@@ -1,201 +1,144 @@
 /* jshint browser: true */
-/* global Polymer, PadlockView */
+/* global Polymer, padlock */
 
-(function (Polymer) {
+(function (Polymer, ViewBehavior, MarkableBehavior, platform) {
   "use strict";
 
-  Polymer("padlock-list-view", {
-    headerOptions: {
-      show: true,
-      leftIconShape: "menu",
-      rightIconShape: "plus",
-      showFilter: true
+  Polymer({
+    is: "padlock-list-view",
+    behaviors: [ViewBehavior, MarkableBehavior],
+    properties: {
+      filterString: {
+        type: String,
+        value: ""
+      },
+      selected: Object,
+      records: Array
     },
-    observe: {
-      filterString: "prepareRecords",
-      "collection.records": "prepareRecords",
-      "settings.order_by": "prepareRecords"
+    observers: ["_refresh(filterString)"],
+    _firstInSection: {},
+    ready: function () {
+      this.leftHeaderIcon = "menu";
+      this.rightHeaderIcon = "plus";
+      this.showFilter = true;
+      this._itemSelector = ".record-item";
+
+      // On iOS the keyboard overlays the web view so we have to add some padding to the bottom to
+      // make sure all records can be scrolled to.
+      if (platform.isIOS()) {
+        window.addEventListener(
+          "native.keyboardshow",
+          function (e) {
+            this.style.paddingBottom = e.keyboardHeight + 5 + "px";
+          }.bind(this)
+        );
+        window.addEventListener(
+          "native.keyboardhide",
+          function () {
+            this.style.paddingBottom = "";
+          }.bind(this)
+        );
+      }
     },
-    marked: null,
     leftHeaderButton: function () {
       this.fire("menu");
     },
     rightHeaderButton: function () {
-      this.fire("add");
-    },
-    bufferedPrepareRecords: function () {
-      if (this.prepareRecordsTimeout) {
-        clearTimeout(this.prepareRecordsTimeout);
-      }
-      this.prepareRecordsTimeout = setTimeout(
-        this.prepareRecords.bind(this),
-        300
-      );
-    },
-    prepareRecords: function () {
-      if (!this.collection) {
-        return;
-      }
-
-      this.marked = null;
-
-      var fs = this.filterString && this.filterString.toLowerCase(),
-        words = fs.split(" "),
-        records = this.collection.records.filter(function (rec) {
-          return !rec.removed;
-        }),
-        count = records.length;
-
-      // Set up category and section property
-      records.forEach(
-        function (rec) {
-          // Add the records category to known categories and assign it a color if it doesn't exist yet.
-          // This is done here mainly for efficiency reasons.
-          if (rec.category && !this.categories.get(rec.category)) {
-            this.categories.set(rec.category, this.categories.autoColor());
-          }
-
-          // Give it a section property for the rendering of the section headers
-          rec.section =
-            this.settings.order_by == "category"
-              ? rec.category || "other"
-              : rec.name.toUpperCase()[0];
-
-          // Add properties for rendering the category
-          rec.catColor = this.categories.get(rec.category) || "";
-          rec.showCategory = this.settings.order_by != "category";
-        }.bind(this)
-      );
-
-      // Save the categories in case any new ones have been added
-      this.categories.save();
-
-      // Sort by section first, name second
-      records.sort(function (a, b) {
-        if (a.section > b.section) {
-          return 1;
-        } else if (a.section < b.section) {
-          return -1;
-        } else {
-          if (a.name > b.name) {
-            return 1;
-          } else if (a.name < b.name) {
-            return -1;
-          } else {
-            return 0;
-          }
-        }
-      });
-
-      var prevSection;
-      // Add some metadata to each record and do some other preparation work
-      records.forEach(
-        function (rec) {
-          // For the record to be a match, each word in the filter string has to appear
-          // in either the category or the record name.
-          for (var i = 0, match = true; i < words.length && match; i++) {
-            match =
-              (rec.category &&
-                rec.category.toLowerCase().search(words[i]) != -1) ||
-              rec.name.toLowerCase().search(words[i]) != -1;
-          }
-          rec.hidden = !match;
-
-          if (!rec.hidden && rec.section !== prevSection) {
-            rec.firstInSection = true;
-            prevSection = rec.section;
-          } else {
-            rec.firstInSection = false;
-          }
-        }.bind(this)
-      );
-
-      // Update records
-      this.records = records;
-      this.filteredRecords = records.filter(function (rec) {
-        return !rec.hidden;
-      });
-      this.empty = !count;
-    },
-    recordClicked: function (event, detail, sender) {
-      this.selected = sender.templateInstance.model;
-    },
-    import: function () {
-      this.fire("import");
+      this.add();
     },
     show: function () {
-      this.marked = null;
-      PadlockView.prototype.show.apply(this, arguments);
+      this._marked = -1;
+      ViewBehavior.show.apply(this, arguments);
     },
-    synchronize: function () {
+    add: function () {
+      this.fire("add");
+    },
+    _filterBySearchString: function (rec) {
+      var fs = this.filterString && this.filterString.toLowerCase(),
+        words = (fs && fs.split(" ")) || [];
+
+      // For the record to be a match, each word in the filter string has to appear
+      // in either the category or the record name.
+      for (var i = 0, match = true; i < words.length && match; i++) {
+        match =
+          (rec.category && rec.category.toLowerCase().search(words[i]) != -1) ||
+          rec.name.toLowerCase().search(words[i]) != -1;
+      }
+
+      return !!match;
+    },
+    _filter: function (rec) {
+      var include = !rec.removed && this._filterBySearchString(rec);
+
+      if (include) {
+        var section = this._section(rec.name);
+        var firstInSection = this._firstInSection[section];
+
+        if (
+          !firstInSection ||
+          !this._filterBySearchString(firstInSection) ||
+          this._sort(firstInSection, rec) > 0
+        ) {
+          this._firstInSection[section] = rec;
+        }
+      }
+
+      return include;
+    },
+    _sort: function (a, b) {
+      var secA = this._section(a.name);
+      var secB = this._section(b.name);
+
+      if (secA > secB) {
+        return 1;
+      } else if (secA < secB) {
+        return -1;
+      } else {
+        if (a.name > b.name) {
+          return 1;
+        } else if (a.name < b.name) {
+          return -1;
+        } else {
+          return a.uuid < b.uuid ? -1 : 1;
+        }
+      }
+    },
+    _recordTapped: function (e) {
+      this._marked = e.model.index;
+      this.fire("select", { record: e.model.item });
+    },
+    _import: function () {
+      this.fire("import");
+    },
+    _synchronize: function () {
       this.fire("synchronize");
     },
-    recordsChanged: function () {
-      this.marked = null;
-    },
-    markNext: function () {
-      var length = this.filteredRecords.length;
-      if (length) {
-        if (this.marked === null) {
-          this.marked = 0;
-        } else {
-          this.marked = (this.marked + 1 + length) % length;
-        }
-        this.revealMarked();
-      }
-    },
-    markPrev: function () {
-      var length = this.filteredRecords.length;
-      if (length) {
-        if (this.marked === null) {
-          this.marked = length - 1;
-        } else {
-          this.marked = (this.marked - 1 + length) % length;
-        }
-        this.revealMarked();
-      }
-    },
-    markedChanged: function (markedOld, markedNew) {
-      var elements = this.shadowRoot.querySelectorAll(
-          ".record-item:not([hidden])"
-        ),
-        oldEl = elements[markedOld],
-        newEl = elements[markedNew];
-
-      if (oldEl) {
-        oldEl.classList.remove("marked");
-      }
-      if (newEl) {
-        newEl.classList.add("marked");
-      }
-    },
-    revealMarked: function () {
-      var elements = this.shadowRoot.querySelectorAll(
-          ".record-item:not([hidden])"
-        ),
-        el = elements[this.marked];
-
-      this.scrollIntoView(el);
-    },
-    //* Scrolls a given element in the list into view
-    scrollIntoView: function (el) {
-      if (el.offsetTop < this.scrollTop) {
-        // The element is off to the top; Scroll it into view, aligning it at the top
-        el.scrollIntoView();
-      } else if (
-        el.offsetTop + el.offsetHeight >
-        this.scrollTop + this.offsetHeight
-      ) {
-        // The element is off to the bottom; Scroll it into view, aligning it at the bottom
-        el.scrollIntoView(false);
-      }
-    },
     selectMarked: function () {
-      this.selected = this.filteredRecords[this.marked];
+      var item = this.$.list.itemForElement(this._items()[this._marked]);
+      if (item) {
+        this.fire("select", { record: item });
+      }
     },
-    selectedChanged: function () {
-      var ind = this.filteredRecords.indexOf(this.selected);
-      this.marked = ind !== -1 ? ind : null;
+    _section: function (name) {
+      return (name || "").toUpperCase()[0];
+    },
+    _showSectionHeader: function (record) {
+      var section = this._section(record.name);
+      return this._firstInSection[section] == record;
+    },
+    _isEmpty: function () {
+      return !this.records.filter(function (rec) {
+        return !rec.removed;
+      }).length;
+    },
+    _filtered: function () {
+      return this.records
+        .filter(this._filter.bind(this))
+        .sort(this._sort.bind(this));
+    },
+    _refresh: function () {
+      this._cachedItems = null;
+      this.$.list.render();
     }
   });
-})(Polymer);
+})(Polymer, padlock.ViewBehavior, padlock.MarkableBehavior, padlock.platform);

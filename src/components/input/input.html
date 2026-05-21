@@ -1,13 +1,111 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<polymer-element name="padlock-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-focus="{{ focussed }}"
-    on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus" autocorrect="off" autocapitalize="off">
-</polymer-element>
+<script>
 
-<polymer-element name="padlock-textarea" extends="textarea" touch-action="none" on-tap="{{ tap }}"
-    on-focus="{{ focussed }}" on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus" autocorrect='off'
-    autocapitalize='off'>
-</polymer-element>
+    /* jshint browser: true */
+    /* global Polymer, padlock, cordova */
 
-<script src="input.js"></script>
+    (function (Polymer, platform) {
+        "use strict";
+
+        // currently selected input
+        var currentInput;
+
+        var overrideNativeFocus = platform.isIOS();
+        if (overrideNativeFocus) {
+            // On iOS we need to pretty much completely suppress the mousedown event to prevent funky behavior
+            document.addEventListener("mousedown", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            });
+
+            // Blur current input when tapping anywhere outside an input element
+            Polymer.Gestures.add(document, "tap", function () {
+                currentInput && currentInput.blur();
+            });
+        }
+
+        // Shows/hides the keyboard accessory bar
+        function showAccessoryBar(show) {
+            typeof cordova != "undefined" && cordova.plugins.Keyboard &&
+                cordova.plugins.Keyboard.hideKeyboardAccessoryBar(!show);
+        }
+
+        // Even with the moudown event suppressed, the keyboard still pops up in unwanted situations
+        // sometimes. We want to manually hide the keyboard in these situations.
+        window.addEventListener("native.keyboardshow", function () {
+            if (!currentInput) {
+                cordova.plugins.Keyboard.close();
+            }
+        });
+
+        var inputBehavior = {
+            properties: {
+                hasFocus: {
+                    type: Boolean,
+                    value: false,
+                    notify: true
+                },
+                selectAllOnFocus: Boolean,
+                showAccessoryBar: Boolean
+            },
+            hostAttributes: {
+                autocorrect: "off",
+                autocapitalize: "off"
+            },
+            listeners: {
+                tap: "_tap",
+                focus: "_focus",
+                blur: "_blur",
+                keydown: "_keydown"
+            },
+            _tap: function (e) {
+                if (overrideNativeFocus && !this.hasFocus) {
+                    this.setSelectionRange(this.value.length, this.value.length);
+                }
+                e.stopPropagation();
+            },
+            _focus: function () {
+                this.hasFocus = true;
+
+                showAccessoryBar(this.showAccessoryBar);
+
+                if (this.selectAllOnFocus) {
+                    // Need to do this asynchronously in some browsers or it won't work
+                    setTimeout(function () {
+                        this.setSelectionRange(0, this.value.length);
+                    }.bind(this), 10);
+                }
+
+                currentInput = this;
+            },
+            _blur: function () {
+                this.hasFocus = false;
+                if (currentInput == this) {
+                    currentInput = null;
+                }
+            },
+            _keydown: function (e) {
+                if (e.keyCode == 13) {
+                    this.fire("enter");
+                }
+            }
+        };
+
+        Polymer({
+            is: "padlock-input",
+            extends: "input",
+            behaviors: [inputBehavior]
+        });
+
+        Polymer({
+            is: "padlock-textarea",
+            extends: "textarea",
+            behaviors: [inputBehavior]
+        });
+
+    })(Polymer, padlock.platform);
+
+</script>

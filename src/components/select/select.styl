@@ -4,12 +4,14 @@
 :host {
   display: block;
   position: relative;
+  color: $color-primary;
 }
 
 button {
   width: 100%;
   position: relative;
   z-index: 1;
+  color: inherit;
 
   shape-shifter {
     $size = 25px;
@@ -20,10 +22,6 @@ button {
     margin: auto 0;
     width: $size;
     height: $size;
-
-    &::shadow line {
-      stroke: $color-primary;
-    }
   }
 }
 
@@ -34,20 +32,11 @@ button {
   left: 0;
 }
 
-polyfill-next-selector {
-  content: '.options > *';
-}
-
-::content > * {
+.options ::content > * {
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
-  height: $row-height;
-  line-height: $row-height;
   width: 100%;
-  background: #fefefe;
-  text-align: center;
-  cursor: pointer;
   transition: transform 0.3s, opacity 0.3s;
 }

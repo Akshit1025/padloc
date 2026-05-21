@@ -1,0 +1,126 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../input/input.html">
+
+<dom-module id="padlock-dynamic-form">
+
+    <link href="dynamic-form.css" rel="import" type="css">
+
+    <template>
+
+        <form autocomplete="off">
+
+            <template is="dom-repeat" items="{{ components }}">
+
+                <template is="dom-if" if="{{ _isInput(item.element) }}">
+                    <div class="tap-highlight">
+                        <input is="padlock-input" value="{{ item.value }}" type$="{{ item.type }}"
+                            select-all-on-focus="{{ item.selectAllOnFocus }}" autocomplete="off"
+                            auto-focus$="{{ item.autofocus }}" placeholder$="{{ item.placeholder }}"
+                            class$="{{ _inputClass(item.class) }}" on-enter="_submit" name$="{{ item.name }}">
+                    </div>
+                </template>
+
+                <template is="dom-if" if="{{ _isButton(item.element) }}">
+                    <button on-click="_buttonTap" type="button" class$="{{ _buttonClass(item.class }}">{{ item.label
+                        }}</button>
+                </template>
+
+            </template>
+
+        </form>
+
+    </template>
+
+    <script>
+        /* global Polymer */
+
+        (function (Polymer) {
+            "use strict";
+
+            Polymer({
+                is: "padlock-dynamic-form",
+                properties: {
+                    components: Array,
+                    submitCallback: Object,
+                    cancelCallback: Object
+                },
+                _isInput: function (type) {
+                    return type == "input";
+                },
+                _isButton: function (type) {
+                    return type == "button";
+                },
+                _isTitle: function (type) {
+                    return type == "title";
+                },
+                _inputClass: function (className) {
+                    return className || "";
+                },
+                _hasTitle: function (title) {
+                    return !!title;
+                },
+                _buttonClass: function (className) {
+                    return className || "";
+                },
+                _buttonTap: function (e) {
+                    var component = e.model.item;
+
+                    if (component.submit) {
+                        this._submit();
+                    } else if (component.cancel) {
+                        this._cancel();
+                    }
+
+                    if (component.close) {
+                        this.blurInputElements();
+                        this.fire("close");
+                    }
+
+                    if (typeof component.tap == "function") {
+                        component.tap(this._values());
+                    }
+                },
+                _cancel: function () {
+                    this.blurInputElements();
+                    if (typeof this.cancelCallback == "function") {
+                        this.cancelCallback();
+                    }
+                    this.fire("cancel");
+                },
+                _values: function () {
+                    return Polymer.dom(this.root).querySelectorAll("input").reduce(function (vals, el) {
+                        var name = el.getAttribute("name");
+                        if (name) {
+                            vals[name] = el.value;
+                        }
+                        return vals;
+                    }, {});
+                },
+                _submit: function (e) {
+                    this.blurInputElements();
+                    var values = this._values();
+
+                    if (typeof this.submitCallback == "function") {
+                        this.submitCallback(values);
+                    }
+
+                    this.fire("submit", values);
+
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                    }
+                },
+                blurInputElements: function () {
+                    // Remove focus from any input elements when closing
+                    Polymer.dom(this.root).querySelectorAll("input").forEach(function (input) {
+                        input.blur();
+                    });
+                }
+            });
+        })(Polymer);
+
+    </script>
+
+</dom-module>

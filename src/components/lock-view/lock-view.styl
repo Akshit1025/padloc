@@ -21,10 +21,12 @@
 :host {
   display: block;
   background: $color-primary;
+  color: #fff;
+  top: 0;
 }
 
 .wrapper {
-  height: 210px;
+  height: 350px;
   position: absolute;
   left: 0;
   right: 0;
@@ -37,42 +39,37 @@
 .header {
   font-size: 50px;
   font-weight: $font-weight-thin;
-  margin-bottom: 20px;
-  color: #fff;
-  animation: reveal 0.5s ease 0.25s both;
+  margin-bottom: 30px;
+  animation: reveal 0.5s ease 0.2s both;
 }
 
 .password-input {
   text-align: center;
   width: 100%;
-  animation: reveal 0.5s ease 0.5s both;
+  animation: reveal 0.5s ease 0.4s both;
 }
 
 .enter-button {
   width: 100%;
-  margin-top: 30px;
-  animation: reveal 0.5s ease 0.75s both;
+  margin-top: 20px;
+  animation: reveal 0.5s ease 0.6s both;
 }
 
-.error-message {
-  color: $color-red;
-  padding: 20px;
-  opacity: 0;
-  transform: translate(0, 100%);
-  transition: transform 0.5s, opacity 0.5s;
+padlock-lock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -50px;
+  margin: 0 auto;
+  animation: reveal 0.5s ease 0.8s both;
 }
 
-.error {
-  .error-message {
-    opacity: 1;
-    transform: translate(0, 0);
+@media (max-height: 500px) {
+  padlock-lock {
+    height: 0;
   }
 
-  input {
-    color: $color-negative;
-  }
-
-  ::-webkit-input-placeholder {
-    color: $color-negative;
+  .wrapper {
+    height: 230px;
   }
 }

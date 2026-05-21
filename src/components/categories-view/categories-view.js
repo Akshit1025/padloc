@@ -1,162 +1,125 @@
 /* jshint browser: true */
-/* global Polymer, Platform, padlock, PadlockView */
+/* global Polymer, padlock */
 
-(function (Polymer, Platform, plPlatform) {
+(function (Polymer, ViewBehavior) {
   "use strict";
 
-  Polymer("padlock-categories-view", {
-    headerOptions: {
-      show: true,
-      leftIconShape: "cancel",
-      rightIconShape: ""
+  Polymer({
+    is: "padlock-categories-view",
+    behaviors: [ViewBehavior],
+    properties: {
+      categories: Array,
+      record: Object
     },
-    titleText: "Categories",
-    observe: {
-      "record.name": "updateTitleText"
+    observers: ["_updateHeaderTitle(record.name)"],
+    ready: function () {
+      this.leftHeaderIcon = "cancel";
+      this.rightHeaderIcon = "plus";
+      this._updateHeaderTitle();
     },
     leftHeaderButton: function () {
       this.fire("back");
     },
-    updateCategories: function () {
-      this.categoryList = this.categories.asArray();
+    rightHeaderButton: function () {
+      this._newCategory();
     },
-    show: function () {
-      var minDelay = 0,
-        maxDelay = 200,
-        prefix = plPlatform.getVendorPrefix().css,
-        catElements = this.shadowRoot.querySelectorAll(".category"),
-        delay;
-
-      // Apparently firefox doesn't want a prefix when setting styles directly
-      prefix = prefix == "-moz-" ? "" : prefix;
-
-      this.updateCategories();
-      // Make sure any updates to the category list are done before showing the view
-      Platform.performMicrotaskCheckpoint();
-
-      PadlockView.prototype.show.apply(this, arguments);
-
-      // Remove animation property so the animation will restart
-      Array.prototype.forEach.call(catElements, function (catEl) {
-        catEl.style[prefix + "animation"] = "none";
-      });
-
-      // Trigger style recalculation to make sure the style change is applied
-      // when we re-add the animation property
-      // jshint expr: true
-      this.offsetLeft;
-      // jshint expr: false
-
-      // Trigger bounce in animation with random invidiual delays
-      Array.prototype.forEach.call(catElements, function (catEl) {
-        delay = minDelay + Math.floor(Math.random() * (maxDelay - minDelay));
-        catEl.style[prefix + "animation"] =
-          "bounceIn 0.5s ease " + delay + "ms both";
+    add: function () {
+      this._newCategory();
+    },
+    _categoryTapped: function (e) {
+      this.set("record.category", e.model.item);
+      this._delayedBack();
+    },
+    //* Updates the headerTitle property with the name of the current record
+    _updateHeaderTitle: function () {
+      this.headerTitle = (this.record && this.record.name) || "Categories";
+    },
+    _newCategory: function () {
+      this.fire("open-form", {
+        title: "New Category",
+        components: [
+          {
+            element: "input",
+            placeholder: "Category Name",
+            name: "name",
+            autofocus: true
+          },
+          { element: "button", label: "Create", submit: true }
+        ],
+        submit: function (data) {
+          this.set("record.category", data.name);
+          if (this.categories.indexOf(data.name) == -1) {
+            this.push("categories", data.name);
+          }
+          this._delayedBack(200);
+        }.bind(this)
       });
     },
-    categoryTapped: function (event, detail, sender) {
-      this.record.category = sender.templateInstance.model.category.name;
-      this.record.catColor = sender.templateInstance.model.category.color;
-      this.bounce(sender);
+    _editCategory: function (e) {
+      var category = e.model.item;
+      this.fire("open-form", {
+        title: "Edit '" + category + "'",
+        components: [
+          {
+            element: "input",
+            placeholder: "Category Name",
+            name: "name",
+            value: category,
+            autofocus: true
+          },
+          { element: "button", label: "Save", submit: true },
+          {
+            element: "button",
+            label: "Remove",
+            cancel: true,
+            tap: this._removeCategory.bind(this, category)
+          }
+        ],
+        submit: function (data) {
+          var ind = this.categories.indexOf(category);
+          this.set("categories." + ind, data.name);
+          this.fire("categorychanged", {
+            previous: category,
+            current: data.name
+          });
+          if (this.record.category == data.name) {
+            this._delayedBack(200);
+          }
+        }.bind(this)
+      });
+      event.stopPropagation();
     },
-    //* Updates the titleText property with the name of the current record
-    updateTitleText: function () {
-      this.titleText = this.record && this.record.name;
+    _removeCategory: function (category) {
+      this.fire("open-form", {
+        title:
+          "Are you sure you want to remove this category? The category will be removed " +
+          "from all other records as well.",
+        components: [
+          { element: "button", label: "Remove", submit: true },
+          { element: "button", label: "Cancel", cancel: true }
+        ],
+        submit: function () {
+          var index = this.categories.indexOf(category);
+          this.fire("categorychanged", { previous: category, current: "" });
+          this.splice("categories", index, 1);
+          if (!this.record.category) {
+            this._delayedBack(200);
+          }
+        }.bind(this)
+      });
     },
-    newCategory: function (event, detail, sender) {
-      this.categoryEditing = null;
-      this.$.nameInput.value = "";
-      this.$.colorSelect.selected = this.$.colorSelect.children[0];
-      this.$.removeButton.style.display = "none";
-      this.$.editDialog.open = true;
-      this.bounce(sender);
+    _selectNone: function () {
+      this.set("record.category", "");
+      this._delayedBack();
     },
-    editCategory: function (event, detail, sender) {
-      var colorOptions = this.$.colorSelect.children,
-        category = sender.templateInstance.model.category;
-
-      this.categoryEditing = category;
-      this.$.nameInput.value = category.name;
-
-      for (var i = 0, co; i < colorOptions.length; i++) {
-        co = colorOptions[i];
-        if (parseInt(co.value, 10) == category.color) {
-          this.$.colorSelect.selected = co;
-          break;
-        }
-      }
-      this.$.removeButton.style.display = "";
-
-      this.$.editDialog.open = true;
-      this.bounce(sender);
+    _isSelected: function (cat, currentCat) {
+      return cat == currentCat;
     },
-    editEnter: function () {
-      var name = this.$.nameInput.value,
-        color = parseInt(this.$.colorSelect.value, 10);
-
-      if (name) {
-        this.$.editDialog.open = false;
-        if (this.categoryEditing) {
-          this.doEditCategory(this.categoryEditing, name, color);
-        } else {
-          this.doNewCategory(name, color);
-        }
-      }
+    _delayedBack: function (delay) {
+      this.async(this.fire.bind(this, "back"), delay || 50);
     },
-    doNewCategory: function (name, color) {
-      if (!this.categories.get(name)) {
-        this.categories.set(name, color);
-        this.categories.save();
-        this.categoryList.push({ name: name, color: color });
-      }
-      this.record.category = name;
-    },
-    doEditCategory: function (category, name, color) {
-      var oldCat = {
-        name: category.name,
-        color: category.color
-      };
-
-      this.categories.remove(category.name);
-      this.categories.set(name, color);
-      this.categories.save();
-      category.name = name;
-      category.color = color;
-      this.fire("categorychanged", { prev: oldCat, curr: category });
-    },
-    removeCategory: function () {
-      this.$.editDialog.open = false;
-      this.$.confirmRemoveDialog.open = true;
-    },
-    confirmRemove: function () {
-      var category = this.categoryEditing;
-
-      this.$.confirmRemoveDialog.open = false;
-      this.categories.remove(this.categoryEditing.name);
-      this.categories.save();
-      this.fire("categorychanged", { prev: category, curr: {} });
-      this.updateCategories();
-    },
-    cancelRemove: function () {
-      this.$.confirmRemoveDialog.open = false;
-    },
-    selectNone: function (event, detail, sender) {
-      delete this.record.category;
-      this.bounce(sender);
-    },
-    bounce: function (el) {
-      var prefix = plPlatform.getVendorPrefix().css;
-      // Apparently firefox doesn't want a prefix when setting styles directly
-      prefix = prefix == "-moz-" ? "" : prefix;
-      el.style[prefix + "animation"] = "none";
-      // Trigger style recalculation
-      // jshint expr: true
-      el.offsetLeft;
-      // jshint expr: false
-      el.style[prefix + "animation"] = "bounce 0.5s ease 0s both";
-    },
-    editDialogClosed: function () {
-      this.$.colorSelect.open = false;
+    _hasCategories: function (count) {
+      return !!count;
     }
   });
-})(Polymer, Platform, padlock.platform);
+})(Polymer, padlock.ViewBehavior);

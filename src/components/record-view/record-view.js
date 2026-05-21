@@ -1,199 +1,331 @@
 /* global Polymer, padlock */
 
-(function (Polymer, util, rand, platform) {
+(function (Polymer, ViewBehavior, MarkableBehavior, util, rand, platform) {
   "use strict";
 
-  Polymer("padlock-record-view", {
-    headerOptions: {
-      show: true,
-      leftIconShape: "left",
-      rightIconShape: "more"
+  Polymer({
+    is: "padlock-record-view",
+    behaviors: [ViewBehavior, MarkableBehavior],
+    properties: {
+      record: Object,
+      settings: Object,
+      _marked: {
+        type: Number,
+        value: -1,
+        observer: "_markedChanged"
+      },
+      _selectedField: {
+        type: Object,
+        observer: "_selectedFieldChanged"
+      },
+      _revealedFields: Object
     },
-    titleText: "",
-    observe: {
-      "record.name": "updateTitleText"
+    observers: ["_updateTitleText(record.name)"],
+    ready: function () {
+      this.leftHeaderIcon = "left";
+      this.rightHeaderIcon = "more";
+      this._itemSelector = ".field";
+    },
+    show: function () {
+      this._marked = this.record
+        ? this.record.fields.indexOf(this._selectedField)
+        : -1;
+      this._revealedFields = {};
+      ViewBehavior.show.apply(this, arguments);
+    },
+    add: function () {
+      this._addField();
     },
     leftHeaderButton: function () {
       this.fire("back");
     },
     rightHeaderButton: function () {
-      this.$.menu.open = true;
+      this._openRecordMenu();
     },
-    //* Opens the confirm dialog for deleting the current element
-    deleteRecord: function () {
-      this.$.menu.open = false;
-      this.$.confirmDeleteDialog.open = true;
+    _openRecordMenu: function () {
+      this.fire("open-form", {
+        components: [
+          {
+            element: "button",
+            label: "Edit Record Name",
+            submit: true,
+            tap: this._editName.bind(this)
+          },
+          {
+            element: "button",
+            label: "Delete Record",
+            submit: true,
+            tap: this._deleteRecord.bind(this)
+          },
+          {
+            element: "button",
+            submit: true,
+            tap: this._toggleObfuscate.bind(this),
+            label: this.settings.obfuscate_fields
+              ? "Show Field Values"
+              : "Hide Field Values"
+          }
+        ],
+        cancel: this._deselect.bind(this)
+      });
     },
-    confirmDelete: function () {
-      this.$.confirmDeleteDialog.open = false;
-      this.fire("delete");
+    _deleteRecord: function () {
+      this.fire("open-form", {
+        title: "Are you sure you want to delete this record?",
+        components: [
+          { element: "button", label: "Delete", submit: true },
+          { element: "button", label: "Cancel", cancel: true }
+        ],
+        submit: this.fire.bind(this, "delete")
+      });
     },
-    cancelDelete: function () {
-      this.$.confirmDeleteDialog.open = false;
-    },
-    //* Opens the edit name dialog
-    editName: function () {
-      this.$.menu.open = false;
-      this.$.nameInput.value = this.record.name;
-      this.$.editNameDialog.open = true;
-    },
-    confirmEditName: function () {
-      this.$.editNameDialog.open = false;
-      this.record.name = this.$.nameInput.value;
-      this.fire("save");
+    _editName: function () {
+      this.fire("open-form", {
+        title: "Edit Name",
+        components: [
+          {
+            element: "input",
+            placeholder: "Enter Name",
+            name: "name",
+            value: this.record.name,
+            autofocus: true,
+            selectAllOnFocus: true
+          },
+          { element: "button", label: "Save", submit: true },
+          { element: "button", label: "Cancel", cancel: true }
+        ],
+        submit: function (data) {
+          this.set("record.name", data.name);
+          this.fire("save");
+        }.bind(this)
+      });
     },
     //* Opens the add field dialog
-    addField: function () {
-      this.selectedField = null;
-      this.$.menu.open = false;
-      this.$.newValueInput.value = "";
-      this.$.newFieldNameInput.value = "";
-      this.$.addFieldDialog.open = true;
+    _addField: function (presets) {
+      presets = presets || {};
+      this.$.selector.deselect();
+
+      this.fire("open-form", {
+        title: "Add Field",
+        components: [
+          {
+            element: "input",
+            placeholder: "Enter Label",
+            name: "name",
+            value: presets.name,
+            autofocus: true
+          },
+          {
+            element: "input",
+            placeholder: "Enter Content",
+            name: "value",
+            value: presets.value
+          },
+          {
+            element: "button",
+            label: "Generate",
+            cancel: true,
+            tap: this._generateValue.bind(this)
+          },
+          { element: "button", label: "Save", submit: true }
+        ],
+        submit: function (data) {
+          if (!data.name) {
+            this.fire("notify", {
+              message: "Please enter a field name!",
+              type: "error",
+              duration: 2000
+            });
+          } else if (
+            this.record.fields.some(function (f) {
+              return f.name == data.name;
+            })
+          ) {
+            this.fire("notify", {
+              message: "A field with this name already exists!",
+              type: "error",
+              duration: 2000
+            });
+          } else {
+            var field = {
+              name: data.name,
+              value: data.value
+            };
+            this.push("record.fields", field);
+            this.fire("save");
+          }
+        }.bind(this)
+      });
     },
-    confirmAddField: function () {
-      this.$.addFieldDialog.open = false;
-      var field = {
-        name: this.$.newFieldNameInput.value,
-        value: this.$.newValueInput.value
-      };
-      this.record.fields.push(field);
-      this.fire("save");
+    _openFieldMenu: function () {
+      this.fire("open-form", {
+        components: [
+          {
+            element: "button",
+            label: "Copy to Clipboard",
+            submit: true,
+            tap: this.copyToClipboard.bind(this)
+          },
+          {
+            element: "button",
+            label: "Edit",
+            submit: true,
+            tap: this._editField.bind(this)
+          },
+          {
+            element: "button",
+            label: "Remove",
+            submit: true,
+            tap: this._removeField.bind(this)
+          }
+        ],
+        cancel: this._deselect.bind(this)
+      });
     },
-    //* Opens the edit field dialog for the currently selected field
-    editField: function () {
-      this.$.editFieldDialog.open = true;
-      this.$.fieldMenu.open = false;
-    },
-    confirmEditField: function () {
-      this.selectedField.value = this.$.fieldValueInput.value;
-      this.selectedField = null;
-      this.fire("save");
+    _editField: function (presets) {
+      presets = presets || {};
+      var field = this._selectedField;
+      this.fire("open-form", {
+        title: "Edit '" + field.name + "'",
+        components: [
+          {
+            element: "input",
+            placeholder: "Enter Content",
+            name: "value",
+            value: presets.value || field.value,
+            autofocus: true,
+            selectAllOnFocus: true
+          },
+          {
+            element: "button",
+            label: "Generate",
+            close: true,
+            tap: this._generateValue.bind(this)
+          },
+          { element: "button", label: "Save", submit: true },
+          { element: "button", label: "Cancel", cancel: true }
+        ],
+        cancel: this._deselect.bind(this),
+        submit: function (data) {
+          this.set("_selectedField.value", data.value);
+          this.$.selector.deselect();
+          this.fire("save");
+        }.bind(this)
+      });
     },
     //* Opens the field context menu
-    fieldTapped: function (event, detail, sender) {
-      this.selectedField = sender.templateInstance.model;
+    _fieldTapped: function (e) {
+      this.$.selector.select(e.model.item);
     },
     //* Opens the remove field confirm dialog
-    removeField: function () {
-      this.$.confirmRemoveFieldDialog.open = true;
-      this.$.fieldMenu.open = false;
+    _removeField: function () {
+      this.fire("open-form", {
+        components: [
+          { element: "button", label: "Remove", submit: true },
+          { element: "button", label: "Cancel", cancel: true }
+        ],
+        submit: function () {
+          var ind = this.record.fields.indexOf(this._selectedField);
+          this.splice("record.fields", ind, 1);
+          this.$.selector.deselect();
+          this.fire("save");
+        }.bind(this),
+        cancel: this._deselect.bind(this)
+      });
     },
-    confirmRemoveField: function () {
-      this.$.confirmRemoveFieldDialog.open = false;
-      this.record.fields = util.remove(
-        this.record.fields,
-        this.record.fields.indexOf(this.selectedField)
-      );
-      this.selectedField = null;
-      this.fire("save");
-    },
-    cancelRemoveField: function () {
-      this.$.confirmRemoveFieldDialog.open = false;
-    },
-    //* Updates the titleText property with the name of the current record
-    updateTitleText: function () {
-      this.titleText = this.record && this.record.name;
-    },
-    openCategories: function () {
+    _openCategories: function () {
       this.fire("categories");
     },
     copyToClipboard: function () {
       // If a field has been selected copy that one, otherwise copy the marked one
-      var field = this.selectedField
-          ? this.selectedField
-          : this.record.fields[this.marked],
-        value = field && field.value;
+      var field = this._selectedField
+        ? this._selectedField
+        : this.record.fields[this._marked];
 
-      platform.setClipboard(value);
-      this.selectedField = null;
-      this.$.clipboardNotification.show();
-      this.$.clipboardNotification.hide();
+      if (field) {
+        platform.setClipboard(field.value);
+        this._selectedField = null;
+        this.fire("notify", {
+          message: "Copied to clipboard!",
+          type: "success",
+          duration: 1500
+        });
+      }
     },
     //* Fills the current value input with a randomized value
-    randomize: function () {
-      // Choose the right input based on whether we are creating a new field or editing an existing one
-      var input = this.selectedField
-        ? this.$.fieldValueInput
-        : this.$.newValueInput;
-      input.value = rand.randomString(20);
+    _generateValue: function (values) {
+      var field = this._selectedField || values;
+      this.async(function () {
+        this.fire("generate-value", { field: field });
+      }, 300);
     },
-    markNext: function () {
-      if (this.record.fields.length && !this.selectedField) {
-        if (typeof this.marked !== "number") {
-          this.marked = 0;
-        } else {
-          this.marked =
-            (this.marked + 1 + this.record.fields.length) %
-            this.record.fields.length;
-        }
-      }
-    },
-    markPrev: function () {
-      if (this.record.fields.length && !this.selectedField) {
-        if (typeof this.marked !== "number") {
-          this.marked = this.record.fields.length - 1;
-        } else {
-          this.marked =
-            (this.marked - 1 + this.record.fields.length) %
-            this.record.fields.length;
-        }
-      }
-    },
-    markedChanged: function (markedOld, markedNew) {
-      var elements = this.shadowRoot.querySelectorAll(".field"),
-        oldEl = elements[markedOld],
-        newEl = elements[markedNew];
-
-      if (oldEl) {
-        oldEl.classList.remove("marked");
-      }
-      if (newEl) {
-        newEl.classList.add("marked");
-        this.scrollIntoView(newEl);
-      }
-    },
-    //* Scrolls a given element in the list into view
-    scrollIntoView: function (el) {
-      if (el.offsetTop < this.scrollTop) {
-        // The element is off to the top; Scroll it into view, aligning it at the top
-        el.scrollIntoView();
-      } else if (
-        el.offsetTop + el.offsetHeight >
-        this.scrollTop + this.offsetHeight
-      ) {
-        // The element is off to the bottom; Scroll it into view, aligning it at the bottom
-        el.scrollIntoView(false);
+    generateConfirm: function (field, value) {
+      if (this._selectedField) {
+        this._editField({ value: value });
+      } else {
+        this._addField({ name: field.name, value: value || field.value });
       }
     },
     selectMarked: function () {
-      this.selectedField = this.record.fields[this.marked];
+      this.$.selector.select(this.record.fields[this._marked]);
     },
-    fieldDialogClosed: function () {
+    _deselect: function () {
       // If all field-related dialogs are closed, unselect the field
-      if (
-        !this.$.fieldMenu.open &&
-        !this.$.confirmRemoveFieldDialog.open &&
-        !this.$.editFieldDialog.open
-      ) {
-        this.selectedField = null;
+      this.$.selector.deselect();
+    },
+    _selectedFieldChanged: function () {
+      if (this._selectedField) {
+        this._openFieldMenu();
+      }
+      this._marked = this.record
+        ? this.record.fields.indexOf(this._selectedField)
+        : -1;
+    },
+    _updateTitleText: function (name) {
+      this.headerTitle = name;
+    },
+    _categoryClass: function (category) {
+      return category ? "category selected" : "category";
+    },
+    _categoryLabel: function (category) {
+      return category || "Add a Category";
+    },
+    _obfuscate: function (value) {
+      var res = "",
+        l = value.length;
+      while (l--) {
+        res += "\u2022";
+      }
+      return res;
+    },
+    _revealField: function (e) {
+      this.set("_revealedFields." + e.model.index, true);
+    },
+    _unrevealField: function (e) {
+      this.set("_revealedFields." + e.model.index, false);
+    },
+    _isObfuscated: function (ind) {
+      return this.settings.obfuscate_fields && !this._revealedFields[ind];
+    },
+    _fieldMouseover: function (e) {
+      if (!platform.isTouch()) {
+        this._revealField(e);
       }
     },
-    selectedFieldChanged: function () {
-      if (this.selectedField) {
-        this.selectedFieldName = this.selectedField.name;
-        this.$.fieldValueInput.value =
-          (this.selectedField && this.selectedField.value) || "";
-        this.$.fieldMenu.open = true;
-      } else {
-        this.$.fieldMenu.open = false;
-        this.$.editFieldDialog.open = false;
-        this.$.confirmDeleteDialog.open = false;
+    _fieldMouseout: function (e) {
+      if (!platform.isTouch()) {
+        this._unrevealField(e);
       }
-      var fieldIndex = this.record.fields.indexOf(this.selectedField);
-      this.marked = fieldIndex !== -1 ? fieldIndex : null;
     },
-    preventDefault: function (event) {
-      event.preventDefault();
+    _toggleObfuscate: function () {
+      this.set("settings.obfuscate_fields", !this.settings.obfuscate_fields);
     }
   });
-})(Polymer, padlock.util, padlock.rand, padlock.platform);
+})(
+  Polymer,
+  padlock.ViewBehavior,
+  padlock.MarkableBehavior,
+  padlock.util,
+  padlock.rand,
+  padlock.platform
+);
