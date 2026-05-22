@@ -41,13 +41,15 @@ button, a.button {
 button.primary {
     background: $color-primary;
     color: $text-color-light;
+    text-shadow();
 }
 
 button.ghost {
     background: transparent;
     color: $text-color-light;
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     line-height: 46px;
+    text-shadow();
 }
 
 input {
@@ -66,13 +68,15 @@ input {
 }
 
 input.ghost, :host(.ghost) > input {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border-top: solid 1px #fff;
-    border-bottom: solid 1px #fff;
+    background: transparent;
+    border-top: solid 1px;
+    border-bottom: solid 1px;
+    text-shadow();
 
     &::-webkit-input-placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: currentColor;
+        opacity: 0.5;
+        text-shadow();
     }
 }
 
@@ -103,7 +107,6 @@ input:not(:focus), textarea:not(:focus) {
 
 strong {
     font-weight: $font-weight-bold;
-    color: $color-primary;
 }
 
 ::-webkit-search-cancel-button {
@@ -120,6 +123,11 @@ strong {
 
 [hidden] {
     display: none !important;
+}
+
+[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 input[type=range] {
@@ -152,4 +160,8 @@ input[type=range]::-webkit-slider-thumb {
     box-sizing: border-box;
     padding: 12px;
     background-clip: content-box;
+}
+
+section {
+    margin: 30px 0;
 }

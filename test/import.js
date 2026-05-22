@@ -19,28 +19,28 @@
             { name: "password", value: "password" }
           ]
         }
-      ];
+      ],
+      collection = new padlock.Collection();
 
     expect(1);
 
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-      if (xmlhttp.readyState == 4) {
-        imp.importSecuStoreBackup(
-          xmlhttp.responseText,
-          password,
-          function (data) {
-            deepEqual(
-              data,
-              expected,
-              "Imported records did not match the exptected data"
-            );
-            start();
-          }
+    imp.importSecuStoreBackup(
+      collection,
+      secustoreBackup,
+      password,
+      function (data) {
+        deepEqual(
+          collection.records,
+          expected,
+          "Imported records did not match the exptected data"
         );
+        start();
+      },
+      function (e) {
+        console.error(e);
+        ok(false, "Import failed");
+        start();
       }
-    };
-    xmlhttp.open("GET", sample, true);
-    xmlhttp.send();
+    );
   });
 })(padlock.import);

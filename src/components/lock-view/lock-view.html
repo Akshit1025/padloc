@@ -15,10 +15,8 @@
         <style include="view-styles"></style>
         <style include="lock-view-styles"></style>
 
-        <padlock-lock></padlock-lock>
-
         <!-- WRAPPER (for centering) -->
-        <form class="wrapper">
+        <div class="wrapper">
             <!-- HEADER -->
             <div class="header">
                 Padlock
@@ -29,8 +27,10 @@
                     on-enter="enter" id="pwdInput" select-all-on-focus />
             </div>
             <!-- ENTER BUTTON -->
-            <button class="enter-button ghost" on-click="enter" type="button">UNLOCK</button>
-        </form>
+            <button class="enter-button ghost" on-click="enter" type="button">Unlock</button>
+        </div>
+
+        <padlock-lock></padlock-lock>
 
     </template>
 

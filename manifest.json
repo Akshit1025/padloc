@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Padlock",
-  "version": "0.11.0",
+  "version": "1.0.0",
   "description": "A password manager built using web technologies",
   "author": "Akshit Gupta",
   "app": {

@@ -6,6 +6,7 @@
 <dom-module id="padlock-dynamic-form">
 
     <template>
+
         <style include="shared-styles"></style>
         <style include="dynamic-form-styles"></style>
 
@@ -17,14 +18,13 @@
                     <div class="tap-highlight">
                         <input is="padlock-input" value="{{ item.value }}" type$="{{ item.type }}"
                             select-all-on-focus="{{ item.selectAllOnFocus }}" autocomplete="off"
-                            auto-focus$="{{ item.autofocus }}" placeholder$="{{ item.placeholder }}"
-                            class$="{{ _inputClass(item.class) }}" on-enter="_submit" name$="{{ item.name }}">
+                            auto-focus$="{{ item.autofocus }}" placeholder$="{{ item.placeholder }}" class="ghost"
+                            on-enter="_submit" name$="{{ item.name }}">
                     </div>
                 </template>
 
                 <template is="dom-if" if="{{ _isButton(item.element) }}">
-                    <button on-click="_buttonTap" type="button" class$="{{ _buttonClass(item.class }}">{{ item.label
-                        }}</button>
+                    <button on-click="_buttonTap" type="button" class="ghost">{{ item.label }}</button>
                 </template>
 
             </template>
@@ -75,7 +75,7 @@
 
                     if (component.close) {
                         this.blurInputElements();
-                        this.fire("close");
+                        this.fire("form-close");
                     }
 
                     if (typeof component.tap == "function") {
@@ -87,7 +87,7 @@
                     if (typeof this.cancelCallback == "function") {
                         this.cancelCallback();
                     }
-                    this.fire("cancel");
+                    this.fire("form-cancel");
                 },
                 _values: function () {
                     return Polymer.dom(this.root).querySelectorAll("input").reduce(function (vals, el) {
@@ -106,7 +106,7 @@
                         this.submitCallback(values);
                     }
 
-                    this.fire("submit", values);
+                    this.fire("form-submit", values);
 
                     if (e) {
                         e.preventDefault();

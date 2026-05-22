@@ -32,7 +32,7 @@ padlock.Store = (function (crypto) {
      *             c) the provided password is incorrect.
      * - source:   Source to use for retreiving the data. If not provided, _defaultSource_ is used.
      */
-    fetch: function (coll, opts) {
+    fetch: function (key, opts) {
       opts = opts || {};
       var source = opts.source || this.defaultSource;
       // Use password argument if provided, otherwise use the password stored in the source object
@@ -40,7 +40,6 @@ padlock.Store = (function (crypto) {
         opts.password !== undefined && opts.password !== null
           ? opts.password
           : source.password;
-      var key = this.getKey(coll);
 
       // Remember password so the user does not have to reenter it every time we save changes
       if (opts.rememberPassword) {
@@ -73,25 +72,15 @@ padlock.Store = (function (crypto) {
                   keyData,
                   data,
                   function (pt) {
-                    // If the decryption was successful, there should be, under normal circumstances, no
-                    // reason why the parsing should fail. So we can do without a try-catch.
-                    var records = JSON.parse(pt);
-                    coll.add(records);
-                    if (opts.success) {
-                      opts.success(records);
-                    }
+                    opts.success && opts.success(pt);
                   },
-                  function (e) {
-                    // The decryption failed, probably because the password was incorrect
-                    if (opts.fail) {
-                      opts.fail(e);
-                    }
-                  }
+                  opts.fail
                 );
-              }
+              },
+              opts.fail
             );
           } else if (opts.success) {
-            opts.success(coll);
+            opts.success("");
           }
         },
         fail: opts.fail
@@ -106,9 +95,9 @@ padlock.Store = (function (crypto) {
      * - fail:     Fail callback
      * - source:   Source to store the data to. If not provided, _defaultSource_ is used.
      */
-    save: function (coll, opts) {
+    save: function (key, data, opts) {
       opts = opts || {};
-      opts.key = this.getKey(coll);
+      opts.key = key;
       // Use source specified in options if any, otherwise use the default source
       var source = opts.source || this.defaultSource;
       // Default `keyOpts` property to empty object. This will be filled with key derivation
@@ -125,14 +114,13 @@ padlock.Store = (function (crypto) {
         source.password = password;
       }
 
-      var pt = JSON.stringify(coll.records),
-        // Take the existing parameters for the key generation from the source kind if they are set.
-        // Otherwise generate a new, random salt and use the defaults for key size and iteration count.
-        salt = (source.keyOpts.salt = source.keyOpts.salt || crypto.rand()),
-        keySize = (source.keyOpts.size =
-          source.keyOpts.size || crypto.defaults.keySize),
-        iter = (source.keyOpts.iter =
-          source.keyOpts.iter || crypto.defaults.iter);
+      // Take the existing parameters for the key generation from the source kind if they are set.
+      // Otherwise generate a new, random salt and use the defaults for key size and iteration count.
+      var salt = (source.keyOpts.salt = source.keyOpts.salt || crypto.rand());
+      var keySize = (source.keyOpts.size =
+        source.keyOpts.size || crypto.defaults.keySize);
+      var iter = (source.keyOpts.iter =
+        source.keyOpts.iter || crypto.defaults.iter);
 
       // Construct a cryptographic key using the password provided by the user and the metadata
       // from the source. The whole thing happens in a web worker which is why it's asynchronous
@@ -143,11 +131,17 @@ padlock.Store = (function (crypto) {
         iter,
         function (keyData) {
           // Encrypt the data. Again, this happens in a web worker.
-          crypto.workerEncrypt(keyData, pt, function (c) {
-            opts.data = c;
-            source.save(opts);
-          });
-        }.bind(this)
+          crypto.workerEncrypt(
+            keyData,
+            data,
+            function (c) {
+              opts.data = c;
+              source.save(opts);
+            },
+            opts.fail
+          );
+        },
+        opts.fail
       );
     },
     /**
@@ -159,9 +153,9 @@ padlock.Store = (function (crypto) {
      * - fail:     Fail callback
      * - source:   Source to delete this collection from. If not provided, the stores default source is used.
      */
-    destroy: function (coll, opts) {
+    destroy: function (key, opts) {
       opts = opts || {};
-      opts.key = this.getKey(coll);
+      opts.key = key;
       var source = opts.source || this.defaultSource;
       source.destroy(opts);
     },
@@ -175,10 +169,10 @@ padlock.Store = (function (crypto) {
      * - fail:     Fail callback
      * - source:   Source to check for the collection. If not provided, _defaultSource_ is used.
      */
-    exists: function (coll, opts) {
+    exists: function (key, opts) {
       var source = opts.source || this.defaultSource;
       opts = opts || {};
-      opts.key = this.getKey(coll);
+      opts.key = key;
       var success = opts.success;
       opts.success = function (data) {
         // The _data_ argument will be either a non-emtpy string or _null_.

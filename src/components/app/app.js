@@ -5,7 +5,7 @@
  * Top-level component for rendering application interface. Requires a `padlock.Collection` and
  * `padlock.Settings` object to be passed into the constructor as dependencies.
  */
-padlock.App = (function (Polymer, platform, CloudSource) {
+padlock.App = (function (Polymer, platform, pay) {
   "use strict";
 
   return Polymer({
@@ -43,18 +43,21 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     listeners: {
       "open-form": "_openFormHandler",
       alert: "_alertHandler",
-      notify: "_notify"
+      notify: "_notify",
+      error: "_errorHandler",
+      "buy-subscription": "_buySubscription"
     },
     observers: [
       "_saveSettings(settings.*)",
-      "_notifyHeaderTitle(_selected.name)"
+      "_notifyHeaderTitle(_selected.name)",
+      "_autoLockChanged(settings.auto_lock, settings.auto_lock_delay, _currentView)"
     ],
     // This is called by the constructor with the same arguments passed into the constructor
     factoryImpl: function () {
       this.init.apply(this, arguments);
     },
     //* Initialize application with a `padlock.Collection` and `padlock.Settings` object
-    init: function (collection, settings) {
+    init: function (collection, settings, announcements) {
       this.collection = collection;
       // Wire up the collection object with the `_records` binding proxy by subscribing to the `update`
       // event
@@ -79,15 +82,41 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       );
 
       this.settings = settings;
-      // Fetch settings from persistent storage
-      this.settings.fetch({ success: this._notifySettings.bind(this) });
+
+      this.announcements = announcements;
+
+      this.remoteSource = new padlock.CloudSource(this.settings);
 
       // Check if collection data already exists in persistent storage. If no, that means that means that
       // we are starting with a 'clean slate' and have to set a master password first
       this.collection.exists({
         success: this._initView.bind(this),
-        fail: this._initView.bind(this, false)
+        fail: function () {
+          this._alert(
+            "Padlock found existing data stored on the device but failed to read it. " +
+              "This may be due to someone medling with your device storage or some sort of failure " +
+              "on the OS level. You may proceed by creating a new store but note that this will " +
+              "overwrite the existing data."
+          );
+          this._initView(false);
+        }.bind(this)
       });
+
+      document.addEventListener(
+        "touchstart",
+        this._autoLockChanged.bind(this),
+        false
+      );
+      document.addEventListener(
+        "keydown",
+        this._autoLockChanged.bind(this),
+        false
+      );
+      document.addEventListener(
+        "mousemove",
+        this.debounce.bind(this, "resetautolock", this._autoLockChanged, 50),
+        false
+      );
 
       // If we want to capture all keydown events, we have to add the listener
       // directly to the document
@@ -101,10 +130,39 @@ padlock.App = (function (Polymer, platform, CloudSource) {
 
       // Init view when app resumes
       document.addEventListener("resume", this._resume.bind(this, true), false);
+    },
+    _cancelAutoLock: function () {
+      this._pausedAt = null;
+      if (this._lockTimeout) {
+        clearTimeout(this._lockTimeout);
+      }
+      if (this._lockNotificationTimeout) {
+        clearTimeout(this._lockNotificationTimeout);
+      }
+    },
+    _autoLockChanged: function () {
+      this._cancelAutoLock();
 
-      // This is a workaround for a bug in Polymer where tap events sometimes fail to be generated
-      // TODO: Remove as soon as this is fixed in Polymer
-      document.addEventListener("touchstart", function () {}, false);
+      if (
+        this.settings.auto_lock &&
+        this._currentView !== this.$.lockView &&
+        this._currentView !== this.$.startView
+      ) {
+        this._lockTimeout = setTimeout(
+          this._lock.bind(this, true),
+          this.settings.auto_lock_delay * 60 * 1000
+        );
+        this._lockNotificationTimeout = setTimeout(
+          function () {
+            this.$.notification.show(
+              "Auto-lock in 10 seconds",
+              "warning",
+              3000
+            );
+          }.bind(this),
+          this.settings.auto_lock_delay * 50 * 1000
+        );
+      }
     },
     _initView: function (collExists) {
       // If there already is data in the local storage ask for password
@@ -114,6 +172,14 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       // open the first view
       // this._openView(this.$.listView, { animation: "" });
       this._openView(view, { animation: "" });
+
+      // Fetch and display announcements from Padlock Server
+      this.announcements.fetch(
+        function (aa) {
+          this._currentAnnouncements = aa;
+          this._displayNextAnnouncement();
+        }.bind(this)
+      );
     },
     // Enter handler for lock view; triggers unlock attempt
     _pwdEnter: function (event, detail) {
@@ -122,13 +188,9 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     _changePwd: function () {
       this._openStartView(true);
     },
-    // Submit handler for start view. A new master password was selected so we have to update it
-    _newPwd: function (event, detail) {
-      // Update master password
-      this.collection.setPassword(detail.password);
-      // Navigate to list view
+    _popinOpen: function (view) {
       this._openView(
-        this.$.listView,
+        view,
         { animation: "popin", delay: 1500 },
         {
           animation: "expand",
@@ -141,6 +203,16 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       this.async(function () {
         this.$.header.showing = true;
       }, 1500);
+    },
+    // Submit handler for start view. A new master password was selected so we have to update it
+    _newPwd: function (event, detail) {
+      // Update master password
+      this.collection.setPassword(detail.password);
+      // Navigate to list view
+      this._popinOpen(this.$.listView);
+    },
+    _restored: function () {
+      this._popinOpen(this.$.listView);
     },
     //* Tries to unlock the current collection with the provided password
     _unlock: function (password) {
@@ -158,113 +230,112 @@ padlock.App = (function (Polymer, platform, CloudSource) {
         password: password,
         rememberPassword: true,
         success: function () {
-          // Hide progress indicator
-          this.$.decrypting.hide();
-          // We're done decrypting so, reset the `_decrypting` flag
-          this._decrypting = false;
-          // Show either the last view shown before locking the screen or default to the list view
-          this._openView(
-            this._lastView || this.$.listView,
-            { animation: "popin", delay: 1500 },
-            {
-              animation: "expand",
-              delay: 500,
-              easing: "cubic-bezier(1, -0.05, 0.9, 0.05)"
-            }
-          );
-
-          // After a short delay...
-          this.async(function () {
-            // Show header
-            this.$.header.showing = true;
-
-            // If there is more than ten records in the collection and no backup reminder has been
-            // shown, show it.
-            if (
-              !this.settings.sync_connected &&
-              this._records.filter(function (rec) {
-                return !rec.removed;
-              }).length > 10 &&
-              !this.settings.showed_backup_reminder
-            ) {
-              this._showBackupReminder();
-            }
-          }, 1500);
-
-          // After a short delay, trigger synchronization if auto-sync is enabled
-          this.async(function () {
-            if (this.settings.sync_connected && this.settings.sync_auto) {
-              this._synchronize();
-            }
-          }, 2000);
+          // Fetch settings from persistent storage
+          this.settings.fetch({
+            success: function () {
+              this._notifySettings();
+              this._unlockSuccess();
+            }.bind(this),
+            fail: function () {
+              // Something went wrong with fetching the settings, so we'll have to start
+              // with a clean slate
+              this.settings.save();
+              this._unlockSuccess();
+            }.bind(this)
+          });
         }.bind(this),
-        fail: function () {
-          // Fetching/decrypting the data failed. This can have multiple reasons but by far the most
-          // likely is that the password was incorrect, so that is what we tell the user.
-          this.$.notification.show("Wrong Password!", "error", 2000);
-          // Hide progress indicator
-          this.$.decrypting.hide();
-          // We're done decrypting so, reset the `_decrypting` flag
-          this._decrypting = false;
-        }.bind(this)
+        fail: this._unlockFail.bind(this)
       });
     },
-    // Handler for cordova `pause` event. Usually triggered when the app goes into the background.
-    // Hides the header, closes all dialogs and unless we're currently on the lock or start view, hide
-    // the current view. This is meant to achive two things:
-    //
-    // 1. To access the data, the master password has to be entered again. This prevents other people from
-    // picking up the devise and snooping through the users data
-    // 2. Any sensitive data currently displayed on the screen is hidden so it is not visible when browsing
-    // apps using multitasking / app switcher.
-    // TODO: #2 currently fails in iOS 9
-    _pause: function () {
-      // Hide header
-      this.$.header.showing = false;
-      // Close all currently opened dialogs
-      this._closeAllDialogs();
-      // If not currently on the lock or start view, navigate to lock view while remembering the current view
-      // so we can navigate back to it later
-      if (
-        this._currentView &&
-        this._currentView != this.$.lockView &&
-        this._currentView != this.$.startView
-      ) {
-        this._lastView = this._currentView;
-        this._currentView.hide({ animation: "" });
-        this._currentView = null;
-      }
+    _unlockSuccess: function () {
+      // Hide progress indicator
+      this.$.decrypting.hide();
+      // We're done decrypting so, reset the `_decrypting` flag
+      this._decrypting = false;
+      // Show either the last view shown before locking the screen or default to the list view
+      this._popinOpen(this.$.listView);
+
+      // After a short delay, trigger synchronization if auto-sync is enabled
+      this.async(function () {
+        // If there is more than ten records in the collection and no backup reminder has been
+        // shown, show it.
+        if (
+          !this.settings.sync_connected &&
+          this._records.filter(function (rec) {
+            return !rec.removed;
+          }).length > 10 &&
+          !this.settings.showed_backup_reminder
+        ) {
+          this._showBackupReminder();
+        }
+
+        if (this.settings.sync_connected && this.settings.sync_auto) {
+          this._synchronize();
+        }
+      }, 2000);
     },
-    // Handler for cordova `resume` event. Calls the `_initView` method which in this case will show
-    // the lock screen for reauthentication (unless we're already in the lock or start view in which
-    // case we do nothing
+    _unlockFail: function () {
+      // Fetching/decrypting the data failed. This can have multiple reasons but by far the most
+      // likely is that the password was incorrect, so that is what we tell the user.
+      this.$.notification.show("Wrong Password!", "error", 2000);
+      // Hide progress indicator
+      this.$.decrypting.hide();
+      // We're done decrypting so, reset the `_decrypting` flag
+      this._decrypting = false;
+    },
+    // Handler for cordova `pause` event. Records the current time for auto locking when resuming
+    _pause: function () {
+      this._pausedAt = new Date();
+    },
+    // Handler for cordova `resume` event. If auto lock is enabled and the specified time has passed
+    // since the app was paused, locks the app
     _resume: function () {
+      this._autoLockChanged();
       if (
-        this._currentView != this.$.lockView &&
-        this._currentView != this.$.startView
+        this.settings.auto_lock &&
+        this._pausedAt &&
+        new Date().getTime() - this._pausedAt.getTime() >
+          this.settings.auto_lock_delay * 60 * 1000
       ) {
-        this._initView(true);
+        this._lock(true);
       }
     },
     //* Locks the collection and opens the lock view
-    _lock: function () {
-      // Remember current view so we can navigate back to it after unlocking the app again
-      // TODO: Does this make sense in case of the record view, since we're trying to remove all
-      // data from memory and the record view will be displaying on of the records?
-      this._lastView = this._currentView;
+    _lock: function (auto) {
+      // Close all currently opened dialogs
+      this._closeAllDialogs();
 
       // Hide header
       this.$.header.showing = false;
-      // Navigate to lock view
-      this._openView(
-        this.$.lockView,
-        {
-          animation: "contract",
-          easing: "cubic-bezier(0.8, 0, 0.2, 1.2)",
-          delay: 300
-        },
-        { animation: "popout" }
-      );
+      if (
+        this._currentView !== this.$.lockView &&
+        this._currentView !== this.$.startView
+      ) {
+        // Navigate to lock view
+        this._openView(
+          this.$.lockView,
+          {
+            animation: "contract",
+            easing: "cubic-bezier(0.8, 0, 0.2, 1.2)",
+            delay: 300
+          },
+          { animation: "popout" }
+        );
+
+        if (auto === true) {
+          var delay = this.settings.auto_lock_delay;
+          this.async(function () {
+            this._alert(
+              "Padlock was automatically locked after " +
+                delay +
+                " " +
+                (delay > 1 ? "minutes" : "minute") +
+                " of inactivity. " +
+                "You can change this behavior from the settings page."
+            );
+          }, 1000);
+        }
+      }
       // Wait for a bit for the animation to finish, then clear the collection data from memory
       setTimeout(this.collection.clear.bind(this.collection), 500);
     },
@@ -277,9 +348,7 @@ padlock.App = (function (Polymer, platform, CloudSource) {
         this.$.header.blurFilterInput();
       }
     },
-    /**
-     * Opens the provided _view_
-     */
+    // Opens the provided _view_
     _openView: function (view, inOpts, outOpts) {
       var views = Polymer.dom(this.root).querySelectorAll(".view"),
         // Choose left or right animation based on the order the views
@@ -394,6 +463,9 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     _openImportView: function () {
       this._openView(this.$.importView);
     },
+    _openCloudView: function () {
+      this._openView(this.$.cloudView);
+    },
     //* Add the records imported with the import view to the collection
     _imported: function (event, detail) {
       this._openView(this.$.listView);
@@ -407,14 +479,8 @@ padlock.App = (function (Polymer, platform, CloudSource) {
         this._synchronize();
       }
     },
-    _importBack: function () {
-      this._openView(this.$.listView);
-    },
     _openExportView: function () {
       this._openView(this.$.exportView);
-    },
-    _exportBack: function () {
-      this._openView(this.$.listView);
     },
     //* Show an alert dialog with the provided message
     _alert: function (msg) {
@@ -422,11 +488,6 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     },
     //* Keyboard shortcuts
     _keydown: function (event) {
-      // Don't do anything if we're currently in a input field
-      if (padlock.currentInput) {
-        return;
-      }
-
       var shortcut;
       var dialogsOpen = !!Polymer.dom(this.root).querySelectorAll(
         "padlock-dialog.open"
@@ -455,16 +516,18 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       }
       // ENTER -> Select marked
       else if (event.keyCode == 13 && !dialogsOpen) {
-        shortcut =
-          this._currentView.selectMarked &&
-          this._currentView.selectMarked.bind(this._currentView);
+        shortcut = this._selectMarkedRecord.bind(this);
       }
       // ESCAPE -> Back
-      else if (event.keyCode == 27) {
+      else if (event.keyCode == 27 && !padlock.currentInput) {
         shortcut = this._back.bind(this);
       }
       // CTRL/CMD + C -> Copy
-      else if ((event.ctrlKey || event.metaKey) && event.keyCode === 67) {
+      else if (
+        (event.ctrlKey || event.metaKey) &&
+        event.keyCode === 67 &&
+        !padlock.currentInput
+      ) {
         shortcut =
           this._currentView.copyToClipboard &&
           this._currentView.copyToClipboard.bind(this._currentView);
@@ -546,13 +609,6 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       // Check if the user has connected the client to the cloud already.
       // If not, prompt him to do so
       if (this.settings.sync_connected) {
-        // Create new cloud source instance (if necessary) and set the required properties with
-        // value from the settings
-        this.remoteSource = this.remoteSource || new CloudSource();
-        this.remoteSource.host = this.settings.sync_host;
-        this.remoteSource.email = this.settings.sync_email;
-        this.remoteSource.apiKey = this.settings.sync_key;
-
         // Show progress indicator
         this.$.synchronizing.show();
 
@@ -562,6 +618,7 @@ padlock.App = (function (Polymer, platform, CloudSource) {
           // the case, provide that password explicitly
           remotePassword: remotePassword,
           success: function () {
+            this.set("settings.sync_readonly", false);
             this.$.synchronizing.hide();
 
             // If we explicitly used a different password for the remote source than for the local source,
@@ -580,25 +637,30 @@ padlock.App = (function (Polymer, platform, CloudSource) {
             }
           }.bind(this),
           fail: function (e) {
-            if (
-              e &&
-              e.message &&
-              e.message.indexOf("CORRUPT: ccm: tag doesn't match") !== -1
-            ) {
-              // Decryption failed, presumably on the remote data. This means that the local master
-              // password does not match the one that was used for encrypting the remote data so
-              // we need to prompt the user for the correct password.
-              this._requireRemotePassword();
-            } else {
-              // If the request failed with a status code of `401` that means that the apiKey
-              // used for authentication is either wrong or has not been activated yet. Otherwise
-              // we really have no idea what happened so just show a generic error message
-              var msg =
-                e.status == 401
-                  ? "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
-                    "If the problem persists, try to disconnect and reconnect under settings!"
-                  : "An error occurred while synchronizing. Please try again later!";
-              this._alert(msg);
+            switch (e) {
+              case padlock.ERR_SOURCE_INVALID_JSON:
+              case padlock.ERR_CRYPTO_INVALID_KEY_PARAMS:
+              case padlock.ERR_CRYPTO_INVALID_CONTAINER:
+                this._alert(
+                  "The data received from Padlock Cloud seems to be corrupt and " +
+                    "cannot be decrypted. This might be due to a network error but could " +
+                    "also be the result of someone trying to compromise your connection to " +
+                    "Padlock Cloud. If the problem persists, please notify " +
+                    "Padlock support!"
+                );
+                break;
+              case padlock.ERR_CRYPTO_DECRYPTION_FAILED:
+                // Decryption failed, presumably on the remote data. This means that the local master
+                // password does not match the one that was used for encrypting the remote data so
+                // we need to prompt the user for the correct password.
+                this._requireRemotePassword();
+                break;
+              case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
+                this.set("settings.sync_readonly", true);
+                this._alertReadonly();
+                break;
+              default:
+                this._handleError(e);
             }
 
             // Hide progress indicator
@@ -606,18 +668,23 @@ padlock.App = (function (Polymer, platform, CloudSource) {
           }.bind(this)
         });
       } else {
+        var msg = this.settings.sync_key
+          ? "It seems you have not completed the connection process for Padlock Cloud yet! Go to " +
+            "Settings > Padlock Cloud for more information!"
+          : "You need to be connected to Padlock Cloud to synchronize your data. " +
+            "Go to Settings > Padlock Cloud for more information!";
         // User has not connected to Padlock Cloud yet so we're prompting them to do so
         this._openForm(
           [
             {
               element: "button",
-              label: "Settings",
-              tap: this._openSettings.bind(this),
+              label: "Open Padlock Cloud Settings",
+              tap: this._openCloudView.bind(this),
               submit: true
             },
             { element: "button", label: "Cancel", cancel: true }
           ],
-          "You need to be connected to Padlock Cloud to synchronize your data."
+          msg
         );
       }
     },
@@ -674,18 +741,27 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     //* Back method. Chooses the right back method based on the current view
     _back: function () {
       var dialogsClosed = this._closeAllDialogs();
+      var cw = this._currentView;
 
       if (!dialogsClosed) {
-        // If we're in the list view, clear the filter input and restore the full list
-        if (this._currentView == this.$.listView) {
-          if (this.$.header.filterActive) {
-            this.$.header.cancelFilter();
-          } else {
-            this._openMainMenu();
-          }
+        if (
+          (cw == this.$.listView ||
+            cw == this.$.lockView ||
+            cw == this.$.startView) &&
+          navigator.Backbutton
+        ) {
+          this._pause();
+          navigator.Backbutton.goBack();
         } else {
-          this._currentView.back();
+          cw.back();
         }
+      }
+    },
+    _listViewBack: function () {
+      if (this.$.header.filterActive) {
+        this.$.header.cancelFilter();
+      } else {
+        this._openMainMenu();
       }
     },
     /**
@@ -715,7 +791,13 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       // Only save if the the data has actually been loaded from persistent storage yet. This check is
       // to prevent settings data being overwritten with default values on app startup
       if (this.settings.loaded) {
-        this.settings.save();
+        this.debounce(
+          "save_settings",
+          function () {
+            this.settings.save();
+          },
+          500
+        );
       }
     },
     // Notify observers of changes to every existing settings property. This is used as a catch-all
@@ -726,7 +808,8 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       }
     },
     _openStartView: function (changingPwd) {
-      this.$.startView.changingPwd = changingPwd === true;
+      this.$.startView.mode =
+        changingPwd === true ? "change-password" : "get-started";
       this.$.header.showing = false;
       this._openView(
         this.$.startView,
@@ -799,27 +882,42 @@ padlock.App = (function (Polymer, platform, CloudSource) {
       }
     },
     // Opens a dialog with a dynamic form based on the provided arguments
-    _openForm: function (components, title, submitCallback, cancelCallback) {
+    _openForm: function (
+      components,
+      title,
+      submitCallback,
+      cancelCallback,
+      allowDismiss
+    ) {
       // We have two dialogs; if the first one is currently showing, we use the second one.
       // That way we get a nice and smooth transition between dialogs in case we close one and
       // instantly open another
       var dialog = this.$.formDialog1.isShowing
         ? this.$.formDialog2
         : this.$.formDialog1;
+      dialog.allowDismiss = allowDismiss !== false;
       // Get form and title element associated with the selected form
       var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
       var titleEl = Polymer.dom(dialog).querySelector(".title");
       // Close both forms
       this.$.formDialog1.open = this.$.formDialog2.open = false;
       // Update title
-      titleEl.innerHTML = title || "";
+      titleEl.textContent = title || "";
       // Update components property, which causes the dynamic form elements to be rendered
       form.components = components;
       // Update callbacks
-      form.submitCallback = submitCallback;
-      form.cancelCallback = cancelCallback;
-      // This is a little tweak to improve alignment of the keyboard on iOS
-      platform.keyboardDisableScroll(false);
+      form.submitCallback = function () {
+        if (typeof submitCallback === "function") {
+          submitCallback.apply(null, arguments);
+        }
+        dialog.open = false;
+      };
+      form.cancelCallback = function () {
+        if (typeof cancelCallback === "function") {
+          cancelCallback.apply(null, arguments);
+        }
+        dialog.open = false;
+      };
       // Open the dialog asynchrously and focus first first input with the `auto-focus` attribute (if any)
       this.async(function () {
         dialog.open = true;
@@ -834,6 +932,16 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     // Closes the dialog from which the event was sent
     _closeCurrentDialog: function (e) {
       e.currentTarget.open = false;
+    },
+    _formDialogOpened: function () {
+      // This is a little tweak to improve alignment of the keyboard on iOS
+      platform.keyboardDisableScroll(false);
+    },
+    _formDialogClosed: function (e) {
+      // Fetch form element of current target
+      var form = Polymer.dom(e.target).querySelector("padlock-dynamic-form");
+      // Blur all input elements
+      form.blurInputElements();
       // If no dialogs remain open, disable keyboard scroll again
       if (
         !Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length
@@ -843,20 +951,11 @@ padlock.App = (function (Polymer, platform, CloudSource) {
     },
     // Handler for when a form dialog gets dismissed (by clicking outside of it). Does some cleanup work
     // and calls the form cancel callback
-    _formDismiss: function (e) {
-      // Fetch form element of current target
+    _formDialogDismissed: function (e) {
       var form = Polymer.dom(e.target).querySelector("padlock-dynamic-form");
-      // Blur all input elements
-      form.blurInputElements();
       // Call cancel callback if there is one
       if (typeof form.cancelCallback == "function") {
         form.cancelCallback();
-      }
-      // If no dialogs remain open, disable keyboard scroll again
-      if (
-        !Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length
-      ) {
-        platform.keyboardDisableScroll(true);
       }
     },
     // Simple function for identifying an empty string. Mainly used in declaratative data bindings
@@ -869,7 +968,8 @@ padlock.App = (function (Polymer, platform, CloudSource) {
         e.detail.components,
         e.detail.title,
         e.detail.submit,
-        e.detail.cancel
+        e.detail.cancel,
+        e.detail.allowDismiss
       );
     },
     // Handler for children elements requesting to open an alert dialog
@@ -940,24 +1040,207 @@ padlock.App = (function (Polymer, platform, CloudSource) {
         [
           {
             element: "button",
+            label: "Connect To Padlock Cloud",
+            close: true,
+            tap: this._connectToCloud.bind(this)
+          },
+          {
+            element: "button",
             label: "Export Data",
             close: true,
             tap: this._openExportView.bind(this)
           },
-          {
-            element: "button",
-            label: "Sync Data",
-            close: true,
-            tap: this._synchronize.bind(this)
-          },
           { element: "button", label: "Dismiss", close: true }
         ],
         "Have you backed up your data yet? Remember that by default your data is only stored " +
-          "locally and may be lost if you uninstall Padlock, loose your device or accidentally " +
-          "reset your data. You can backup your data by exporting it " +
-          "or synching it with Padlock Cloud."
+          "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
+          "reset your data. Padlock Cloud is a great way to back up your data online and synchronize " +
+          "with other devices. Alternatively, you can export your data and store it somewhere safe."
       );
       this.set("settings.showed_backup_reminder", new Date().getTime());
+    },
+    _errorHandler: function (e) {
+      this._handleError(e.detail);
+    },
+    _handleError: function (e) {
+      switch (e) {
+        case padlock.ERR_CLOUD_UNAUTHORIZED:
+          this.set("settings.sync_connected", false);
+          this.set("settings.sync_key", "");
+          this.set("settings.sync_email", "");
+          this._openForm(
+            [
+              {
+                element: "button",
+                label: "Open Padlock Cloud Settings",
+                tap: this._openCloudView.bind(this),
+                submit: true
+              }
+            ],
+            "It seems you have been disconnected from Padlock Cloud. Please reconnect " +
+              "via Settings > Padlock Cloud!"
+          );
+          break;
+        case padlock.ERR_CRYPTO_DECRYPTION_FAILED:
+          this._alert("The password you entered was wrong! Please try again!");
+          break;
+        case padlock.ERR_CLOUD_FAILED_CONNECTION:
+          this._alert(
+            "Failed to connect to Padlock Cloud. Please check your " +
+              "internet connection and try again!"
+          );
+          break;
+        case padlock.ERR_CLOUD_VERSION_DEPRECATED:
+          this._openForm(
+            [
+              {
+                element: "button",
+                label: "Update Now",
+                tap: this._openAppStore.bind(this),
+                submit: true
+              }
+            ],
+            "A newer version of Padlock is available now! You can download it using the button below. " +
+              "Please note that you won't be able to use Padlock Cloud until you install the latest version!"
+          );
+          break;
+        case padlock.ERR_PAY_INVALID_RECEIPT:
+          this._openForm(
+            [
+              {
+                element: "button",
+                label: "Try Again",
+                tap: this._buySubscription.bind(this),
+                submit: true
+              },
+              { element: "button", label: "Dismiss", cancel: true }
+            ],
+            "We were unable to verify your purchase. Please try again!"
+          );
+          break;
+        case padlock.ERR_CLOUD_LIMIT_EXCEEDED:
+          this._alert(
+            "Padlock Cloud is over capacity right now. Please try again in a few minutes!"
+          );
+          break;
+        default:
+          this._alert(
+            "There was an error while trying to connect to Padlock Cloud. " +
+              "Please try again later!"
+          );
+      }
+    },
+    _openAppStore: function () {
+      window.open(platform.getAppStoreLink(), "_system");
+    },
+    _alertReadonly: function () {
+      this._openForm(
+        [
+          {
+            element: "button",
+            label: "Renew Subscription",
+            submit: true,
+            tap: this._buySubscription.bind(this)
+          },
+          {
+            element: "button",
+            label: "Go To Padlock Cloud Settings",
+            submit: true,
+            tap: this._openCloudView.bind(this)
+          },
+          { element: "button", label: "Dismiss", cancel: true }
+        ],
+        "It seems your Padlock Cloud subscription has expired which means that you can " +
+          "download your data from the cloud but you won't be able to update it or synchronize with " +
+          "any other devices. Renew your subscription now to unlock the full potential of Padlock Cloud!"
+      );
+    },
+    _buySubscription: function () {
+      this.$.connecting.show();
+      pay.getProductInfo(
+        function (info) {
+          this.$.connecting.hide();
+          this._openForm(
+            [
+              {
+                element: "button",
+                label: "Buy Subscription (" + info.price + " / month)",
+                submit: true
+              },
+              { element: "button", label: "No Thanks", cancel: true }
+            ],
+            info.description,
+            function () {
+              pay.orderSubscription(
+                this.settings.sync_host_url,
+                this.settings.sync_email,
+                this._subscriptionVerified.bind(this),
+                this._handleError.bind(this)
+              );
+            }.bind(this)
+          );
+        }.bind(this)
+      );
+    },
+    _selectMarkedRecord: function () {
+      this._currentView.selectMarked && this._currentView.selectMarked();
+    },
+    _subscriptionVerified: function () {
+      this.set("settings.sync_readonly", false);
+      var actions = this.settings.sync_connected
+        ? [
+            {
+              element: "button",
+              label: "Synchronize Now",
+              tap: this._synchronize.bind(this),
+              submit: true
+            },
+            { element: "button", label: "Dismiss", cancel: true }
+          ]
+        : [
+            {
+              element: "button",
+              label: "Connect Now",
+              tap: this._connectToCloud.bind(this),
+              submit: true
+            },
+            { element: "button", label: "Dismiss", cancel: true }
+          ];
+      this._openForm(
+        actions,
+        "Your purchase was successful! You can now start using Padlock Cloud on this device!"
+      );
+    },
+    _connectToCloud: function () {
+      if (this._currentView != this.$.cloudView) {
+        this._openCloudView();
+      }
+      this.async(this.$.cloudView.connect.bind(this.$.cloudView), 100);
+    },
+    _displayNextAnnouncement: function () {
+      var a = this._currentAnnouncements[0];
+      var dismissed = function () {
+        this.announcements.markRead(a);
+        this._currentAnnouncements.splice(0, 1);
+        this._displayNextAnnouncement();
+      }.bind(this);
+
+      if (a) {
+        var els = a.link
+          ? [
+              {
+                element: "button",
+                label: "Learn More",
+                tap: function () {
+                  window.open(a.link, "_system");
+                }
+              }
+            ]
+          : [];
+        els.push({ element: "button", label: "Dismiss", submit: true });
+
+        this._openForm(els, a.text, dismissed, dismissed, true);
+      }
     }
   });
-})(Polymer, padlock.platform, padlock.CloudSource);
+})(Polymer, padlock.platform, padlock.pay);

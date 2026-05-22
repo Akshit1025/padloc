@@ -1,5 +1,6 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../input/input.html">
@@ -16,30 +17,39 @@
         <style include="view-styles"></style>
         <style include="settings-view-styles"></style>
 
-        <div class="section">
-            <button on-click="_import">Import Data</button>
-            <button on-click="_export">Export Data</button>
-            <button on-click="_resetData">Reset Data</button>
-            <button on-click="_changePassword">Change Master Password</button>
-        </div>
-        <div class="section">
-            <button on-click="_cloudConnect" hidden$="{{ settings.sync_connected }}">Connect To Padlock Cloud</button>
-            <button on-click="_cloudDisconnect" hidden$="{{ !settings.sync_connected }}">
-                <div>Disconnect <span class="email">(<span>{{ settings.sync_email }}</span>)</span></div>
+        <section>
+            <button on-click="_openCloudView">
+                <span>Padlock Cloud</span>
+                <shape-shifter shape="right"></shape-shifter>
             </button>
-            <button on-click="_resetRemoteData" hidden$="{{ !settings.sync_connected }}">Reset Remote Data</button>
-            <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync"
-                hidden$="{{ !settings.sync_connected }}"></padlock-toggle-button>
-        </div>
-        <div class="section">
+            <button on-click="_import">
+                <span>Import Data</span>
+                <shape-shifter shape="right"></shape-shifter>
+            </button>
+            <button on-click="_export">
+                <span>Export Data</span>
+                <shape-shifter shape="right"></shape-shifter>
+            </button>
+        </section>
+
+        <section>
+            <padlock-toggle-button value="{{ settings.auto_lock }}" label="Auto Lock"></padlock-toggle-button>
+            <padlock-slider min="1" max="10" value="{{ settings.auto_lock_delay }}" step="1" unit=" min" label="After"
+                hidden$="{{ !settings.auto_lock }}"></padlock-slider>
+        </section>
+
+        <section>
+            <button on-click="_resetData">Reset App</button>
+            <button on-click="_changePassword">Change Master Password</button>
             <padlock-toggle-button value="{{ settings.obfuscate_fields }}"
                 label="Hide Field Values"></padlock-toggle-button>
-        </div>
-        <div class="section">
+        </section>
+
+        <section>
             <button on-click="_openWebsite">Website</button>
             <button on-click="_sendMail">Support</button>
             <div class="info" on-click="_openHomepage">Developed and maintained by <strong>Akshit Gupta</strong></div>
-        </div>
+        </section>
 
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="progress">Sending request...</padlock-progress>

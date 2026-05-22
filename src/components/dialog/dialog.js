@@ -16,13 +16,17 @@
         value: false,
         notify: true
       },
-      closeOnTap: Boolean
+      closeOnTap: Boolean,
+      allowDismiss: {
+        type: Boolean,
+        value: true
+      }
     },
     listeners: {
       tap: "_dismiss"
     },
     //* Changed handler for the _open_ property. Shows/hides the dialog
-    _openChanged: function () {
+    _openChanged: function (curr, prev) {
       // Set _display: block_ if we're showing. If we're hiding
       // we need to wait until the transitions have finished before we
       // set _display: none_.
@@ -40,12 +44,15 @@
       // Trigger relayout to make sure all elements have been rendered
       // when applying the transition
       // jshint expr: true
+      // eslint-disable-next-line no-unused-expressions
       this.offsetLeft;
       // jshint expr: false
 
       this.toggleClass("open", this.open);
 
-      this.fire(this.open ? "open" : "close");
+      if (prev !== undefined) {
+        this.fire(this.open ? "open" : "close");
+      }
     },
     _innerTap: function (event) {
       // Intercept the tap event to prevent closing the popup if one
@@ -59,8 +66,10 @@
       this.open = false;
     },
     _dismiss: function () {
-      this._close();
-      this.fire("dismiss");
+      if (this.allowDismiss) {
+        this._close();
+        this.fire("dismiss");
+      }
     }
   });
 })(Polymer);

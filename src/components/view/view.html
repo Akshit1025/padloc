@@ -45,7 +45,12 @@
                     type: String,
                     value: "ease"
                 },
-                adjustScrollHeight: Boolean
+                adjustScrollHeight: Boolean,
+                showing: {
+                    type: Boolean,
+                    value: false,
+                    observer: "_showingChanged"
+                }
             },
             leftHeaderButton: function () { },
             rightHeaderButton: function () { },
@@ -164,6 +169,7 @@
                 this.startAnimation(opts);
                 // Show the element
                 this.toggleClass("showing", true);
+                this.showing = true;
             },
             //* Hides the view
             hide: function (opts) {
@@ -172,6 +178,7 @@
                 var endCallback = opts.endCallback;
                 opts.endCallback = function () {
                     this.toggleClass("showing", false);
+                    this.showing = false;
                     if (endCallback) {
                         endCallback();
                     }
@@ -196,7 +203,8 @@
                 if (!dialogClosed) {
                     this.fire("back");
                 }
-            }
+            },
+            _showingChanged: function () { }
         };
 
     })(padlock.platform);

@@ -1,5 +1,5 @@
 @import '../../styles/config';
-@import '../styles/mixins';
+@import '../../styles/mixins';
 @import 'nib';
 
 :host {
@@ -33,7 +33,7 @@
   }
 
   .record-item-category {
-    font-size: 14px;
+    font-size: $font-size-tiny;
     background: #ddd;
     color: $text-color-light;
     border: solid transparent;
@@ -64,6 +64,7 @@
   top: 0;
   background: $color-quaternary;
   position-sticky();
+  text-shadow();
 }
 
 .list {

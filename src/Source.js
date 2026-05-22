@@ -1,6 +1,9 @@
 /* global padlock */
+
 padlock.Source = (function () {
   "use strict";
+
+  padlock.ERR_SOURCE_INVALID_JSON = "Invalid JSON";
 
   /**
    * The _Source_ object is responsible for fetching/saving data from/to a persistent
@@ -11,22 +14,20 @@ padlock.Source = (function () {
 
   Source.prototype = {
     didFetch: function (rawData, opts) {
+      var data;
       try {
         // Try to parse data
-        var data = rawData ? JSON.parse(rawData) : null;
-        if (opts && opts.success) {
-          opts.success(data);
-        }
+        data = rawData ? JSON.parse(rawData) : null;
       } catch (e) {
-        if (opts && opts.fail) {
-          opts.fail(e);
-        }
+        opts && opts.fail && opts.fail(padlock.ERR_SOURCE_INVALID_JSON);
+        return;
       }
+
+      opts && opts.success && opts.success(data);
     },
     /**
      * Fetches data
-     * @param Object opts
-     * Object containing options for the call. Options may include:
+     * @param {Object} opts - Object containing options for the call. Options may include:
      *
      * - collName (required): Name of the collection to fetch data for
      * - success: Success callback. Retrieved data will be passed as only argument
@@ -37,11 +38,11 @@ padlock.Source = (function () {
     },
     /**
      * Saves data
-     * @param Object opts
-     * Object containing options for the call. Options may include:
+     * @param {Object} opts - Object containing options for the call. Options may include:
      *
-     * - collName (required): Name of the collection to save data for
-     * - success: Success callback.
+     * - collName (required): Name of the collection to fetch data for
+     * - success: Success callback. Retrieved data will be passed as only argument
+     * - fail: Fail callback
      */
     save: function () {
       // Not implemented

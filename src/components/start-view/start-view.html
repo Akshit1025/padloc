@@ -4,6 +4,7 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../password-input/password-input.html">
 <link rel="import" href="../lock/lock.html">
+<link rel="import" href="../progress/progress.html">
 <link rel="import" href="../../styles/shared-styles.html">
 <link rel="import" href="../view/view-styles.html">
 <link rel="import" href="start-view-styles.html">
@@ -16,22 +17,42 @@
         <style include="view-styles"></style>
         <style include="start-view-styles"></style>
 
-        <padlock-lock></padlock-lock>
+        <div class="form-wrapper">
+            <div class="get-started">
+                <div class="header">
+                    Padlock
+                </div>
+                <div class="tap-highlight">
+                    <padlock-password-input class="ghost pwdinput" placeholder="Enter Master Password" id="pwdInput"
+                        on-enter="_enter" select-all-on-focus obfuscate></padlock-password-input>
+                </div>
+                <button class="enter-button ghost" on-click="_enter" type="button">{{ _buttonLabel(mode) }}</button>
+            </div>
 
-        <!-- WRAPPER (for centering) -->
-        <form class="wrapper">
-            <!-- HEADER -->
-            <div class="header">
-                Padlock
+            <div class="restore-cloud">
+                <div class="header">
+                    Padlock Cloud
+                </div>
+                <div class="tap-highlight">
+                    <input is="padlock-input" id="emailInput" type="email" placeholder="Enter Email Address"
+                        class="ghost" on-enter="_cloudEnter">
+                </div>
+                <div class="tap-highlight">
+                    <input is="padlock-input" id="cloudPwdInput" type="password" placeholder="Enter Password"
+                        class="ghost" on-enter="_cloudEnter" select-all-on-focus>
+                </div>
+                <button class="enter-button ghost" on-click="_cloudEnter" type="button"
+                    id="cloudEnterButton">Restore</button>
             </div>
-            <!-- NEW PASSWORD INPUT -->
-            <div class="tap-highlight">
-                <padlock-password-input class="ghost pwdinput" placeholder="Enter Master Password" id="pwdInput"
-                    on-enter="enter" select-all-on-focus obfuscate></padlock-password-input>
-            </div>
-            <!-- ENTER BUTTON -->
-            <button class="enter-button ghost" on-tap="enter" type="button">{{ _buttonLabel(changingPwd) }}</button>
-        </form>
+        </div>
+
+        <div class="lock-wrapper">
+            <padlock-lock></padlock-lock>
+            <button class="switch-button" on-click="_switchMode" type="button" hidden$="{{ _isChangeMode(mode) }}">{{
+                _switchButtonLabel(mode) }}</button>
+        </div>
+
+        <padlock-progress>Connecting to Padlock Cloud</padlock-progress>
 
     </template>
 
