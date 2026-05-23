@@ -121,17 +121,19 @@
         this.mode == "restore-cloud" ? "get-started" : "restore-cloud";
     },
     _cloudEnter: function () {
-      var cloudSource = new CloudSource(this.settings);
+      var input = this.$.emailInput;
+      var email = input.value;
 
-      var email = this.$.emailInput.value;
-      if (!email) {
-        this.fire("notify", {
-          message: "Please enter an email address!",
-          type: "error",
-          duration: 2000
+      if (!email || !input.checkValidity()) {
+        this.fire("alert", {
+          message: email
+            ? input.validationMessage
+            : "Please enter an email address!"
         });
         return;
       }
+
+      var cloudSource = new CloudSource(this.settings);
 
       this.$$("padlock-progress").show();
       this.$.cloudEnterButton.disabled = true;
@@ -143,13 +145,14 @@
           this.$.cloudEnterButton.disabled = false;
           this.set("settings.sync_email", email);
           this.set("settings.sync_key", authToken.token);
+          this.set("settings.sync_id", authToken.id);
           this._promptConnecting();
           this._attemptRestore();
         }.bind(this),
         function (e) {
           this.$.cloudEnterButton.disabled = false;
           this.$$("padlock-progress").hide();
-          switch (e) {
+          switch (typeof e === "string" ? e : e.error) {
             case padlock.ERR_CLOUD_NOT_FOUND:
             case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
               this.fire("open-form", {
@@ -197,12 +200,13 @@
             this._cancelRestore = false;
             this.set("settings.sync_email", "");
             this.set("settings.sync_key", "");
+            this.set("settings.sync_id", "");
             return;
           }
-          if (e == padlock.ERR_CLOUD_UNAUTHORIZED) {
+          if (e.error == padlock.ERR_CLOUD_INVALID_AUTH_TOKEN) {
             this._attemptRestoreTimeout = setTimeout(
               this._attemptRestore.bind(this),
-              1000
+              3000
             );
           } else {
             this.fire("error", e);
@@ -214,6 +218,7 @@
       this._cancelRestore = true;
       this.set("settings.sync_email", "");
       this.set("settings.sync_key", "");
+      this.set("settings.sync_id", "");
       clearTimeout(this._attemptRestoreTimeout);
     },
     _restoreSuccess: function () {
@@ -222,6 +227,11 @@
         return;
       }
       this.set("settings.sync_connected", true);
+      this.notifyPath(
+        "settings.sync_sub_status",
+        this.settings.sync_sub_status
+      );
+      this.notifyPath("settings.sync_trial_end", this.settings.sync_trial_end);
       this.collection.save({
         password: this.$.cloudPwdInput.value,
         rememberPassword: true
@@ -242,7 +252,9 @@
         title:
           "Almost done! An email was sent to " +
           this.settings.sync_email +
-          " with further instructions. Hit 'Cancel' to abort the process.",
+          " with further instructions. Hit 'Cancel' to abort the process. (Connection ID: " +
+          this.settings.sync_id +
+          ")",
         components: [
           {
             element: "button",

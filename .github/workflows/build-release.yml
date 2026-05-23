@@ -1,0 +1,55 @@
+name: Build macOS Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "10"
+
+      - name: Downgrade npm
+        run: npm install -g npm@6
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Install Bower
+        run: npm install -g bower
+
+      - name: Install bower packages
+        working-directory: ./app
+        run: bower install --allow-root
+
+      # Compile Stylus -> CSS
+      - name: Build styles
+        run: npx gulp stylus
+
+      # Optional lint step
+      - name: Run eslint
+        run: npx gulp eslint || true
+
+      # Main production build
+      - name: Build macOS app
+        run: npx gulp build --mac
+
+      - name: Show dist files
+        run: ls -R dist
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
