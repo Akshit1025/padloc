@@ -23,8 +23,10 @@ workflows:
         script: |
           npm config set node_gyp $(which node-gyp)
 
-      - name: Install npm dependencies
+      - name: Clean install
         script: |
+          rm -rf node_modules
+          rm -f package-lock.json
           npm install --legacy-peer-deps
 
       - name: Install bower packages
@@ -42,6 +44,7 @@ workflows:
 
       - name: Build macOS app
         script: |
+          export CSC_IDENTITY_AUTO_DISCOVERY=false
           export ELECTRON_CACHE=$HOME/Library/Caches/electron
           npx gulp build --mac
 
