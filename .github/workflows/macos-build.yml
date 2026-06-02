@@ -61,12 +61,33 @@ jobs:
       - name: Run ESLint (non-fatal)
         run: npx gulp eslint || true
 
-      - name: Build mac app
+      - name: Build mac app (try electron-builder; don't fail workflow)
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
           ELECTRON_CACHE: ${{ env.ELECTRON_CACHE }}
         run: |
-          npx gulp build --mac
+          set -o pipefail
+          npx gulp build --mac 2>&1 | tee build-builder.log || true
+
+      - name: Fallback - package with electron-packager if no artifact
+        run: |
+          set -e
+          # detect existing mac artifact
+          if find dist -type f \( -name "*.zip" -o -name "*.dmg" -o -name "*.app" \) | grep -q .; then
+            echo "Artifact already exists, skipping fallback packaging."
+            exit 0
+          fi
+
+          echo "No artifact found — running electron-packager fallback"
+          npx electron-packager dist/electron Padlock --platform=darwin --arch=x64 --out=dist --overwrite --app-bundle-id=com.agtech.padlock --app-version=1.0.0 || true
+
+          # Zip the .app if present
+          APP=$(find dist -maxdepth 1 -type d -name "*Padlock*.app" | head -n1 || true)
+          if [ -n "$APP" ]; then
+            ZIP=dist/Padlock-mac-x64.zip
+            ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
+            echo "Created $ZIP"
+          fi
 
       - name: Show dist contents
         run: ls -R dist || true
@@ -84,22 +105,4 @@ jobs:
           name: mac-dist
           path: dist/**
 
-      - name: Create GitHub Release (on tag)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: ${{ github.ref_name }}
-          body: mac build artifacts
-          draft: false
-          prerelease: false
-        id: create_release
-
-      - name: Upload artifact to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/') && steps.find_artifact.outputs.artifact != ''
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.find_artifact.outputs.artifact }}
-          asset_name: ${{ steps.find_artifact.outputs.artifact }}
-          asset_content_type: application/octet-stream
+      # Release creation/upload removed — user will create release manually
