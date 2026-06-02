@@ -1,0 +1,100 @@
+name: macOS Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    env:
+      ELECTRON_CACHE: $RUNNER_TEMP/electron
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 10
+        uses: actions/setup-node@v4
+        with:
+          node-version: "10.24.1"
+          cache: "npm"
+
+      - name: Show versions
+        run: |
+          node -v
+          npm -v
+          xcodebuild -version || true
+
+      - name: Downgrade npm and install global tools
+        run: |
+          npm install -g npm@6
+          npm install -g gulp
+          npm install -g bower
+          npm install -g node-gyp@6.1.0
+
+      - name: Configure node-gyp
+        run: |
+          npm config set node_gyp $(which node-gyp) || true
+
+      - name: Clean install
+        run: |
+          rm -rf node_modules || true
+          rm -f package-lock.json || true
+          npm install --legacy-peer-deps
+
+      - name: Install bower packages
+        working-directory: app
+        run: |
+          bower install --allow-root
+
+      - name: Build Stylus
+        run: npx gulp stylus
+
+      - name: Run ESLint (non-fatal)
+        run: npx gulp eslint || true
+
+      - name: Build mac app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          ELECTRON_CACHE: ${{ env.ELECTRON_CACHE }}
+        run: |
+          npx gulp build --mac
+
+      - name: Show dist contents
+        run: ls -R dist || true
+
+      - name: Find mac artifact
+        id: find_artifact
+        run: |
+          ART=$(find dist -type f \( -name "*.zip" -o -name "*.dmg" -o -name "*.tar.gz" \) | head -n1 || true)
+          echo "artifact=$ART" >> $GITHUB_OUTPUT
+          echo "Found artifact: $ART"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-dist
+          path: dist/**
+
+      - name: Create GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          body: mac build artifacts
+          draft: false
+          prerelease: false
+        id: create_release
+
+      - name: Upload artifact to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') && steps.find_artifact.outputs.artifact != ''
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.find_artifact.outputs.artifact }}
+          asset_name: ${{ steps.find_artifact.outputs.artifact }}
+          asset_content_type: application/octet-stream
