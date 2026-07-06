@@ -140,7 +140,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mac-dist
-          path: dist/mac-dist.zip
+          name: ${{ env.ARTNAME }}
+          path: ${{ steps.prepare_zip.outputs.artifact }}
 
       # Release creation/upload removed — user will create release manually
