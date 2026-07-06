@@ -99,10 +99,48 @@ jobs:
           echo "artifact=$ART" >> $GITHUB_OUTPUT
           echo "Found artifact: $ART"
 
-      - name: Upload build artifacts
+      - name: Set artifact name
+        run: |
+          # Use tag version if present (strip leading 'v'), otherwise package.json
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            V="${GITHUB_REF#refs/tags/}"
+            V="${V#v}"
+          else
+            V=$(node -p "require('./package.json').version")
+          fi
+          echo "VERSION=$V" >> $GITHUB_ENV
+          echo "ARTNAME=Padlock-$V-mac" >> $GITHUB_ENV
+
+      - name: Prepare single mac zip artifact
+        id: prepare_zip
+        run: |
+          set -e
+          # prefer a packaged .app if present
+          APP=$(find dist -type d -name "*.app" | head -n1 || true)
+          OUT=dist/${ARTNAME}.zip
+          if [ -n "$APP" ]; then
+            APPDIR=$(dirname "$APP")
+            if [ "$(basename "$APP")" != "Padlock.app" ]; then
+              mv "$APP" "$APPDIR/Padlock.app" || true
+              APP="$APPDIR/Padlock.app"
+            fi
+            echo "Creating zip from $APP -> $OUT"
+            ditto -c -k --sequesterRsrc --keepParent "$APP" "$OUT"
+          else
+            echo "No .app found — zipping entire dist directory -> $OUT"
+            if [ -d dist ]; then
+              (cd dist && zip -r ../${ARTNAME}.zip .) || true
+            else
+              echo "dist folder missing"
+              touch "$OUT"
+            fi
+          fi
+          echo "artifact=$OUT" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: mac-dist
-          path: dist/**
+          path: dist/mac-dist.zip
 
       # Release creation/upload removed — user will create release manually
