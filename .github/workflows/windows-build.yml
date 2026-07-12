@@ -1,0 +1,166 @@
+name: Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-win:
+    runs-on: windows-latest
+    env:
+      ELECTRON_CACHE: $RUNNER_TEMP/electron
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 10 (x64)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "10.24.1"
+          cache: "npm"
+          architecture: "x64"
+
+      - name: Show versions
+        run: |
+          node -v
+          npm -v
+          git --version
+
+      - name: Downgrade npm and install global tools
+        run: |
+          npm install -g npm@6
+          npm install -g gulp
+          npm install -g bower
+          npm install -g node-gyp@6.1.0
+
+      - name: Configure node-gyp
+        run: |
+          npm config set node_gyp "$(which node-gyp)" || true
+
+      - name: Clean install
+        run: |
+          rm -rf node_modules || true
+          rm -f package-lock.json || true
+          npm install --legacy-peer-deps
+
+      - name: Install bower packages
+        working-directory: app
+        run: |
+          bower install --allow-root
+
+      - name: Build Stylus
+        run: |
+          npx gulp stylus
+
+      - name: Run ESLint (non-fatal)
+        run: |
+          npx gulp eslint || true
+
+      - name: Build web app for Electron
+        run: |
+          node - <<'NODE'
+          const { build } = require('./lib/build.js');
+          build('dist/electron').then(() => {
+            console.log('Electron web build created in dist/electron');
+          }).catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+          cp electron/main.js dist/electron/main.js
+          cp electron/package.json dist/electron/package.json
+
+      - name: Build Windows installer
+        run: |
+          node - <<'NODE'
+          const builder = require('electron-builder');
+          const { name, version, description, author, licence, homepage } = require('./package.json');
+
+          builder.build({
+            targets: builder.Platform.WINDOWS.createTarget('nsis'),
+            devMetadata: {
+              build: {
+                appId: 'com.agtech.padlock'
+              },
+              directories: {
+                buildResources: 'electron',
+                app: 'dist/electron',
+                output: 'dist'
+              }
+            },
+            appMetadata: {
+              name,
+              version,
+              description,
+              author,
+              licence,
+              homepage,
+              productName: 'Padlock',
+              main: 'main.js'
+            }
+          }).then(() => {
+            console.log('Windows build complete');
+          }).catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Set artifact names
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "EXENAME=Padlock.Setup.$version.exe" >> "$GITHUB_ENV"
+          echo "NUSPECNAME=padlock-$version-full.nuspec" >> "$GITHUB_ENV"
+          echo "NUPKGNAME=padlock-$version-full.nupkg" >> "$GITHUB_ENV"
+
+      - name: Rename installer and build nupkg
+        run: |
+          set -e
+          installer=$(find dist -maxdepth 1 -type f -name "*.exe" | head -n1 || true)
+          if [ -z "$installer" ]; then
+            echo "Windows installer not found in dist"
+            exit 1
+          fi
+
+          cp "$installer" "dist/$EXENAME"
+
+          pkgdir="dist/nupkg"
+          rm -rf "$pkgdir"
+          mkdir -p "$pkgdir/tools"
+
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="utf-8"?>' \
+            '<package>' \
+            '  <metadata>' \
+            '    <id>padlock-full</id>' \
+            "    <version>$VERSION</version>" \
+            '    <authors>Akshit Gupta</authors>' \
+            '    <description>Padlock Windows installer package</description>' \
+            '    <requireLicenseAcceptance>false</requireLicenseAcceptance>' \
+            '  </metadata>' \
+            '</package>' > "$pkgdir/$NUSPECNAME"
+
+          cp "dist/$EXENAME" "$pkgdir/tools/"
+          (cd "$pkgdir" && zip -qr "../$NUPKGNAME" .)
+
+          test -f "dist/$EXENAME"
+          test -f "dist/$NUPKGNAME"
+
+      - name: Show dist contents
+        run: |
+          find dist -maxdepth 2 -type f | sort
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-dist
+          path: |
+            dist/Padlock.Setup.1.2.0-alpha.2.exe
+            dist/padlock-1.2.0-alpha.2-full.nupkg

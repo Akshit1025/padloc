@@ -130,6 +130,12 @@ padlock.App = (function (Polymer, platform) {
 
       // Init view when app resumes
       document.addEventListener("resume", this._resume.bind(this, true), false);
+      window.addEventListener(
+        "update-downloaded",
+        function (e) {
+          this._updateDownloaded.apply(this, e.detail);
+        }.bind(this)
+      );
     },
     _cancelAutoLock: function () {
       this._pausedAt = null;
@@ -233,6 +239,8 @@ padlock.App = (function (Polymer, platform) {
           // Fetch settings from persistent storage
           this.settings.fetch({
             success: function () {
+              // Write version to settings
+              this.set("settings.version", padlock.version);
               this._notifySettings();
               this._unlockSuccess();
             }.bind(this),
@@ -1199,6 +1207,9 @@ padlock.App = (function (Polymer, platform) {
 
         this._openForm(els, a.text, dismissed, dismissed, true);
       }
+    },
+    _updateDownloaded: function () {
+      this._alert("New Update Available! Restart the app to install!");
     }
   });
 })(Polymer, padlock.platform);

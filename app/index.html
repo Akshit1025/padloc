@@ -5,6 +5,22 @@
     <title>Padlock</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
+    <script>
+        /* global require, electron */
+        (function () {
+            "use strict";
+
+            if (typeof require !== "undefined") {
+                delete window.module;
+                window.electron = require("electron");
+                electron.ipcRenderer.on("auto-update", function (_, type) {
+                    const evt = new CustomEvent(type, { detail: Array.prototype.slice.call(arguments, 3) });
+                    window.dispatchEvent(evt);
+                });
+            }
+        })();
+    </script>
+
     <style>
         html {
             background: #59c6ff;
@@ -19,7 +35,9 @@
 
     <!-- Define padlock globally before anything else relies on it -->
     <script>
-        window.padlock = {};
+        window.padlock = {
+            version: ""
+        };
     </script>
 
     <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
@@ -58,6 +76,11 @@
             if (cordova.InAppBrowser) {
                 window.open = cordova.InAppBrowser.open;
             }
+            // Try to get app version again after deviceready event since the getAppVersion
+            // plugin is not ready before
+            padlock.platform.getAppVersion(function (version) {
+                padlock.version = version;
+            });
         });
     </script>
 

@@ -1,5 +1,5 @@
 /* jshint browser: true */
-/* global padlock, chrome, cordova */
+/* global padlock, chrome, cordova, electron */
 
 /**
  * Module containing various platform-specific utilities
@@ -193,6 +193,18 @@ padlock.platform = (function () {
     }
   };
 
+  var getAppVersion = function(cb) {
+    if (typeof electron !== "undefined") {
+      cb(electron.remote.app.getVersion());
+    } else if (typeof cordova !== "undefined" && cordova.getAppVersion) {
+      cordova.getAppVersion.getVersionNumber(cb);
+    } else if (isChromeApp()) {
+      cb(chrome.runtime.getManifest().version);
+    } else {
+      cb("");
+    }
+  };
+
   return {
     getVendorPrefix: getVendorPrefix,
     getTransitionEndEventName: getTransitionEndEventName,
@@ -206,6 +218,7 @@ padlock.platform = (function () {
     setClipboard: setClipboard,
     getClipboard: getClipboard,
     keyboardDisableScroll: keyboardDisableScroll,
-    getAppStoreLink: getAppStoreLink
+    getAppStoreLink: getAppStoreLink,
+    getAppVersion: getAppVersion
   };
 })();
