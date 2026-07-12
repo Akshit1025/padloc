@@ -43,7 +43,7 @@ jobs:
       - name: Install build tools
         run: |
           npm install --no-save \
-            electron-packager@8.7.2 \
+            electron-packager@8.5.2 \
             electron-winstaller@2.7.0
 
       - name: Install bower
@@ -78,7 +78,7 @@ jobs:
 
       - name: Package Electron app
         run: |
-          npx electron-packager \
+          ./node_modules/.bin/electron-packager \
             dist/electron \
             Padlock \
             --platform=win32 \
