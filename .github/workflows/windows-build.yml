@@ -82,6 +82,7 @@ jobs:
           const { name, version, description, author, licence, homepage } = require('./package.json');
 
           builder.build({
+            electronVersion: '1.4.5',
             targets: builder.Platform.WINDOWS.createTarget('nsis'),
             devMetadata: {
               build: {
