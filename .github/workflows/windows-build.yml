@@ -35,7 +35,6 @@ jobs:
       - name: Downgrade npm and install global tools
         run: |
           npm install -g npm@6
-          npm install -g gulp
           npm install -g bower
           npm install -g node-gyp@6.1.0
 
