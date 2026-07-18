@@ -1,6 +1,6 @@
 "use strict";
 
-const { app, BrowserWindow, shell } = require("electron");
+const { app, BrowserWindow, shell, Menu } = require("electron");
 const { autoUpdater } = require("electron-auto-updater");
 const path = require("path");
 const url = require("url");
@@ -55,10 +55,40 @@ function createWindow() {
     });
 }
 
+function createApplicationMenu() {
+  // Set up menu
+  const template = [
+    {
+      label: "Application",
+      submenu: [{ role: "about" }, { type: "separator" }, { role: "quit" }]
+    },
+    {
+      label: "Edit",
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "selectall" }
+      ]
+    }
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", createWindow);
+app.on("ready", () => {
+    createWindow();
+    // Create application on MacOS
+    if (os.platform() == "darwin") {
+        createApplicationMenu();
+    }
+});
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {

@@ -205,6 +205,20 @@ padlock.platform = (function () {
     }
   };
 
+  var getPlatformName = function() {
+    if (typeof require !== "undefined" && require("os")) {
+      return require("os").platform();
+    } else if (isIOS()) {
+      return "ios";
+    } else if (isAndroid()) {
+      return "android";
+    } else if (isChromeApp()) {
+      return "chrome";
+    } else {
+      return "";
+    }
+  }
+
   return {
     getVendorPrefix: getVendorPrefix,
     getTransitionEndEventName: getTransitionEndEventName,
@@ -219,6 +233,7 @@ padlock.platform = (function () {
     getClipboard: getClipboard,
     keyboardDisableScroll: keyboardDisableScroll,
     getAppStoreLink: getAppStoreLink,
-    getAppVersion: getAppVersion
+    getAppVersion: getAppVersion,
+    getPlatformName: getPlatformName
   };
 })();

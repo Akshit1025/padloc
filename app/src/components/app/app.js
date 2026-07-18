@@ -1217,6 +1217,9 @@ padlock.App = (function (Polymer, platform) {
       this.collection.clear();
       this.collection.destroy();
       this._openStartView();
+      this.async(function() {
+        this._alert("Data has been reset! You can now set up a new password and start fresh!");
+      }, 1000);
     }
   });
 })(Polymer, padlock.platform);
