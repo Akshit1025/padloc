@@ -43,7 +43,7 @@
         <!-- Settings VIEW -->
         <padlock-settings-view id="settingsView" class="view" on-back="_settingsBack"
             on-open-cloud-view="_openCloudView" on-import="_openImportView" on-export="_openExportView"
-            on-reset="_openStartView" on-change-password="_changePwd" collection="{{ collection }}"
+            on-reset="_resetData" on-change-password="_changePwd" collection="{{ collection }}"
             settings="{{ settings }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
         <padlock-import-view id="importView" class="view" on-imported="_imported" collection="{{ collection }}"

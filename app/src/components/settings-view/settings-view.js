@@ -85,11 +85,6 @@
           "This action can not be undone! Please enter your master password to confirm.",
         submit: function (data) {
           if (data.password == this.collection.defaultPassword) {
-            this.set("settings.sync_connected", false);
-            this.set("settings.sync_key", "");
-            this.set("settings.sync_email", "");
-            this.collection.clear();
-            this.collection.destroy();
             this.fire("reset");
           } else {
             this.fire("notify", {
@@ -103,6 +98,9 @@
     },
     _openCloudView: function () {
       this.fire("open-cloud-view");
+    },
+    _version: function() {
+      return padlock.version;
     }
   });
 })(Polymer, padlock.platform, padlock.ViewBehavior);
