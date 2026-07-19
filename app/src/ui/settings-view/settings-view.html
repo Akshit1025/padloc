@@ -118,7 +118,7 @@
                 <div class="section-row" hidden$="[[ _isMobile() ]]">
                     <div class="section-row-label">Select a File</div>
                     <input type="file" name="importFile" id="importFile" on-change="_importFile"
-                        accept="text/plain,.padlock,.set">
+                        accept="text/plain,.pls,.set">
                     <label for="importFile" class="tiles-2">
                         <pl-icon icon="upload" class="tap"></pl-icon>
                     </label>
@@ -291,7 +291,7 @@
                         .then((data) => {
                             const a = document.createElement("a");
                             a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
-                            a.download = "exported.padlock";
+                            a.download = "padlock-export.pls";
                             a.click();
                         });
                 }

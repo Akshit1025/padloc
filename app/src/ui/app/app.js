@@ -2,7 +2,7 @@
   const Collection = padlock.data.Collection;
   const Record = padlock.data.Record;
   const Settings = padlock.data.Settings;
-  const LocalStorageSource = padlock.source.LocalStorageSource;
+  const FileSource = padlock.source.FileSource;
   const EncryptedSource = padlock.source.EncryptedSource;
   const CloudSource = padlock.source.CloudSource;
 
@@ -43,11 +43,11 @@
       super();
       this.collection = new Collection();
       this.localSource = new EncryptedSource(
-        new LocalStorageSource("coll_default")
+        new FileSource("data.pls")
       );
       this.settings = new Settings();
       this.settingsSource = new EncryptedSource(
-        new LocalStorageSource("settings_encrypted")
+        new FileSource("settings.pls")
       );
       this.cloudSource = new EncryptedSource(new CloudSource(this.settings));
 

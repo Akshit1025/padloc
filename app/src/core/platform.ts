@@ -1,6 +1,8 @@
 declare var cordova: any;
 declare var chrome: any;
-declare var electron: any;
+
+const nodeRequire = window.require;
+const electron = nodeRequire && nodeRequire("electron");
 
 let vPrefix: {
   lowercase: string;
@@ -124,12 +126,16 @@ function domGetClipboard(): string {
   return clipboardTextArea.value;
 }
 
+export function isCordova(): Boolean {
+  return typeof cordova !== "undefined";
+}
+
 //* Sets the clipboard text to a given string
 export function setClipboard(text: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
     if (
-      typeof cordova !== "undefined" &&
+      isCordova() &&
       cordova.plugins &&
       cordova.plugins.clipboard
     ) {
@@ -146,7 +152,7 @@ export function getClipboard(): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
     if (
-      typeof cordova !== "undefined" &&
+      isCordova() &&
       cordova.plugins &&
       cordova.plugins.clipboard
     ) {
@@ -170,10 +176,10 @@ export function isTouch() {
 //* Disables scrolling the viewport on iOS when virtual keyboard is showing. Does nothing on other
 //* Platforms so can be safely called independtly of the platform
 export function keyboardDisableScroll(disable: boolean) {
-  typeof cordova != "undefined" &&
-    cordova.plugins &&
-    cordova.plugins.Keyboard &&
-    cordova.plugins.Keyboard.disableScroll(disable);
+  isCordova() &&
+  cordova.plugins &&
+  cordova.plugins.Keyboard &&
+  cordova.plugins.Keyboard.disableScroll(disable);
 }
 
 export function getAppStoreLink(): string {
@@ -188,10 +194,18 @@ export function getAppStoreLink(): string {
   }
 }
 
+export function hasNode(): Boolean {
+  return !!nodeRequire;
+}
+
+export function isElectron(): Boolean {
+  return !!electron;
+}
+
 export async function getAppVersion(): Promise<string> {
-  if (typeof electron !== "undefined") {
+  if (isElectron()) {
     return electron.remote.app.getVersion();
-  } else if (typeof cordova !== "undefined" && cordova.getAppVersion) {
+  } else if (isCordova() && cordova.getAppVersion) {
     return await new Promise<string>((resolve, reject) => {
       cordova.getAppVersion.getVersionNumber(resolve, reject);
     });
@@ -203,8 +217,8 @@ export async function getAppVersion(): Promise<string> {
 }
 
 export function getPlatformName(): string {
-  if (typeof require !== "undefined" && require("os")) {
-    return require("os").platform();
+  if (isElectron() && require("os")) {
+    return nodeRequire("os").platform();
   } else if (isIOS()) {
     return "ios";
   } else if (isAndroid()) {
