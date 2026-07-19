@@ -26,13 +26,16 @@
           type: String,
           value: ""
         },
-        records: Array,
+        records: { type: Array },
         selectedRecord: {
           type: Object,
-          observer: "_selectedRecordChanged",
           notify: true
         }
       };
+    }
+
+    static get observers() {
+      return ["_scrollToSelected(records, selectedRecord)"];
     }
 
     ready() {
@@ -40,10 +43,10 @@
       window.addEventListener("keydown", (e) => {
         switch (e.key) {
           case "ArrowDown":
-            this.$.list._focusPhysicalItem(this.$.list.firstVisibleIndex);
+            this.$.list._focusItem(this.$.list.firstVisibleIndex);
             break;
           case "ArrowUp":
-            this.$.list._focusPhysicalItem(this.$.list.lastVisibleIndex);
+            this.$.list._focusItem(this.$.list.lastVisibleIndex);
             break;
         }
       });
@@ -56,7 +59,6 @@
 
     deselect() {
       this.$.list.clearSelection();
-      this.$.list.notifyResize();
     }
 
     _filterAndSort() {
@@ -89,10 +91,6 @@
       return items.slice(0, 50);
     }
 
-    _selectedRecordChanged() {
-      this.$.list.notifyResize();
-    }
-
     _lock() {
       this.dispatchEvent(new CustomEvent("lock"));
     }
@@ -103,6 +101,14 @@
 
     _openCloudView() {
       this.dispatchEvent(new CustomEvent("open-cloud-view"));
+    }
+
+    _scrollToSelected() {
+      const l = this.$.list;
+      const i = l.items.indexOf(this.selectedRecord);
+      if (i !== -1 && (i < l.firstVisibleIndex || i > l.lastVisibleIndex)) {
+        l.scrollToItem(this.selectedRecord);
+      }
     }
 
     focusFilterInput() {
