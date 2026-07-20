@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../input/input.html">
 
 <dom-module id="pl-dialog">
 
@@ -133,6 +134,9 @@
                             clearTimeout(this._hideTimeout);
                             this._hideTimeout = null;
                         }
+                        if (padlock.Input.activeInput) {
+                            padlock.Input.activeInput.blur();
+                        }
                         this.style.display = "";
                         this.isShowing = true;
                     } else {
@@ -148,7 +152,10 @@
 
                     this.classList.toggle("open", this.open);
 
-                    this.dispatchEvent(new CustomEvent(this.open ? "dialog-open" : "dialog-close"));
+                    this.dispatchEvent(new CustomEvent(
+                        this.open ? "dialog-open" : "dialog-close",
+                        {bubbles: true, composed: true}
+                    ));
                 }
 
                 dismiss() {

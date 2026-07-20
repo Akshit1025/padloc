@@ -1,9 +1,12 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
+<link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../loading-button/loading-button.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="../toggle/toggle-button.html">
 
 <dom-module id="pl-cloud-view">
 
@@ -48,6 +51,18 @@
                 display: none;
             }
 
+            pl-icon[icon=refresh][spin] {
+                background: transparent;
+                pointer-events: none;
+                animation: spin 1s infinite;
+                transform-origin: center 49%;
+            }
+
+            pl-icon[spin]::after,
+            pl-icon[spin]::before {
+                display: none;
+            }
+
             @media (min-width: 700px) {
                 pl-icon[icon=backward] {
                     display: none;
@@ -59,75 +74,76 @@
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">Padlock Cloud</div>
-            <pl-icon icon="refresh" class="tap" on-click="synchronize"></pl-icon>
+            <pl-icon icon="refresh" class="tap" on-click="synchronize" spin$="[[ isSynching ]]"></pl-icon>
         </header>
 
         <main>
 
-            <section class="tiles tiles-2" hidden$="[[ settings.syncConnected ]]">
+            <section class="tiles tiles-2" hidden$="[[ _isSet(settings.syncToken) ]]">
                 <div class="note">
-                    Padlock Cloud provides a convenient way of synchronising your data between all your devices. By
-                    securely storing your data in the cloud, it not only allows you to easily access it from anywhere
-                    but also acts as a backup in case you should lose your device or accidentally erase your data.
-                    Before being sent to our servers, your data is encrypted locally using your master password to make
-                    sure that nobody can read it - not even we!
+                    [[ _generalInfoText() ]]
                 </div>
-                <pl-input id="emailInput" type="email" placeholder="Enter Email Adress" value="[[ settings.syncEmail ]]"
-                    required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="Get Started"
+                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]"
+                    value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
+                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]"
                     on-click="connect"></pl-loading-button>
+            </section>
+
+            <section class="tiles tiles-2"
+                hidden$="[[ !_isActivationPending(settings.syncToken, settings.syncConnected) ]]">
+                <div class="note">
+                    <strong>[[ $l("Activation pending") ]]</strong> -
+                    [[ _activationPendingText(settings.syncEmail) ]]
+                    <div class="conn-id">[[ $l("Connection ID: {0}", settings.syncId) ]]</div>
+                </div>
+                <button class="tap" on-click="_cancelConnect">[[ $l("Cancel") ]]</button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !_isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="note">
-                    <strong>Your trial period ends in {{ _remainingTrialDays(settings.syncTrialEnd) }} days.</strong>
-                    After this period, your access will be read-only, which means you will be able to access
-                    your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize
-                    changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!
+                    <strong>[[ $l("Your trial period ends in {0} days.", _remainingTrialDays) ]]</strong> -
+                    [[ _trialInfoText() ]]
                 </div>
-                <button class="tap" on-click="_openDashboard">Manage Subscriptions</button>
+                <button class="tap" on-click="_openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !_isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="note">
-                    <strong>Read-Only</strong> -
-                    You currently don't have an active subscription! This means you can access
-                    your existing data on Padlock Cloud but you won't be able to upload any new data
-                    or synchronize changes between devices. Get a subscription now to regain full access
-                    to Padlock Cloud!
+                    <strong>[[ $l("Read-Only") ]]</strong> -
+                    [[ _readOnlyInfoText() ]]
                 </div>
-                <button class="tap" on-click="_openDashboard">Manage Subscriptions</button>
+                <button class="tap" on-click="_openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !settings.syncConnected ]]">
                 <div class="note">
-                    <strong>Connected</strong> - This device is connected to the Padlock Cloud account <strong>{{
-                        settings.syncEmail }}</strong>.
-                    Connect all your devices with the same account to easily synchronize your data between them!
-                    <div class="conn-id">Connection ID: {{ settings.syncId }}</div>
+                    <strong>[[ $l("Connected") ]]</strong> -
+                    [[ _connectedInfoText(settings.syncEmail) ]]
+                    <div class="conn-id">[[ $l("Connection ID: {0}", settings.syncId) ]]</div>
                 </div>
                 <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
-                    label="Synchronize"></pl-loading-button>
-                <button class="tap" on-click="_openDashboard">Manage Account</button>
-                <button class="tap" on-click="_disconnect">Disconnect</button>
-                <pl-toggle-button active="{{ settings.syncAuto }}" label="Auto Sync" reverse
+                    label="[[ $l('Synchronize') ]]"></pl-loading-button>
+                <button class="tap" on-click="_openDashboard">[[ $l("Manage Account") ]]</button>
+                <button class="tap" on-click="_disconnect">[[ $l("Disconnect") ]]</button>
+                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Auto Sync') ]]" reverse
                     class="tap"></pl-toggle-button>
             </section>
 
             <section class="tiles tiles-2">
                 <div class="note">
-                    By providing a custom URL, you can synchronize your data with a server other than the official
-                    Padlock Cloud server. <strong>WARNING: This is only recommended for advanced users!</strong>
+                    [[ $l("By providing a custom URL you can synchronize your data with a server other than the official
+                    Padlock Cloud server.") ]]
+                    <strong>[[ $l("WARNING: This is only recommended for advanced users!") ]]</strong>
                 </div>
-                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="Use Custom Server" reverse
+                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
                     on-change="_customHostChanged" class="tap"></pl-toggle-button>
                 <div class="tap tiles" hidden$="[[ !settings.syncCustomHost ]]">
-                    <pl-input id="customUrlInput" placeholder="Enter Custom URL" value="{{ settings.syncHostUrl }}"
-                        pattern="^https://[^\s/$.?#].[^\s]*$" required></pl-input>
+                    <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
+                        value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$" required></pl-input>
                     <div class="note warning">
-                        <strong>Invalid URL</strong> - Make sure that the URL is of the form
-                        <strong>https://myserver.tld:port</strong>.
-                        Note that a <strong>https</strong> connection is strictly required.
+                        <strong>[[ $l("Invalid URL") ]]</strong> -
+                        [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https
+                        connection is required.") ]]
                     </div>
                 </div>
             </section>
@@ -139,7 +155,7 @@
     <script>
         (() => {
 
-            class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.BaseElement)) {
+            class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.NotificationMixin(padlock.BaseElement))) {
 
                 static get is() { return "pl-cloud-view"; }
 
@@ -150,17 +166,32 @@
                             type: Object,
                             notify: true
                         },
+                        isSynching: {
+                            type: Boolean,
+                            value: false,
+                            notify: true
+                        },
                         localSource: Object,
                         settings: {
                             type: Object,
                             notify: true
+                        },
+                        _remainingTrialDays: {
+                            type: Number,
+                            computed: "_computeRemainingTrialDays(settings.syncTrialEnd)"
                         }
                     };
                 }
 
+                static get observers() {
+                    return [
+                        "_credentialsChanged(settings.syncToken, settings.syncConnected)"
+                    ];
+                }
+
                 synchronize() {
                     if (!this.settings.syncConnected) {
-                        this.alert("You have to be connected to a Padlock Cloud account to synchronize your data!")
+                        this.alert($l("You have to be connected to a Padlock Cloud account to synchronize your data!"))
                             .then(() => this.$.emailInput.focus());
                         return Promise.reject();
                     }
@@ -191,7 +222,10 @@
                 }
 
                 _disconnect() {
-                    this.confirm("Are you sure you want to disconnect from Padlock Cloud?", "Disconnect").then((confirmed) => {
+                    this.confirm(
+                        $l("Are you sure you want to disconnect from Padlock Cloud?"),
+                        $l("Disconnect")
+                    ).then((confirmed) => {
                         if (confirmed) {
                             this.settings.syncConnected = false;
                             this.settings.syncToken = "";
@@ -204,7 +238,7 @@
 
                 connect() {
                     if (this.$.emailInput.invalid) {
-                        this.alert(this.$.emailInput.validationMessage || "Please enter a valid email address!");
+                        this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
                     } else {
                         this._requestAuthToken(this.$.emailInput.value.toLowerCase());
                     }
@@ -226,7 +260,7 @@
                             this.settings.syncId = authToken.id;
                             this.notifyPath("settings");
                             this.$.connectButton.success();
-                            this._promptCheckEmail();
+                            this.alert(this._activationPendingText());
                         })
                         .catch((e) => {
                             switch (typeof e === "string" ? e : e.code) {
@@ -235,12 +269,12 @@
                                     break;
                                 case "rate_limit_exceeded":
                                     this.$.connectButton.fail();
-                                    this.alert("For security reasons only a limited amount of connection request " +
-                                        "are allowed at a time. Please wait a little before trying again!");
+                                    this.alert($l("For security reasons only a limited amount of connection request " +
+                                        "are allowed at a time. Please wait a little before trying again!"));
                                     break;
                                 default:
                                     this.$.connectButton.fail();
-                                    this.alert("Something went wrong. Please try again later!");
+                                    this.alert($l("Something went wrong. Please try again later!"));
                             }
                             this.notifyPath("settings");
                         });
@@ -259,7 +293,9 @@
                 }
 
                 _synchronize() {
+                    this.isSynching = true;
                     this.$.syncButton.start();
+
                     return this.collection.fetch(this.cloudSource)
                         .then(() => this.collection.save(this.localSource))
                         .then(() => this.collection.save(this.cloudSource))
@@ -270,8 +306,8 @@
 
                             if (this.localSource.password !== this.cloudSource.password) {
                                 return this.confirm(
-                                    "Do you want to change your Padlock Cloud master password to your local one?",
-                                    "Yes", "No"
+                                    $l("Do you want to change your Padlock Cloud master password to your local one?"),
+                                    $l("Yes"), $l("No")
                                 ).then((confirm) => {
                                     if (confirm) {
                                         this.$.syncButton.start();
@@ -279,89 +315,106 @@
                                         return this.collection.save(this.cloudSource)
                                             .then(() => {
                                                 this.$.syncButton.success();
-                                                this.alert("Padlock Cloud master password updated successfully!");
+                                                this.isSynching = false;
+                                                this.alert($l("Padlock Cloud master password updated successfully!"));
                                             })
                                             .catch(() => {
                                                 this.$.syncButton.fail();
-                                                this.alert("Failed to update Padlock Cloud " +
-                                                    "master password. Please try again later!");
+                                                this.isSynching = false;
+                                                this.alert($l("Failed to update Padlock Cloud " +
+                                                    "master password. Please try again later!"));
                                             });
                                     }
                                 });
                             }
+
+                            this.isSynching = false;
                         })
                         .catch((e) => {
                             this.notifyPath("settings");
                             this.$.syncButton.fail();
-                            switch (e.code) {
-                                case "account_not_found":
-                                case "invalid_auth_token":
-                                case "expired_auth_token":
-                                    this.settings.syncConnected = false;
-                                    this.settings.syncToken = "";
-                                    this.settings.syncEmail = "";
-                                    this.settings.syncReadonly = false;
-                                    this.notifyPath("settings");
-                                    this.alert("There was a problem authenticating with Padlock Cloud. Please " +
-                                        "complete the connection process again!");
-                                    break;
-                                case "deprecated_api_version":
-                                    this.confirm(
-                                        "A newer version of Padlock is available now! You can download it using the " +
-                                        "button below. Please note that you won't be able to use Padlock Cloud until " +
-                                        "you install the latest version!",
-                                        "Update Now",
-                                        "Dismiss"
-                                    ).then((confirm) => {
-                                        if (confirm) {
-                                            window.open(padlock.platform.getAppStoreLink(), "_system");
-                                        }
-                                    });
-                                    break;
-                                case "rate_limit_exceeded":
-                                    this.alert("It seems Padlock Cloud is over capacity right now. Please try again later!");
-                                    break;
-                                case "json_error":
-                                case "invalid_container_data":
-                                case "invalid_key_params":
-                                    this.alert("The data received from Padlock Cloud seems to be corrupt and " +
-                                        "cannot be decrypted. This might be due to a network error but could " +
-                                        "also be the result of someone trying to compromise your connection to " +
-                                        "Padlock Cloud. If the problem persists, please notify " +
-                                        "Padlock support!");
-                                    break;
-                                case "decryption_failed":
-                                case "encryption_failed":
-                                    // Decryption failed. This means that the local master
-                                    // password does not match the one that was used for encrypting the remote data so
-                                    // we need to prompt the user for the correct password.
-                                    this.prompt("It seems that your Padlock Cloud account uses a different master " +
-                                        "password than then one you are using on this device. Please provide the " +
-                                        "correct master password for your Padlock Cloud account!",
-                                        "Enter Master Password", "password", "Submit")
-                                        .then((pwd) => {
-                                            if (pwd === null) {
-                                                return;
-                                            }
-
-                                            this.cloudSource.password = pwd;
-                                            this.synchronize();
-                                        });
-                                    break;
-                                case "subscription_required":
-                                    this.alert("You currently don't have an active subscription which means you can access " +
-                                        "your existing data on Padlock Cloud but you won't be able to upload any new data " +
-                                        "or synchronize changes between devices. Get a subscription now to regain full access " +
-                                        "to Padlock Cloud!");
-                                    break;
-                                default:
-                                    this.alert("Something went wrong. Please try again later!");
-                            }
+                            this.isSynching = false;
+                            this._handleCloudError(e);
                         });
                 }
 
+                _handleCloudError(e) {
+                    switch (e.code) {
+                        case "account_not_found":
+                        case "invalid_auth_token":
+                        case "expired_auth_token":
+                            this.settings.syncConnected = false;
+                            this.settings.syncToken = "";
+                            this.settings.syncEmail = "";
+                            this.settings.syncReadonly = false;
+                            this.notifyPath("settings");
+                            this.alert($l("There was a problem authenticating with Padlock Cloud. Please " +
+                                "complete the connection process again!"));
+                            break;
+                        case "deprecated_api_version":
+                            this.confirm(
+                                $l("A newer version of Padlock is available now! You can download it using the " +
+                                    "button below. Please note that you won't be able to use Padlock Cloud until " +
+                                    "you install the latest version!"),
+                                $l("Update Now"),
+                                $l("Dismiss")
+                            ).then((confirm) => {
+                                if (confirm) {
+                                    window.open(padlock.platform.getAppStoreLink(), "_system");
+                                }
+                            });
+                            break;
+                        case "rate_limit_exceeded":
+                            this.alert($l("It seems Padlock Cloud is over capacity right now. Please try again later!"));
+                            break;
+                        case "json_error":
+                        case "invalid_container_data":
+                        case "invalid_key_params":
+                            this.alert($l(
+                                "The data received from Padlock Cloud seems to be corrupt and " +
+                                "cannot be decrypted. This might be due to a network error but could " +
+                                "also be the result of someone trying to compromise your connection to " +
+                                "Padlock Cloud. If the problem persists, please notify " +
+                                "Padlock support!"
+                            ));
+                            break;
+                        case "decryption_failed":
+                        case "encryption_failed":
+                            // Decryption failed. This means that the local master
+                            // password does not match the one that was used for encrypting the remote data so
+                            // we need to prompt the user for the correct password.
+                            this.prompt(
+                                $l("It seems that your Padlock Cloud account uses a different master " +
+                                    "password than then one you are using on this device. Please provide the " +
+                                    "correct master password for your Padlock Cloud account!"),
+                                $l("Enter Master Password"), "password", $l("Submit"))
+                                .then((pwd) => {
+                                    if (pwd === null) {
+                                        return;
+                                    }
+
+                                    this.cloudSource.password = pwd;
+                                    this.synchronize();
+                                });
+                            break;
+                        case "subscription_required":
+                            this.alert($l(
+                                "You currently don't have an active subscription which means you can access " +
+                                "your existing data on Padlock Cloud but you won't be able to upload any new data " +
+                                "or synchronize changes between devices. Get a subscription now to regain full access " +
+                                "to Padlock Cloud!"
+                            ));
+                            break;
+                        default:
+                            this.alert($l("Something went wrong. Please try again later!"));
+                    }
+                }
+
                 _connectionSuccess() {
-                    this.confirm("You successfully paired this device with Padlock Cloud!", "Synchonize Now", "Dismiss")
+                    this.confirm(
+                        $l("You successfully paired this device with Padlock Cloud!"),
+                        $l("Synchonize Now"), $l("Dismiss")
+                    )
                         .then((confirmed) => {
                             if (confirmed) {
                                 this.synchronize();
@@ -371,8 +424,11 @@
 
                 _customHostChanged() {
                     if (this.settings.syncCustomHost) {
-                        this.confirm("Are you sure you want to use a custom server for synchronization? " +
-                            "This option is only recommended for advanced users!", "Continue").then((confirmed) => {
+                        this.confirm(
+                            $l("Are you sure you want to use a custom server for synchronization? " +
+                                "This option is only recommended for advanced users!"),
+                            $l("Continue"))
+                            .then((confirmed) => {
                                 if (!confirmed) {
                                     this.set("settings.syncCustomHost", false);
                                 }
@@ -388,32 +444,93 @@
                     window.open(this.settings.syncHostUrl + "/dashboard/", "_system");
                 }
 
-                _remainingTrialDays(trialEnd) {
+                _computeRemainingTrialDays(trialEnd) {
                     var now = new Date().getTime() / 1000;
                     trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
                     return Math.ceil((trialEnd - now) / 60 / 60 / 24);
                 }
 
-                _promptCheckEmail(failed) {
-                    let text = failed ? "It doesn't look like you've completed the connection process yet!" : "Almost done!";
-                    text += ` An email was sent to ${this.settings.syncEmail}. Please follow the instructions and
-            then return here to complete the process! (Connection ID: ${this.settings.syncId})`;
-                    this.confirm(text, "Verify Connection", "Cancel").then((confirmed) => {
-                        if (confirmed) {
-                            this.cloudSource.source.testCredentials().then((connected) => {
-                                this.settings.syncConnected = connected;
-                                this.notifyPath("settings");
-                                if (connected) {
-                                    this._connectionSuccess();
-                                } else {
-                                    this._promptCheckEmail(true);
-                                }
-                            });
-                        } else {
-                            this.set("settings.syncToken", "");
+                _testCredentials(pollInterval) {
+                    if (this._testCredsPromise || !this._isActivationPending()) {
+                        return;
+                    }
+
+                    this._testCredsPromise = this.cloudSource.source.testCredentials()
+                        .then((connected) => {
+                            this._testCredsPromise = null;
+                            this.settings.syncConnected = connected;
                             this.notifyPath("settings");
-                        }
-                    });
+
+                            if (connected) {
+                                this._connectionSuccess();
+                            }
+
+                            if (!connected && pollInterval) {
+                                setTimeout(() => this._testCredentials(pollInterval), pollInterval);
+                            }
+                        })
+                        .catch((e) => {
+                            this._testCredsPromise = null;
+                            this._handleCloudError(e);
+                        });
+                }
+
+                _credentialsChanged() {
+                    if (this._isActivationPending()) {
+                        // Wait 1 minute, then poll every 10 seconds
+                        setTimeout(() => this._testCredentials(10000), 60000);
+                        // Also test on first focus event since there is a chance the user is just returning
+                        // from his email client / web browsers
+                        window.addEventListener("focus", () => this._testCredentials(), { once: true });
+                    }
+                }
+
+                _isActivationPending() {
+                    return this.settings.syncToken && !this.settings.syncConnected;
+                }
+
+                _generalInfoText() {
+                    return $l(
+                        "Padlock Cloud provides a convenient way of synchronising your data between " +
+                        "all your devices. By securely storing your data in the cloud, it not only allows you " +
+                        "to easily access it from anywhere but also acts as a backup in case you should lose " +
+                        "your device or accidentally erase your data. Before being sent to our servers, " +
+                        "your data is encrypted locally using your master password to make sure that nobody " +
+                        "can read it - not even we!"
+                    );
+                }
+
+                _trialInfoText() {
+                    return $l(
+                        "After this period, your access will be read-only, which means you will be able to access " +
+                        "your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize " +
+                        "changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!"
+                    );
+                }
+
+                _readOnlyInfoText() {
+                    return $l(
+                        "You currently don't have an active subscription! This means you can access " +
+                        "your existing data on Padlock Cloud but you won't be able to upload any new data " +
+                        "or synchronize changes between devices. Get a subscription now to regain full access " +
+                        "to Padlock Cloud!"
+                    );
+                }
+
+                _connectedInfoText() {
+                    return $l(
+                        "This device is connected to the Padlock Cloud account {0}. Connect all your devices " +
+                        "with the same account to easily synchronize your data between them!",
+                        this.settings.syncEmail
+                    );
+                }
+
+                _activationPendingText() {
+                    return $l(
+                        "You are almost done connecting this device. An email was sent to {0}. Check your " +
+                        "inbox and follow the instructions to complete the process!",
+                        this.settings.syncEmail
+                    );
                 }
 
             }

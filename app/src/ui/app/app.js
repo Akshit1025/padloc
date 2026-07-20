@@ -20,8 +20,13 @@
         settings: Object,
         settingsSource: Object,
         cloudSource: Object,
+        locked: {
+          type: Boolean,
+          value: true,
+          observer: "_lockedChanged"
+        },
         _currentView: {
-          type: "string",
+          type: String,
           value: "placeholderView",
           observer: "_currentViewChanged"
         },
@@ -35,7 +40,7 @@
     static get observers() {
       return [
         "_saveSettings(settings.*)",
-        "_autoLockChanged(settings.autoLock, settings.autoLockDelay)"
+        "_autoLockChanged(settings.autoLock, settings.autoLockDelay, locked)"
       ];
     }
 
@@ -71,6 +76,13 @@
 
       // Listen for android back button
       document.addEventListener("backbutton", this._back.bind(this), false);
+
+      document.addEventListener("dialog-open", () =>
+        this.classList.add("dialog-open")
+      );
+      document.addEventListener("dialog-close", () =>
+        this.classList.remove("dialog-open")
+      );
     }
 
     get _isNarrow() {
@@ -82,7 +94,7 @@
     }
 
     _newRecord() {
-      const record = new Record("New Record");
+      const record = new Record($l("New Record"));
       this.collection.add(record);
       this.notifyPath("collection");
       this.$.listView.select(record);
@@ -129,19 +141,20 @@
     _unlocked() {
       this.cloudSource.password = this.localSource.password;
       this.notifyPath("collection");
-      setTimeout(() => {
-        this.$.startView.open = true;
-        this._autoLockChanged();
-      }, 500);
+      this.locked = false;
+      this.$.startView.open = true;
+      if (this.settings.syncAuto && this.settings.syncConnected) {
+        this._debouncedSynchronize();
+      }
     }
 
     _getStarted() {
       this._unlocked();
       if (this.settings.syncEmail) {
         this.confirm(
-          "Would you like to pair this device with Padlock Cloud now?",
-          "Yes",
-          "Maybe Later"
+          $l("Would you like to pair this device with Padlock Cloud now?"),
+          $l("Yes"),
+          $l("Maybe Later")
         ).then((confirm) => {
           if (confirm) {
             this._currentView = "cloudView";
@@ -176,8 +189,8 @@
     }
 
     _currentViewChanged() {
-      this.$.pages.classList.toggle(
-        "showing",
+      this.$.main.classList.toggle(
+        "showing-pages",
         this._currentView !== "placeholderView"
       );
       clearTimeout(this._switchPagesTimeout);
@@ -201,22 +214,27 @@
     _autoLockChanged() {
       this._cancelAutoLock();
 
-      if (this.settings.autoLock && this.$.startView.open) {
+      if (this.settings.autoLock && !this.locked) {
         this._lockTimeout = setTimeout(
           () => {
             const delay = this.settings.autoLockDelay;
             this.lock();
             setTimeout(() => {
-              this.alert(`Padlock was automatically locked after
-                        ${delay} ${delay > 1 ? "minutes" : "minute"}
-                        of inactivity. You can change this behavior from the settings page.`);
+              this.alert(
+                $l(
+                  "Padlock was automatically locked after {0} {1} " +
+                    "of inactivity. You can change this behavior from the settings page.",
+                  delay,
+                  delay > 1 ? $l("minutes") : $l("minute")
+                )
+              );
             }, 1000);
           },
           this.settings.autoLockDelay * 60 * 1000
         );
         this._lockNotificationTimeout = setTimeout(
           () => {
-            this.notify("Auto-lock in 10 seconds", "info", 3000);
+            this.notify($l("Auto-lock in 10 seconds"), "info", 3000);
           },
           this.settings.autoLockDelay * 50 * 1000
         );
@@ -228,7 +246,7 @@
       this.settingsSource.clear();
       this.lock();
       setTimeout(
-        () => this.alert("App reset successfully. Off to a fresh start!"),
+        () => this.alert($l("App reset successfully. Off to a fresh start!")),
         500
       );
     }
@@ -277,7 +295,12 @@
       Promise.all([
         this.collection.save(this.localSource),
         this.settings.save(this.settingsSource)
-      ]).then(() => this.alert("Master password changed successfully."));
+      ]).then(() => this.alert($l("Master password changed successfully.")));
+    }
+
+    _lockedChanged() {
+      this.$.main.classList.toggle("active", !this.locked);
+      this._autoLockChanged();
     }
 
     lock() {
@@ -288,8 +311,8 @@
         this.cloudSource.password =
           "";
       this.$.startView.reset();
+      this.locked = true;
       this.$.startView.open = false;
-      this._autoLockChanged();
       setTimeout(() => this.notifyPath("collection"), 500);
     }
 
