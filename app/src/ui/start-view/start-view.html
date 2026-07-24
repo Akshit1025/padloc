@@ -1,14 +1,12 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
+<link rel="import" href="../data/data.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../loading-button/loading-button.html">
 <link rel="import" href="../locale/locale.html">
-
 <dom-module id="pl-start-view">
-
     <template>
-
         <style include="shared">
             @keyframes rumble {
                 25% {
@@ -51,6 +49,7 @@
                 display: flex;
                 flex-direction: column;
                 background: var(--color-background);
+                transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
             }
 
@@ -108,96 +107,76 @@
             }
 
             :host([open]) .shutter.top {
-                transform: translateY(-101%);
+                transform: translate3d(0, -100%, 0);
             }
 
             :host([open]) .shutter.bottom {
-                transform: translateY(101%);
+                transform: translate3d(0, 100%, 0);
             }
         </style>
 
         <main hidden$="[[ !_hasData ]]">
             <div class="shutter top">
-
                 <div class="spacer"></div>
-
                 <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
-
             </div>
-
             <div class="shutter bottom">
-
-                <pl-input id="passwordInput" type="password" placeholder="[[$l('Enter Master Password')]]"
-                    class="tap tiles-3" select-on-focus on-enter="_unlock"></pl-input>
-
+                <pl-input id="passwordInput" type="password" class="tap tiles-3" select-on-focus on-enter="_unlock"
+                    placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
                 <pl-loading-button id="enterButton" on-click="_unlock" class="tap tiles-4 enter-button"
-                    label="[[$l('Unlock')]]"></pl-loading-button>
-
+                    label="[[ $l('Unlock') ]]"></pl-loading-button>
                 <div class="spacer tiles-5"></div>
-
             </div>
         </main>
-
         <main hidden$="[[ _hasData ]]">
             <div class="shutter top">
-
                 <div class="spacer"></div>
-
                 <pl-icon icon="logo" class="hero"></pl-icon>
-
             </div>
-
             <div class="shutter bottom">
-
                 <div class="tap tiles-2 input-wrapper">
-                    <pl-input id="emailInput" type="email" placeholder="[[$l('Enter Email (Optional)')]]"
-                        select-on-focus on-focus="_emailInputFocused" on-enter="_emailEnter"></pl-input>
+                    <pl-input id="emailInput" type="email" select-on-focus on-focus="_emailInputFocused"
+                        on-enter="_emailEnter" placeholder="[[ $l('Enter Email (Optional)') ]]"></pl-input>
                     <pl-icon icon="info" on-click="_showEmailInfo"></pl-icon>
                 </div>
-
                 <div class="tap tiles-3 input-wrapper">
-                    <pl-input id="newPasswordInput" type="password" placeholder="[[$l('Enter Master Password')]]"
-                        select-on-focus on-focus="_newPasswordInputFocused" on-enter="_getStarted"
-                        value="{{ newPwd }}"></pl-input>
-                    <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">strength: [[
-                        _passwordStrength(newPwd) ]]</div>
+                    <pl-input id="newPasswordInput" type="password" select-on-focus on-focus="_newPasswordInputFocused"
+                        on-enter="_getStarted" value="{{ newPwd }}"
+                        placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
+                    <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">[[ $l('strength: {0}', _pwdStrength)
+                        ]]</div>
                     <pl-icon icon="info" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
                 </div>
-
                 <pl-loading-button id="getStartedButton" on-click="_getStarted" class="tap tiles-4 enter-button"
-                    label="[[$l('Get Started')]]"></pl-loading-button>
-
+                    label="[[ $l('Get Started') ]]"></pl-loading-button>
                 <div class="spacer tiles-5"></div>
-
             </div>
         </main>
-
     </template>
-
     <script src="../../../bower_components/zxcvbn/lib/zxcvbn.js"></script>
-
     <script>
         /* global zxcvbn */
         (() => {
 
-            class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElement)) {
+            const { DataMixin, LocaleMixin, DialogMixin, BaseElement } = padlock;
+            const { applyMixins } = padlock.util;
+
+            class StartView extends applyMixins(
+                BaseElement,
+                DataMixin,
+                LocaleMixin,
+                DialogMixin
+            ) {
 
                 static get is() { return "pl-start-view"; }
 
                 static get properties() {
                     return {
-                        collection: Object,
-                        localSource: Object,
                         open: {
                             type: Boolean,
                             value: true,
                             reflectToAttribute: true
                         },
-                        settings: {
-                            type: Object,
-                            notify: true
-                        },
-                        settingsSource: Object,
                         _hasData: {
                             type: Boolean
                         },
@@ -207,7 +186,6 @@
                         }
                     };
                 }
-
                 constructor() {
                     super();
                     this._failCount = 0;
@@ -215,12 +193,11 @@
 
                 ready() {
                     super.ready();
-                    this._transferLegacyData()
+                    this.dataReady()
                         .then(() => this.reset())
                         .then(() => this.open = false)
                         .then(() => setTimeout(() => this.classList.add("ready"), 500));
                 }
-
                 reset() {
                     this.$.passwordInput.value = "";
                     this.$.emailInput.value = "";
@@ -232,28 +209,8 @@
                     return this._checkHasData();
                 }
 
-                _transferLegacyData() {
-                    // transfer legacy data from LocalStorageSource to FileSource
-                    function transfer(lsName, fileName) {
-                        const lsSource = new padlock.source.LocalStorageSource(lsName);
-                        return lsSource.get().then((data) => {
-                            if (data) {
-                                return Promise.all([
-                                    new padlock.source.FileSource(fileName).set(data),
-                                    lsSource.clear()
-                                ]);
-                            }
-                        });
-                    }
-
-                    return Promise.all([
-                        transfer("coll_default", "data.pls"),
-                        transfer("settings_encrypted", "settings.pls")
-                    ]);
-                }
-
                 _checkHasData() {
-                    return this.localSource.hasData()
+                    return this.hasData()
                         .then((has) => this._hasData = has);
                 }
 
@@ -262,18 +219,17 @@
                         this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
                         return;
                     }
-
                     const pwd = this.$.newPasswordInput.value;
-
                     if (!pwd) {
                         this.alert("Please enter a master password!").then(() => this.$.newPasswordInput.focus());
                         return;
                     }
-
                     if (zxcvbn(pwd).score < 2) {
-                        this.confirm($l("WARNING: The password you entered is weak which makes it easier for attackers to break " +
+                        this.confirm($l(
+                            "WARNING: The password you entered is weak which makes it easier for attackers to break " +
                             "the encryption used to protect your data. Try to use a longer password or include a " +
-                            "variation of uppercase, lowercase and special characters as well as numbers."),
+                            "variation of uppercase, lowercase and special characters as well as numbers."
+                        ),
                             $l("Use Anyway"), $l("Choose Different Password")).then((confirm) => {
                                 if (confirm) {
                                     this._confirmPassword();
@@ -283,15 +239,16 @@
                             });
                         return;
                     }
-
                     this._confirmPassword();
                 }
-
                 _confirmPassword() {
-                    this.prompt($l("Remember your master password! Without it, nobody will be able to access your data, " +
+                    this.prompt($l(
+                        "Remember your master password! Without it, nobody will be able to access your data, " +
                         "not even we! This is to ensure that your data is as safe as possible but it also means " +
                         "that if you lose your master password, we won't be able to assist you with recovering your " +
-                        "data."), $l("Repeat Master Password"), $l("password"), $l("Confirm")).then((pwd) => {
+                        "data."
+                    ),
+                        $l("Repeat Master Password"), "password", $l("Confirm")).then((pwd) => {
                             if (pwd === this.$.newPasswordInput.value) {
                                 this._initializeData();
                             } else {
@@ -302,81 +259,117 @@
                 }
 
                 _initializeData() {
-                    this.settings.syncEmail = this.$.emailInput.value;
-                    this.localSource.password = this.settingsSource.password = this.$.newPasswordInput.value;
                     this.$.getStartedButton.start();
-                    Promise.all([
-                        this.collection.save(this.localSource),
-                        this.settings.save(this.settingsSource)
-                    ]).then(() => {
-                        this.notifyPath("settings");
-                        this.$.getStartedButton.success();
-                        this.$.newPasswordInput.blur();
-                        this.dispatchEvent(new CustomEvent("get-started"));
-                    });
+                    if (this._initializing) {
+                        return;
+                    }
+                    this._initializing = true;
+                    this.initData(this.$.newPasswordInput.value, this.$.emailInput.value)
+                        .then(() => {
+                            this.$.getStartedButton.success();
+                            this.$.newPasswordInput.blur();
+                            this._initializing = false;
+                        });
                 }
 
-                _unlock() {
-                    this.localSource.password = this.settingsSource.password = this.$.passwordInput.value;
-                    this.$.passwordInput.blur();
-
-                    this.$.enterButton.start();
-                    this.collection.fetch(this.localSource)
-                        .then(() => {
-                            return this.settings.fetch(this.settingsSource)
-                                .catch(() => this.settings.save(this.settingsSource));
-                        })
-                        .then(() => {
-                            this.$.enterButton.success();
-                            this.notifyPath("settings");
-                            this.dispatchEvent(new CustomEvent("unlock"));
-                        })
-                        .catch((e) => {
-                            if (e.code === "decryption_failed") {
-                                this.$.enterButton.fail();
-                                this.$.logo.classList.remove("rumble");
-                                this.offsetLeft;
-                                this.$.logo.classList.add("rumble");
-                                this._failCount++;
-                                if (this._failCount > 2) {
-                                    this.prompt(
-                                        $l("Forgot your master password? You can start over by resetting the app. " +
-                                        "WARNING: This will delete all your data!"),
-                                        $l("Type 'RESET' to confirm"), "text", $l("Reset App")
-                                    ).then((value) => {
-                                        if (value == null) {
-                                            return;
-                                        }
-                                        if (value.toUpperCase() === "RESET") {
-                                            this.dispatchEvent(new CustomEvent("reset-data"));
-                                        } else {
-                                            this.alert($l("You didn't type 'RESET'. Refusing to reset the app."));
-                                        }
-                                    });
-                                } else {
-                                    this.$.passwordInput.focus();
-                                }
+                _promptResetData(message) {
+                    this.prompt(message, $l("Type 'RESET' to confirm"), "text", $l("Reset App"))
+                        .then((value) => {
+                            if (value == null) {
+                                return;
+                            }
+                            if (value.toUpperCase() === "RESET") {
+                                this.resetData();
                             } else {
-                                throw e;
+                                this.alert($l("You didn't type 'RESET'. Refusing to reset the app."));
                             }
                         });
                 }
 
+                _unlock() {
+                    const password = this.$.passwordInput.value;
+                    this.$.passwordInput.blur();
+                    this.$.enterButton.start();
+
+                    if (this._unlocking) {
+                        return;
+                    }
+                    this._unlocking = true;
+
+                    this.loadData(password)
+                        .then(() => {
+                            this.$.enterButton.success();
+                            this._unlocking = false;
+                        })
+                        .catch((e) => {
+                            switch (e.code) {
+                                case "decryption_failed":
+                                    this.$.enterButton.fail();
+                                    this.$.logo.classList.remove("rumble");
+                                    this.offsetLeft;
+                                    this.$.logo.classList.add("rumble");
+                                    this._failCount++;
+                                    if (this._failCount > 2) {
+                                        this._promptResetData($l(
+                                            "Forgot your master password? You can start over by resetting the app. " +
+                                            "WARNING: This will delete all your data!"
+                                        ));
+                                    } else {
+                                        this.$.passwordInput.focus();
+                                    }
+                                    break;
+                                case "unsupported_container_version":
+                                    this.$.enterButton.fail();
+                                    this.confirm($l(
+                                        "It seems the data stored on this device was saved with a newer version " +
+                                        "of Padlock and can not be opened with the version you are currently running. " +
+                                        "Please install the latest version of Padlock or reset the data to start over!"
+                                    ), $l("Check For Updates"), $l("Reset Data"))
+                                        .then((confirmed) => {
+                                            if (confirmed) {
+                                                padlock.platform.checkForUpdates();
+                                            } else {
+                                                this._promptResetData($l(
+                                                    "Are you sure you want to reset the app? " +
+                                                    "WARNING: This will delete all your data!"
+                                                ));
+                                            }
+                                        });
+                                    break;
+                                default:
+                                    throw e;
+                            }
+                            this._unlocking = false;
+                        });
+                }
+
                 _showEmailInfo() {
-                    this._hasEmailInputShown = true;
-                    this.alert($l("Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
-                        "you to easily and securely store your data online and synchronize it between all your devices. " +
-                        "Don't worry, we'll only use it as a method of authentication and won't send you any spam!"))
+                    this.$.emailInput.blur();
+                    padlock.util.wait(100)
+                        .then(() => {
+                            return this.alert($l(
+                                "Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
+                                "you to easily and securely store your data online and synchronize it between all your devices. " +
+                                "Don't worry, we'll only use it as a method of authentication and won't send you any spam!"
+                            ));
+                        })
                         .then(() => this.$.emailInput.focus());
+                    this._hasEmailInputShown = true;
                 }
 
                 _showPasswordInfo() {
-                    this._hasPasswordInfoShown = true;
-                    this.alert($l("Your master password is a single passphrase that is used to encrypt everything you " +
-                        "store in Padlock and the only way to access your data. Without your master password, no " +
-                        "one will be able to read your data - not even we! So make sure you don't forget it, because " +
-                        "we won't be able to help you recover it in case you do."))
+                    this.$.newPasswordInput.blur();
+                    padlock.util.wait(100)
+                        .then(() => {
+                            return this.alert($l(
+                                "Your master password is a single passphrase that is used to encrypt everything you " +
+                                "store in Padlock and the only way to access your data. Without your master password, no " +
+                                "one will be able to read your data - not even we! So make sure you don't forget it, because " +
+                                "we won't be able to help you recover it in case you do."
+                            ));
+                        })
                         .then(() => this.$.newPasswordInput.focus());
+                    this._hasPasswordInfoShown = true;
                 }
 
                 _emailInputFocused() {
@@ -385,32 +378,24 @@
                         this.$.emailInput.blur();
                     }
                 }
-
                 _newPasswordInputFocused() {
                     if (!this._hasPasswordInfoShown) {
                         this._showPasswordInfo();
                         this.$.newPasswordInput.blur();
                     }
                 }
-
                 _passwordStrength(pwd) {
                     const score = pwd ? zxcvbn(pwd).score : -1;
-                    return score === -1 ? "" : score < 2 ? ($l("weak")) : score < 4 ? $l("medium") : $l("strong");
+                    return score === -1 ? "" : score < 2 ? $l("weak") : score < 4 ? $l("medium") : $l("strong");
                 }
-
                 _hasValue(val) {
                     return !!val;
                 }
-
                 _emailEnter() {
                     this.$.newPasswordInput.focus();
                 }
-
             }
-
             window.customElements.define(StartView.is, StartView);
-
         })();
     </script>
-
 </dom-module>

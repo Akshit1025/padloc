@@ -9,6 +9,11 @@
 <link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../start-view/start-view.html">
+<link rel="import" href="../sync/sync.html">
+<link rel="import" href="./auto-lock.html">
+<link rel="import" href="./auto-sync.html">
+<link rel="import" href="./hints.html">
+<link rel="import" href="./messages.html">
 
 <dom-module id="pl-app">
     <template>
@@ -26,21 +31,26 @@
                 overflow: hidden;
             }
 
-            :host, #main, #pages, #listView {
+            :host,
+            #main,
+            #pages,
+            #listView {
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            #main:not(.active), :host(.dialog-open) {
+            #main:not(.active),
+            :host(.dialog-open) {
                 transform: scale(0.95);
             }
 
             #listView {
-                width: 350px;
+                flex: 1;
             }
 
             #pages {
                 position: relative;
-                flex: 1;
+                flex: 1.62;
+                /* Golden Ratio ;) */
                 box-shadow: rgba(0, 0, 0, 0.15) -1px 0 1px;
                 background: var(--color-background);
             }
@@ -60,11 +70,13 @@
                 width: 150px;
             }
 
-            @media (max-width: 700px) {
-                #listView {
+            @media (max-width: 800px) {
+                #pages {
                     flex: 1;
                 }
+            }
 
+            @media (max-width: 600px) {
                 .showing-pages #listView {
                     transform: scale(0.95);
                 }
@@ -80,39 +92,28 @@
             }
         </style>
 
-        <pl-start-view id="startView" collection="[[ collection ]]" settings="{{ settings }}"
-            local-source="[[ localSource ]]" settings-source="[[ settingsSource ]]" on-unlock="_unlocked"
-            on-get-started="_getStarted" on-reset-data="_resetData"></pl-start-view>
+        <pl-start-view id="startView"></pl-start-view>
 
         <div id="main">
-        
-            <pl-list-view id="listView" records="[[ collection.records ]]" selected-record="{{ _selectedRecord }}"
-                on-open-menu="openMainMenu" on-record-new="_newRecord" on-lock="lock" on-open-settings="_openSettings"
-                on-open-cloud-view="_openCloudView" is-synching="{{ _isSynching }}"></pl-list-view>
-        
+
+            <pl-list-view id="listView" selected-record="{{ _selectedRecord }}" on-open-settings="_openSettings"
+                on-open-cloud-view="_openCloudView"></pl-list-view>
+
             <iron-pages id="pages" attr-for-selected="id">
-        
+
                 <div id="placeholderView" class="tiles-2">
                     <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
                 </div>
-        
-                <pl-record-view id="recordView" categories="[[ collection.categories ]]" on-record-change="_recordChange"
-                    on-record-close="_closeRecord" on-record-create="_createRecord"
-                    on-record-delete="_deleteRecord"></pl-record-view>
-        
-                <pl-settings-view id="settingsView" settings="{{ settings }}" collection="{{ collection }}"
-                    local-source="[[ localSource ]]" on-settings-back="_settingsBack" on-reset-data="_resetData"
-                    on-change-password="_changePassword"></pl-settings-view>
-        
-                <pl-cloud-view id="cloudView" settings="{{ settings }}" cloud-source="[[ cloudSource ]]"
-                    collection="{{ collection }}" local-source="[[ localSource ]]" on-cloud-back="_cloudViewBack"
-                    is-synching="{{ _isSynching }}"></pl-cloud-view>
-        
+
+                <pl-record-view id="recordView" on-record-close="_closeRecord"></pl-record-view>
+
+                <pl-settings-view id="settingsView" on-settings-back="_settingsBack"></pl-settings-view>
+
+                <pl-cloud-view id="cloudView" on-cloud-back="_cloudViewBack"></pl-cloud-view>
+
             </iron-pages>
-        
+
         </div>
-
     </template>
-
     <script src="app.js"></script>
 </dom-module>

@@ -1,15 +1,13 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../slider/slider.html">
 <link rel="import" href="../toggle/toggle-button.html">
-
 <dom-module id="pl-settings-view">
-
     <template>
-
         <style include="shared">
             :host {
                 @apply --fullbleed;
@@ -75,7 +73,6 @@
                 }
             }
         </style>
-
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">[[ $l("Settings") ]]</div>
@@ -83,156 +80,138 @@
 
         <main>
             <section class="tiles tiles-2">
-                <!-- <pl&#45;toggle&#45;button active="{{ settings.obfuscateFields }}" label="Hide Field Values" class="tap" reverse></pl&#45;toggle&#45;button> -->
-                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Auto Lock') ]]" class="tap"
-                    reverse></pl-toggle-button>
-                <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l('min') ]]" label="[[ $l('After') ]]"
-                    hidden$="{{ !settings.autoLock }}"></pl-slider>
+                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Auto Lock') ]]" class="tap" reverse
+                    on-change="settingChanged"></pl-toggle-button>
+                <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
+                    label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
 
             <section class="tiles tiles-2">
-                <button on-click="_resetData" class="tap">[[ $l('Reset App') ]]</button>
-                <button on-click="_changePassword" class="tap">[[ $l('Change Master Password') ]]</button>
+                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
+                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
             </section>
-
             <section class="tiles tiles-2">
-                <div class="section-header">[[ $l('Export') ]]</div>
+                <div class="section-header">[[ $l("Export") ]]</div>
                 <div class="section-row tiles">
-                    <div class="section-row-label">[[ $l('As CSV (not recommended)') ]]</div>
+                    <div class="section-row-label">[[ $l("As CSV (not recommended)") ]]</div>
                     <pl-icon icon="copy" class="tap" on-click="_copyCSV"></pl-icon>
                     <pl-icon icon="download" class="tap" on-click="_downloadCSV" hidden$="[[ _isMobile() ]]"></pl-icon>
                 </div>
                 <div class="section-row tiles">
-                    <div class="section-row-label">[[ $l('As Encrypted File') ]]</div>
+                    <div class="section-row-label">[[ $l("As Encrypted File") ]]</div>
                     <pl-icon icon="copy" class="tap" on-click="_copyEncrypted"></pl-icon>
                     <pl-icon icon="download" class="tap" on-click="_downloadEncrypted"
                         hidden$="[[ _isMobile() ]]"></pl-icon>
                 </div>
             </section>
-
             <section class="tiles tiles-2">
-                <div class="section-header">[[ $l('Import') ]]</div>
+                <div class="section-header">[[ $l("Import") ]]</div>
                 <div class="section-row tiles">
-                    <div class="section-row-label">[[ $l('Paste From Clipboard') ]]</div>
+                    <div class="section-row-label">[[ $l("Paste From Clipboard") ]]</div>
                     <pl-icon icon="copy" class="tap" on-click="_importFromClipboard"></pl-icon>
                 </div>
                 <div class="section-row" hidden$="[[ _isMobile() ]]">
-                    <div class="section-row-label">[[ $l('Select a File') ]]</div>
+                    <div class="section-row-label">[[ $l("Select a File") ]]</div>
                     <input type="file" name="importFile" id="importFile" on-change="_importFile"
-                        accept="text/plain,.pls,.set">
+                        accept="text/plain,.csv,.pls,.set">
                     <label for="importFile" class="tiles-2">
                         <pl-icon icon="upload" class="tap"></pl-icon>
                     </label>
                 </div>
             </section>
-
             <section class="tiles tiles-2">
-                <button on-click="_openWebsite" class="tap">[[ $l('Website') ]]</button>
-                <button on-click="_sendMail" class="tap">[[ $l('Support') ]]</button>
+                <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
+                <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
                 <button class="info tap" on-click="_openHomepage">
-                    <strong>Padlock {{ _version() }}</strong><br>
-                    [[ $l('Developed and maintained by') ]] <strong>Akshit Gupta</strong>
+                    <strong>Padlock {{ settings.version }}</strong><br>
+                    [[ $l("Developed and maintained by") ]] <strong>Akshit Gupta</strong>
                 </button>
             </section>
         </main>
-
     </template>
-
     <script>
         /* global zxcvbn */
         (() => {
-
-            const exportCSVWarning = $l("WARNING: Exporting to CSV format will save your data without encyryption of any " +
+            const exportCSVWarning = $l(
+                "WARNING: Exporting to CSV format will save your data without encyryption of any " +
                 "kind which means it can be read by anyone. We strongly recommend exporting your data as " +
-                "a secure, encrypted file, instead! Are you sure you want to proceed?");
+                "a secure, encrypted file, instead! Are you sure you want to proceed?"
+            );
 
-            class SettingsView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElement)) {
+            const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
+            const { applyMixins } = padlock.util;
+
+            class SettingsView extends applyMixins(
+                BaseElement,
+                DataMixin,
+                LocaleMixin,
+                DialogMixin
+            ) {
 
                 static get is() { return "pl-settings-view"; }
-
-                static get properties() {
-                    return {
-                        localSource: Object,
-                        settings: {
-                            type: Object,
-                            notify: true
-                        },
-                        collection: {
-                            type: Object,
-                            notify: true
-                        }
-                    };
-                }
 
                 _back() {
                     this.dispatchEvent(new CustomEvent("settings-back"));
                 }
-
                 //* Opens the change password dialog and resets the corresponding input elements
                 _changePassword() {
                     let newPwd;
-                    return this.prompt($l("Are you sure you want to change your master password? Enter your current password " +
-                        "to continue"), $l("Enter Current Password"), "password", $l("Confirm"))
+                    return this.prompt($l("Are you sure you want to change your master password? Enter your " +
+                        "current password to continue!"), $l("Enter Current Password"), "password", $l("Confirm"))
                         .then((pwd) => {
-                            if (pwd !== this.localSource.password) {
+                            if (!this.checkPassword(pwd)) {
                                 this.alert($l("You entered the wrong master password!"));
                                 return Promise.reject();
                             }
-                            return this.prompt($l("Now choose a new master password!"), $l("Enter New Password"), "password", $l("Confirm"));
+                            return this.prompt($l("Now choose a new master password!"),
+                                $l("Enter New Password"), "password", $l("Confirm"));
                         })
                         .then((pwd) => {
                             if (pwd === null) {
                                 return Promise.reject();
                             }
                             newPwd = pwd;
-                            return this.prompt($l("Confirm your new master password!"), $l("Confirm New Password"), "password",
-                                $l("Confirm & Change"));
+                            return this.prompt($l("Confirm your new master password!"), $l("Confirm New Password"),
+                                "password", $l("Confirm & Change"));
                         })
                         .then((pwd) => {
                             if (pwd === null) {
                                 return null;
                             }
-
                             if (pwd !== newPwd) {
                                 return this.alert($l("You failed to confirm the new password. Please try again!"));
                             }
 
-                            this.dispatchEvent(new CustomEvent("change-password", { detail: pwd }));
-                        });
+                            return this.setPassword(pwd);
+                        })
+                        .then(() => this.alert($l("Master password changed successfully.")));
                 }
 
                 _openWebsite() {
                     window.open("https://padlock.io", "_system");
                 }
-
                 _sendMail() {
                     window.open("mailto:problemsolver687@gmail.com", "_system");
                 }
-
                 _openGithub() {
                     window.open("https://github.com/Akshit1025/padloc/", "_system");
                 }
-
                 _resetData() {
-                    this.prompt($l("Are you sure you want to delete all your data and reset the app? Enter your master " +
-                        "password to continue!"), $l("Enter Master Password"), "password", $l("Reset App"))
+                    this.prompt($l("Are you sure you want to delete all your data and reset the app? Enter your " +
+                        "master password to continue!"), $l("Enter Master Password"), "password", $l("Reset App"))
                         .then((pwd) => {
                             if (pwd === null) {
                                 return;
                             }
 
-                            if (pwd !== this.localSource.password) {
+                            if (!this.checkPassword(pwd)) {
                                 this.alert($l("You entered the wrong master password! Please try again!"))
                                     .then(() => this._resetData());
                                 return;
                             }
 
-                            this.dispatchEvent(new CustomEvent("reset-data"));
+                            return this.resetData();
                         });
-                }
-
-                _version() {
-                    return padlock.version;
                 }
 
                 _downloadCSV() {
@@ -244,10 +223,10 @@
                                 a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
                                 a.download = "padlock.csv";
                                 a.click();
+                                this.dispatch("data-exported");
                             }
                         });
                 }
-
                 _copyCSV() {
                     this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"))
                         .then((confirm) => {
@@ -255,13 +234,13 @@
                                 padlock.platform.setClipboard(padlock.exp.toCSV(this.collection.records))
                                     .then(() => this.alert($l("Your data has successfully been copied to the system " +
                                         "clipboard. You can now paste it into the spreadsheet program of your choice.")));
+                                this.dispatch("data-exported");
                             }
                         });
                 }
-
                 _getEncryptedData() {
-                    return this.prompt($l("Please choose a password to protect your data. This may be the same as your master " +
-                        " password or something else, but make sure it is sufficiently strong!"),
+                    return this.prompt($l("Please choose a password to protect your data. This may be the same as " +
+                        "your master password or something else, but make sure it is sufficiently strong!"),
                         $l("Enter Password"), "password", $l("Confirm"), $l("Cancel"))
                         .then((pwd) => {
                             if (!pwd) {
@@ -271,22 +250,22 @@
                                 return Promise.reject();
                             }
                             if (zxcvbn(pwd).score < 2) {
-                                return this.confirm($l("WARNING: The password you entered is weak which makes it easier for " +
+                                return this.confirm($l(
+                                    "WARNING: The password you entered is weak which makes it easier for " +
                                     "attackers to break the encryption used to protect your data. Try to use a longer " +
                                     "password or include a variation of uppercase, lowercase and special characters as " +
-                                    "well as numbers."), $l("Use Anyway"), $l("Try Again")).then((confirm) => {
-                                        if (!confirm) {
-                                            return Promise.reject();
-                                        }
-
-                                        return padlock.exp.toPadlock(this.collection.records, pwd);
-                                    });
+                                    "well as numbers."
+                                ), $l("Use Anyway"), $l("Try Again")).then((confirm) => {
+                                    if (!confirm) {
+                                        return Promise.reject();
+                                    }
+                                    return padlock.exp.toPadlock(this.collection.records, pwd);
+                                });
                             } else {
                                 return padlock.exp.toPadlock(this.collection.records, pwd);
                             }
                         });
                 }
-
                 _downloadEncrypted() {
                     this._getEncryptedData()
                         .then((data) => {
@@ -294,6 +273,7 @@
                             a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
                             a.download = "padlock-export.pls";
                             a.click();
+                            this.dispatch("data-exported");
                         });
                 }
 
@@ -302,6 +282,7 @@
                         .then((data) => {
                             padlock.platform.setClipboard(data)
                                 .then(() => this.alert($l("Your data has successfully been copied to the system clipboard.")));
+                            this.dispatch("data-exported");
                         });
                 }
 
@@ -315,6 +296,18 @@
                                     case "decryption_failed":
                                         this.alert($l("Failed to open file. Did you enter the correct password?"));
                                         break;
+                                    case "unsupported_container_version":
+                                        this.confirm($l(
+                                            "It seems the data you are trying to import was exported from a " +
+                                            "newer version of Padlock and can not be opened with the version you are " +
+                                            "currently running."
+                                        ), $l("Check For Updates"), $l("Cancel"))
+                                            .then((confirmed) => {
+                                                if (confirmed) {
+                                                    padlock.platform.checkForUpdates();
+                                                }
+                                            });
+                                        break;
                                     case "invalid_csv":
                                         this.alert($l("Failed to recognize file format."));
                                         break;
@@ -327,7 +320,6 @@
                     };
                     reader.readAsText(file);
                 }
-
                 _importFromClipboard() {
                     padlock.platform.getClipboard()
                         .then((str) => this._importString(str))
@@ -342,7 +334,6 @@
                             }
                         });
                 }
-
                 _importString(rawStr) {
                     const imp = padlock.imp;
                     const isPadlock = imp.isFromPadlock(rawStr);
@@ -352,7 +343,7 @@
                     return Promise.resolve()
                         .then(() => {
                             if (isPadlock || isSecuStore) {
-                                return this.prompt(($l("This file is protected by a password.")),
+                                return this.prompt($l("This file is protected by a password."),
                                     $l("Enter Password"), "password", $l("Confirm"), $l("Cancel"));
                             }
                         })
@@ -360,7 +351,6 @@
                             if (pwd === null) {
                                 return;
                             }
-
                             if (isPadlock) {
                                 return imp.fromPadlock(rawStr, pwd);
                             } else if (isSecuStore) {
@@ -368,14 +358,21 @@
                             } else if (isLastPass) {
                                 return imp.fromLastPass(rawStr);
                             } else if (isCSV) {
-                                return this.confirm($l("The data you want to import seems to be in CSV format. Before you continue, " +
-                                    "please make sure that the data is structured according to Padlocks specific requirements!"),
-                                    $l("Continue"), $l("Review Import Guidelines"))
-                                    .then((confirm) => {
-                                        if (confirm) {
-                                            return imp.fromCSV(rawStr);
-                                        } else {
-                                            window.open("https://padlock.io/howto/import/#importing-from-csv", "_system");
+                                return this.choose($l(
+                                    "The data you want to import seems to be in CSV format. Before you continue, " +
+                                    "please make sure that the data is structured according to Padlocks specific " +
+                                    "requirements!"
+                                ), [$l("Review Import Guidelines"), $l("Continue"), $l("Cancel")])
+                                    .then((choice) => {
+                                        switch (choice) {
+                                            case 0:
+                                                window.open("https://padlock.io/howto/import/#importing-from-csv", "_system");
+                                                // Reopen dialog for when the user comes back from the web page
+                                                return this._importString(rawStr);
+                                            case 1:
+                                                return imp.fromCSV(rawStr);
+                                            case 2:
+                                                return;
                                         }
                                     });
 
@@ -385,23 +382,22 @@
                         })
                         .then((records) => {
                             if (records) {
-                                this.collection.add(records);
-                                this.collection.save(this.localSource);
-                                this.notifyPath("collection");
+                                this.addRecords(records);
                                 this.alert($l("Successfully imported {0} records.", records.length));
                             }
                         });
                 }
-
                 _isMobile() {
                     return padlock.platform.isIOS() || padlock.platform.isAndroid();
+                }
+
+                _openHomepage() {
+                    window.open("https://github.com/Akshit1025/", "_system");
                 }
 
             }
 
             window.customElements.define(SettingsView.is, SettingsView);
-
         })();
     </script>
-
 </dom-module>

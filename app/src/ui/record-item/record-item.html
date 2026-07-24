@@ -1,3 +1,4 @@
+<link rel="import" href="../../../bower_components/polymer/lib/mixins/mutable-data.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
@@ -108,12 +109,14 @@
             <div class="field">
                 <div class="field-label">[[ _fieldLabel(record.fields.0.name) ]]</div>
                 <div class="field-value">[[ _obfuscate(record.fields.0.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField1" hidden$='[[!_isSet(record.fields.0.value)]]'></pl-icon>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField1"
+                    hidden$='[[!_isSet(record.fields.0.value)]]'></pl-icon>
             </div>
             <div class="field">
                 <div class="field-label">[[ _fieldLabel(record.fields.1.name) ]]</div>
                 <div class="field-value">[[ _obfuscate(record.fields.1.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField2" hidden$='[[!_isSet(record.fields.1.value)]]'></pl-icon>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField2"
+                    hidden$='[[!_isSet(record.fields.1.value)]]'></pl-icon>
             </div>
         </div>
 
@@ -122,7 +125,11 @@
     <script>
         (() => {
 
-            class RecordItem extends padlock.NotificationMixin(padlock.BaseElement) {
+            const { NotificationMixin, BaseElement } = padlock;
+            const { MutableData } = Polymer;
+            const { applyMixins } = padlock.util;
+
+            class RecordItem extends applyMixins(BaseElement, MutableData, NotificationMixin) {
 
                 static get is() { return "pl-record-item"; }
 

@@ -1,4 +1,5 @@
 import { uuid } from "./util";
+import { getAppVersion } from "./platform";
 import { Source } from "./source";
 
 function compareProperty(p: string): (a: Object, b: Object) => number {
@@ -149,7 +150,6 @@ export class Settings {
     syncTrialEnd: 0,
     defaultFields: ["username", "password"],
     obfuscateFields: false,
-    showedBackupReminder: 0,
     syncRequireSubscription: false,
     syncId: "",
     version: ""
@@ -216,6 +216,7 @@ export class Settings {
   async fetch(source: Source): Promise<void> {
     let json = await source.get();
     this.loadJSON(json);
+    this.version = await getAppVersion();
     // Update loaded flag to indicate that data has been loaded from persistent storage at least once
     this.loaded = true;
   }

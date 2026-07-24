@@ -102,7 +102,9 @@ export class CloudError {
 export class CloudSource extends AjaxSource {
   urlForPath(path: string) {
     // Remove trailing slashes
-    const host = this.settings.syncHostUrl.replace(/\/+$/, "");
+    const host = this.settings.syncCustomHost
+      ? this.settings.syncHostUrl.replace(/\/+$/, "")
+      : "https://cloud.padlock.io";
     return `${host}/${path}/`;
   }
 
@@ -229,7 +231,7 @@ export class EncryptedSource implements Source {
     // Reuse container if possible
     let cont = (this.container = this.container || new Container());
     cont.password = this.password;
-    cont.set(data);
+    await cont.set(data);
 
     return this.source.set(cont.toJSON());
   }

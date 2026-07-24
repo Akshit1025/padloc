@@ -1,6 +1,6 @@
 {
   "name": "padlock",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-rc.1",
   "homepage": "https://github.com/Akshit1025/padloc",
   "authors": ["Akshit Gupta <problemsolver687@gmail.com>"],
   "main": "index.html",

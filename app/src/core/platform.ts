@@ -134,11 +134,7 @@ export function isCordova(): Boolean {
 export function setClipboard(text: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
-    if (
-      isCordova() &&
-      cordova.plugins &&
-      cordova.plugins.clipboard
-    ) {
+    if (isCordova() && cordova.plugins && cordova.plugins.clipboard) {
       cordova.plugins.clipboard.copy(text, resolve, reject);
     } else {
       domSetClipboard(text);
@@ -151,11 +147,7 @@ export function setClipboard(text: string): Promise<void> {
 export function getClipboard(): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
-    if (
-      isCordova() &&
-      cordova.plugins &&
-      cordova.plugins.clipboard
-    ) {
+    if (isCordova() && cordova.plugins && cordova.plugins.clipboard) {
       cordova.plugins.clipboard.paste(resolve, reject);
     } else {
       resolve(domGetClipboard());
@@ -177,9 +169,9 @@ export function isTouch() {
 //* Platforms so can be safely called independtly of the platform
 export function keyboardDisableScroll(disable: boolean) {
   isCordova() &&
-  cordova.plugins &&
-  cordova.plugins.Keyboard &&
-  cordova.plugins.Keyboard.disableScroll(disable);
+    cordova.plugins &&
+    cordova.plugins.Keyboard &&
+    cordova.plugins.Keyboard.disableScroll(disable);
 }
 
 export function getAppStoreLink(): string {
@@ -228,4 +220,18 @@ export function getPlatformName(): string {
   } else {
     return "";
   }
+}
+
+export function checkForUpdates(): void {
+  if (isElectron()) {
+    electron.ipcRenderer.send("check-updates");
+  } else {
+    window.open(getAppStoreLink(), "_system");
+  }
+}
+
+export function getLocale(): string {
+  // TODO: Is there a more reliable way to get the system locale,
+  // e.g. through `electron.remote.app.getLocale()`?
+  return navigator.language || "en";
 }

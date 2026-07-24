@@ -47,6 +47,7 @@
                 font-size: 110%;
                 line-height: 1.3;
                 margin: 30px 0 5px 0;
+                min-height: 65px;
                 transition: opacity 0.2s, transform 0.2s;
             }
 
@@ -72,7 +73,7 @@
                     on-escape="_cancelEdit"></pl-input>
                 <pl-input multiline id="valueInput" value="[[ field.value ]]"
                     placeholder="[[ _valuePlaceholder(draft) ]]" select-on-focus on-focus="_valueInputFocused"
-                    on-blur="_valueInputBlurred" on-escape="_cancelEdit"></pl-input>
+                    on-blur="_valueInputBlurred" on-escape="_cancelEdit" on-mousedown='_valueInputMouseDown'></pl-input>
             </div>
             <template is="dom-if" if="{{ !draft }}">
                 <div class="field-buttons tiles" hidden$="{{ _editing }}">
@@ -113,8 +114,7 @@
                     return {
                         _editing: {
                             type: Boolean,
-                            computed: "_computeEditing(_editingName, _editingValue)",
-                            observer: "_editingChanged"
+                            computed: "_computeEditing(_editingName, _editingValue)"
                         },
                         _editingName: {
                             type: Boolean,
@@ -140,17 +140,28 @@
                     };
                 }
 
+                static get observers() {
+                    return [
+                        "_editingChanged(_editing, showGenerator)"
+                    ];
+                }
+
                 _computeEditing() {
                     return this._editingName || this._editingValue;
                 }
 
-                _editingChanged(curr, prev) {
-                    if (!this._editing && !this.draft) {
-                        this.notifyPath("field.name");
-                        this.notifyPath("field.value");
+                _editingChanged() {
+                    if (!this._editing) {
+                        if (this.draft) {
+                            this.field && (this.field.name = this.$.nameInput.value);
+                            this.field && (this.field.value = this.$.valueInput.value);
+                        } else {
+                            this.notifyPath("field.name");
+                            this.notifyPath("field.value");
+                        }
                     }
 
-                    if (prev !== undefined) {
+                    if (!this.showGenerator) {
                         this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
                     }
                 }
@@ -169,8 +180,9 @@
                 }
 
                 _valueInputFocused() {
-                    if (this.field.name) {
+                    if (this.$.nameInput.value) {
                         this._editingValue = true;
+                        this.showGenerator = false;
                     } else {
                         this.$.nameInput.focus();
                     }
@@ -213,7 +225,7 @@
                 }
 
                 _valuePlaceholder() {
-                    return this.draft ? "" : $l("Empty Field");
+                    return this.draft ? $l("Enter Content") : $l("Empty Field");
                 }
 
                 _toggleGenerator() {
@@ -224,9 +236,10 @@
                 }
 
                 _generatorConfirm() {
+                    this.set("field.name", this.$.nameInput.value);
+                    this.set("field.value", this.$.generator.value);
                     this.showGenerator = false;
-                    this.$.valueInput.value = this.$.generator.value;
-                    this.$.valueInput.focus();
+                    this._fireEditEvent();
                 }
 
                 _generatorCancel() {
@@ -240,6 +253,14 @@
                 _copy() {
                     padlock.platform.setClipboard(this.field.value)
                         .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
+                }
+
+                _valueInputMouseDown(e) {
+                    // Prevent focusing value input if name input is still empty; Focus name input instead
+                    if (!this.$.nameInput.value) {
+                        e.preventDefault();
+                        this.$.nameInput.focus();
+                    }
                 }
 
                 edit() {

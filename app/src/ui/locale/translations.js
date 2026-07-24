@@ -44,29 +44,39 @@ $l.loadTranslations({
     Unlock: "",
     "Enter Email (Optional)": "",
     "strength: {0}": "",
+    "New Record": "",
     OK: "",
     "Are you sure you want to do this?": "",
     Confirm: "",
+    Dismiss: "",
     "You have to be connected to a Padlock Cloud account to synchronize your data!":
       "",
-    "Are you sure you want to disconnect from Padlock Cloud?": "",
-    "Please enter a valid email address!": "",
-    "For security reasons only a limited amount of connection request are allowed at a time. Please wait a little before trying again!":
+    "Padlock Cloud master password updated successfully!": "",
+    "Failed to update Padlock Cloud master password. Please try again later!":
       "",
-    "Something went wrong. Please try again later!": "",
+    "You successfully paired this device with Padlock Cloud!": "",
+    "Synchonize Now": "",
+    "You are almost done connecting this device. An email was sent to {0}. Check your inbox and follow the instructions to complete the process!":
+      "",
+    "After this period, your access will be read-only, which means you will be able to access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!":
+      "",
+    "Padlock Cloud provides a convenient way of synchronising your data between all your devices. By securely storing your data in the cloud, it not only allows you to easily access it from anywhere but also acts as a backup in case you should lose your device or accidentally delete the app. Before being sent to our servers, your data is encrypted locally using your master password to make sure that nobody can read it - not even we!":
+      "",
+    "You currently don't have an active subscription! This means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
+      "",
+    "This device is connected to the Padlock Cloud account {0}. Connect all your devices with the same account to easily synchronize your data between them!":
+      "",
     "Do you want to change your Padlock Cloud master password to your local one?":
       "",
     Yes: "",
     No: "",
-    "Padlock Cloud master password updated successfully!": "",
-    "Failed to update Padlock Cloud master password. Please try again later!":
+    "For security reasons only a limited amount of connection request are allowed at a time. Please wait a little before trying again!":
       "",
     "There was a problem authenticating with Padlock Cloud. Please complete the connection process again!":
       "",
     "A newer version of Padlock is available now! You can download it using the button below. Please note that you won't be able to use Padlock Cloud until you install the latest version!":
       "",
     "Update Now": "",
-    Dismiss: "",
     "It seems Padlock Cloud is over capacity right now. Please try again later!":
       "",
     "The data received from Padlock Cloud seems to be corrupt and cannot be decrypted. This might be due to a network error but could also be the result of someone trying to compromise your connection to Padlock Cloud. If the problem persists, please notify Padlock support!":
@@ -74,27 +84,22 @@ $l.loadTranslations({
     "It seems that your Padlock Cloud account uses a different master password than then one you are using on this device. Please provide the correct master password for your Padlock Cloud account!":
       "",
     Submit: "",
+    "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock on this device!":
+      "",
+    "Check For Updates": "",
     "You currently don't have an active subscription which means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
       "",
-    "You successfully paired this device with Padlock Cloud!": "",
-    "Synchonize Now": "",
+    "Something went wrong. Please try again later!": "",
+    "Are you sure you want to disconnect from Padlock Cloud?": "",
+    "Please enter a valid email address!": "",
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "",
     Continue: "",
-    "Padlock Cloud provides a convenient way of synchronising your data between all your devices. By securely storing your data in the cloud, it not only allows you to easily access it from anywhere but also acts as a backup in case you should lose your device or accidentally erase your data. Before being sent to our servers, your data is encrypted locally using your master password to make sure that nobody can read it - not even we!":
-      "",
-    "After this period, your access will be read-only, which means you will be able to access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!":
-      "",
-    "You currently don't have an active subscription! This means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
-      "",
-    "This device is connected to the Padlock Cloud account {0}. Connect all your devices with the same account to easily synchronize your data between them!":
-      "",
-    "You are almost done connecting this device. An email was sent to {0}. Check your inbox and follow the instructions to complete the process!":
-      "",
     "Value copied to clipboard!": "",
     "{0} more {1}": "",
     field: "",
     fields: "",
+    "Enter Content": "",
     "Empty Field": "",
     "Are you sure you want to delete this field?": "",
     Delete: "",
@@ -112,6 +117,7 @@ $l.loadTranslations({
     "Confirm New Password": "",
     "Confirm & Change": "",
     "You failed to confirm the new password. Please try again!": "",
+    "Master password changed successfully.": "",
     "Are you sure you want to delete all your data and reset the app? Enter your master password to continue!":
       "",
     "You entered the wrong master password! Please try again!": "",
@@ -129,6 +135,8 @@ $l.loadTranslations({
     "Try Again": "",
     "Your data has successfully been copied to the system clipboard.": "",
     "Failed to open file. Did you enter the correct password?": "",
+    "It seems the data you are trying to import was exported from a newer version of Padlock and can not be opened with the version you are currently running.":
+      "",
     "Failed to recognize file format.": "",
     "Failed to open file.": "",
     "Failed to decrypt data. Did you enter the correct password?": "",
@@ -144,10 +152,15 @@ $l.loadTranslations({
       "",
     "Repeat Master Password": "",
     "You failed to repeat the password correctly. Try again!": "",
-    "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
-      "",
     "Type 'RESET' to confirm": "",
     "You didn't type 'RESET'. Refusing to reset the app.": "",
+    "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
+      "",
+    "It seems the data stored on this device was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock or reset the data to start over!":
+      "",
+    "Reset Data": "",
+    "Are you sure you want to reset the app? WARNING: This will delete all your data!":
+      "",
     "Padlock uses your email address to connect to the Padlock Cloud service, which allows you to easily and securely store your data online and synchronize it between all your devices. Don't worry, we'll only use it as a method of authentication and won't send you any spam!":
       "",
     "Your master password is a single passphrase that is used to encrypt everything you store in Padlock and the only way to access your data. Without your master password, no one will be able to read your data - not even we! So make sure you don't forget it, because we won't be able to help you recover it in case you do.":
@@ -155,16 +168,25 @@ $l.loadTranslations({
     weak: "",
     medium: "",
     strong: "",
-    "New Record": "",
-    "Would you like to pair this device with Padlock Cloud now?": "",
-    "Maybe Later": "",
+    "Learn More": "",
     "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
       "",
     minutes: "",
     minute: "",
     "Auto-lock in 10 seconds": "",
-    "App reset successfully. Off to a fresh start!": "",
-    "Master password changed successfully.": ""
+    "Have you backed up your data yet? Remember that by default your data is only stored locally and may be lost if you uninstall Padlock, lose your device or accidentally reset your data. Padlock Cloud is a great way to back up your data online and synchronize with other devices. Alternatively, you can export your data and store it somewhere safe.":
+      "",
+    "Sync With Padlock Cloud": "",
+    "Export Data": "",
+    "Do Nothing": "",
+    "The last time you synced your data with Padlock Cloud was {0} days ago! You should synchronize regularly to keep all your devices up-to-date and to make sure you always have a recent backup in the cloud.":
+      "",
+    "Synchronize Now": "",
+    "Turn On Auto Sync": "",
+    "Your Padlock Cloud trial period ends in {0} days!": "",
+    "Would you like to pair this device with Padlock Cloud now?": "",
+    "Maybe Later": "",
+    "App reset successfully. Off to a fresh start!": ""
   },
   de: {
     "Enter Email Address": "Emailadresse Eingeben",
@@ -214,34 +236,42 @@ $l.loadTranslations({
     Unlock: "Entsperren",
     "Enter Email (Optional)": "Email Eingeben (Optional)",
     "strength: {0}": "Sicherheit: {0}",
+    "New Record": "Neuer Eintrag",
     OK: "OK",
     "Are you sure you want to do this?":
       "Sind Sie sicher dass Sie dies tun möchten?",
     Confirm: "Bestätigen",
+    Dismiss: "OK",
     "You have to be connected to a Padlock Cloud account to synchronize your data!":
       "Sie müssen mit Padlock Cloud verbunden sein um Ihre Daten zu synchronisieren!",
-    "Are you sure you want to disconnect from Padlock Cloud?":
-      "Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?",
-    "Please enter a valid email address!":
-      "Bitte geben Sie eine gültige Emailadresse ein!",
-    "For security reasons only a limited amount of connection request are allowed at a time. Please wait a little before trying again!":
-      "Aus Sicherheitsgründen ist nur eine begrenzte Anzahl an Verbindungsanfragen innerhalb eines bestimmten Zeitraums erlaubt. Bitte warten Sie eine Weile und versuchen es dann erneut!",
-    "Something went wrong. Please try again later!":
-      "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!",
-    "Do you want to change your Padlock Cloud master password to your local one?":
-      "Wollen Sie Ihr Master Password auf Padlock Cloud auf Ihr lokales Password ändern?",
-    Yes: "Ja",
-    No: "Nein",
     "Padlock Cloud master password updated successfully!":
       "Ihr Password auf Padlock Cloud wurde erfolgreich geändert!",
     "Failed to update Padlock Cloud master password. Please try again later!":
       "Die Änderung Ihres Passwort auf Padlock Cloud ist fehlgeschlagen. Bitte versuchen Sie es später erneut!",
+    "You successfully paired this device with Padlock Cloud!":
+      "Sie haben dieses Gerät erfolgreiche mit Padlock Cloud verbunden!",
+    "Synchonize Now": "Jetzt Synchronisieren",
+    "You are almost done connecting this device. An email was sent to {0}. Check your inbox and follow the instructions to complete the process!":
+      "Der Verbindungsvorgang ist fast abgeschlossen. Es wurde eine Email an {0} gesendet. Prüfen Sie Ihr Postfach und folgen Sie den Anweisungen um den Vorgang abzuschließen!",
+    "After this period, your access will be read-only, which means you will be able to access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!":
+      "Nach dieser Zeitspanne ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt. Dies bedeutet, dass Sie zwar weiterhin Ihre Daten herunterladen, jedoch weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um um vollen Zugriff auf Padlock Cloud zu erhalten!",
+    undefined:
+      'Padlock Cloud ist der einfachste und bequemste Weg, Ihre Daten zwischen all Ihren Geräten zu synchronisieren. Das sichere Speichern Ihrer Daten in der "Cloud" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus zuzugreifen, sondern dient außerdem als Absicherung im Falle eines Datenverlustes. Ihre Daten werden stets lokal verschlüsselt bevor sie an unsere Server gesendet werden um sicher zu stellen, dass niemand sie lesen kann - nicht einmal wir!',
+    "You currently don't have an active subscription! This means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
+      "Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können, aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen Zugriff auf Padlock Cloud zu erhalten!",
+    "This device is connected to the Padlock Cloud account {0}. Connect all your devices with the same account to easily synchronize your data between them!":
+      "Dieses Gerät ist mit dem Padlock Cloud Konto {0} verbunden. Verbinden Sie all Ihre Geräte mit dem selben Konto um Ihre Daten auf einfache Weise zwischen ihnen zu synchronisieren!",
+    "Do you want to change your Padlock Cloud master password to your local one?":
+      "Wollen Sie Ihr Master Password auf Padlock Cloud auf Ihr lokales Password ändern?",
+    Yes: "Ja",
+    No: "Nein",
+    "For security reasons only a limited amount of connection request are allowed at a time. Please wait a little before trying again!":
+      "Aus Sicherheitsgründen ist nur eine begrenzte Anzahl an Verbindungsanfragen innerhalb eines bestimmten Zeitraums erlaubt. Bitte warten Sie eine Weile und versuchen es dann erneut!",
     "There was a problem authenticating with Padlock Cloud. Please complete the connection process again!":
       "Es ist ein Fehler bei der Authentifizierung mit Padlock Cloud aufgetreten. Bitte Verbinden Sie Ihr Gerät erneut!",
     "A newer version of Padlock is available now! You can download it using the button below. Please note that you won't be able to use Padlock Cloud until you install the latest version!":
       "Eine aktuellere Version von Padlock ist nun verfügbar! Bitte installieren Sie diese um Padlock Cloud weiterhin nutzen zu können!",
     "Update Now": "Jetzt Updaten",
-    Dismiss: "Abbrechen",
     "It seems Padlock Cloud is over capacity right now. Please try again later!":
       "Es scheint dass die Padlock Cloud server gerade nicht erreichbar sind. Versuchen Sie es später noch einmal!",
     "The data received from Padlock Cloud seems to be corrupt and cannot be decrypted. This might be due to a network error but could also be the result of someone trying to compromise your connection to Padlock Cloud. If the problem persists, please notify Padlock support!":
@@ -249,28 +279,25 @@ $l.loadTranslations({
     "It seems that your Padlock Cloud account uses a different master password than then one you are using on this device. Please provide the correct master password for your Padlock Cloud account!":
       "Es scheint dass Ihre Daten auf Padlock Cloud mit einem anderen Passwort geschützt sind als Ihre lokalen Daten. Bitte geben dass Passwort für Ihre Padlock Cloud Daten ein!",
     Submit: "Senden",
+    "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock on this device!":
+      "Die auf Padlock Cloud liegeneden daten scheinen mit einer neueren Version von Padlock gespeichert worden zu sein und können deshalb nicht geöffnet werden. Bitte installieren Sie die neueste Version von Padlock auf diesem Gerät!",
+    "Check For Updates": "Auf Updates Prüfen",
     "You currently don't have an active subscription which means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
       "Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können, aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen Zugriff auf Padlock Cloud zu erhalten!",
-    "You successfully paired this device with Padlock Cloud!":
-      "Sie haben dieses Gerät erfolgreiche mit Padlock Cloud verbunden!",
-    "Synchonize Now": "Jetzt Synchronisieren",
+    "Something went wrong. Please try again later!":
+      "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!",
+    "Are you sure you want to disconnect from Padlock Cloud?":
+      "Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?",
+    "Please enter a valid email address!":
+      "Bitte geben Sie eine gültige Emailadresse ein!",
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "Sind Sie sicher, dass Sie einen eigenen Server zur Synchronisation verwenden möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!",
     Continue: "Fortfahren",
-    "Padlock Cloud provides a convenient way of synchronising your data between all your devices. By securely storing your data in the cloud, it not only allows you to easily access it from anywhere but also acts as a backup in case you should lose your device or accidentally erase your data. Before being sent to our servers, your data is encrypted locally using your master password to make sure that nobody can read it - not even we!":
-      'Padlock Cloud ist der einfachste und bequemste Weg, Ihre Daten zwischen all Ihren Geräten zu synchronisieren. Das sichere Speichern Ihrer Daten in der "Cloud" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus zuzugreifen, sondern dient außerdem als Absicherung im Falle eines Datenverlustes. Ihre Daten werden stets lokal verschlüsselt bevor sie an unsere Server gesendet werden um sicher zu stellen, dass niemand sie lesen kann - nicht einmal wir!',
-    "After this period, your access will be read-only, which means you will be able to access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!":
-      "Nach dieser Zeitspanne ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt. Dies bedeutet, dass Sie zwar weiterhin Ihre Daten herunterladen, jedoch weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um um vollen Zugriff auf Padlock Cloud zu erhalten!",
-    "You currently don't have an active subscription! This means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
-      "Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können, aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen Zugriff auf Padlock Cloud zu erhalten!",
-    "This device is connected to the Padlock Cloud account {0}. Connect all your devices with the same account to easily synchronize your data between them!":
-      "Dieses Gerät ist mit dem Padlock Cloud Konto {0} verbunden. Verbinden Sie all Ihre Geräte mit dem selben Konto um Ihre Daten auf einfache Weise zwischen ihnen zu synchronisieren!",
-    "You are almost done connecting this device. An email was sent to {0}. Check your inbox and follow the instructions to complete the process!":
-      "Der Verbindungsvorgang ist fast abgeschlossen. Es wurde eine Email an {0} gesendet. Prüfen Sie Ihr Postfach und folgen Sie den Anweisungen um den Vorgang abzuschließen!",
     "Value copied to clipboard!": "Daten in Zwischenablage kopiert!",
     "{0} more {1}": "{0} weitere {1}",
     field: "Feld",
     fields: "Felder",
+    "Enter Content": "Inhalt Eingeben",
     "Empty Field": "Leeres Feld",
     "Are you sure you want to delete this field?":
       "Sind Sie sicher, dass Sie dieses Feld löschen wollen?",
@@ -293,6 +320,8 @@ $l.loadTranslations({
     "Confirm & Change": "Bestätigen & Ändern",
     "You failed to confirm the new password. Please try again!":
       "Sie haben das neue Passwort nicht korrekt wiederholt. Bitte versuchen Sie es erneut!",
+    "Master password changed successfully.":
+      "Ihr Masterpassword wurde erfolgreich geändert.",
     "Are you sure you want to delete all your data and reset the app? Enter your master password to continue!":
       "Sind Sie sicher dass Sie all Ihre Daten löschen und die App zurücksetzen wollen? Geben Sie Ihr Master Passwort ein um fortzufahren!",
     "You entered the wrong master password! Please try again!":
@@ -313,6 +342,8 @@ $l.loadTranslations({
       "Ihre Daten wurden erfolgreich in die Zwischenablage kopiert.",
     "Failed to open file. Did you enter the correct password?":
       "Datei konnte nicht geöffnet werden. Haben Sie das richtige Passwort eingegeben?",
+    "It seems the data you are trying to import was exported from a newer version of Padlock and can not be opened with the version you are currently running.":
+      "Die zu importierenden Daten wurden scheinbar mit einer neueren Version von Padlock Cloud exporortiert und können deshalb nicht geöffnet werden.",
     "Failed to recognize file format.":
       "Dateiformat konnte nicht erkannt werden.",
     "Failed to open file.": "Datei konnte nicht geöffnet werden.",
@@ -333,11 +364,16 @@ $l.loadTranslations({
     "Repeat Master Password": "Master Passwort Wiederholen",
     "You failed to repeat the password correctly. Try again!":
       "Sie haben das password nicht korrekt wiederholt. Versuchen Sie es noch einmal!",
-    "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
-      "Haben Sie Ihr Master Passwort vergessen? Sie können die App zurücksetzen um von vorne zu beginnen. WARNUNG: Dadurch werden all Ihre Daten gelöscht!",
     "Type 'RESET' to confirm": '"RESET" zum Bestätigen Eingeben',
     "You didn't type 'RESET'. Refusing to reset the app.":
       'Sie haben nicht "RESET" eingegeben. Die App wird nicht zurückgesetzt.',
+    "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
+      "Haben Sie Ihr Master Passwort vergessen? Sie können die App zurücksetzen um von vorne zu beginnen. WARNUNG: Dadurch werden all Ihre Daten gelöscht!",
+    "It seems the data stored on this device was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock or reset the data to start over!":
+      "Die auf diesem Gerät gespeicherten Daten scheinen von einer neueren Version von Padlock zu stammen und können deshalb nicht geöffnet werden. Bitte installieren Sie die neueste Version von Padlock oder setzen Sie die Daten zurück um von vorne zu beginnen.",
+    "Reset Data": "Daten Zurücksetzen",
+    "Are you sure you want to reset the app? WARNING: This will delete all your data!":
+      "Sind Sie sicher, dass Sie die App zurücksetzen wollen? Dabei werden all Ihre Daten gelöscht!",
     "Padlock uses your email address to connect to the Padlock Cloud service, which allows you to easily and securely store your data online and synchronize it between all your devices. Don't worry, we'll only use it as a method of authentication and won't send you any spam!":
       "Padlock verwendet Ihre Emailadresse um sich mit dem Padlock Cloud Service zu verbinden, welcher es Ihnen ermöglicht, Ihre Daten schnell und einfach online zu speichern und zwischen all Ihren Geräten zu synchronisieren. Keine Sorge, wir verwenden Ihre Email nur zu Authentifizierungszwecken und keinesfalls zum versenden von Werbung oder dergleichen.",
     "Your master password is a single passphrase that is used to encrypt everything you store in Padlock and the only way to access your data. Without your master password, no one will be able to read your data - not even we! So make sure you don't forget it, because we won't be able to help you recover it in case you do.":
@@ -345,19 +381,28 @@ $l.loadTranslations({
     weak: "schwach",
     medium: "mittel",
     strong: "stark",
-    "New Record": "Neuer Eintrag",
-    "Would you like to pair this device with Padlock Cloud now?":
-      "Möchten sie diese Gerät nun mit Padlock Cloud verbinden?",
-    "Maybe Later": "Vielleicht Später",
+    "Learn More": "Mehr Erfahren",
     "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
       "Padlock wurde nach {0} {1} Inaktivität automatisch gesperrt. Dieses Verhalten kann bei Bedarf in den Einstellungen der App angepasst werden.",
     minutes: "Minuten",
     minute: "Minute",
     "Auto-lock in 10 seconds": "Automatische Sperrung in 10 Sekunden",
+    "Have you backed up your data yet? Remember that by default your data is only stored locally and may be lost if you uninstall Padlock, lose your device or accidentally reset your data. Padlock Cloud is a great way to back up your data online and synchronize with other devices. Alternatively, you can export your data and store it somewhere safe.":
+      "Haben Sie bereits eine Sicherung Ihrer Daten erstellt? Denken Sie daran, dass Ihre Daten standartmäßig nur lokal auf Ihrem Gerät gespeichert werden und verloren gehen können, sollten Sie Ihr Gerät verlieren oder versehentlich die Applikation entfernen. Padlock Cloud bietet eine gute Möglichkeit, Ihre Daten online zu sichern und mit anderen Geräten zu synchronisieren. Alternativ können Sie Ihre Daten auch exportieren und an einem sicheren Ort speichern.",
+    "Sync With Padlock Cloud": "Mit Padlock Cloud Synchronisieren",
+    "Export Data": "Daten Exportieren",
+    "Do Nothing": "Nichts Tun",
+    "The last time you synced your data with Padlock Cloud was {0} days ago! You should synchronize regularly to keep all your devices up-to-date and to make sure you always have a recent backup in the cloud.":
+      "Sie haben vor {0} Tagen das letzte mal Ihre Daten mit Padlock Cloud synchronisiert. Es wird empfohlen, Ihre Daten regelmäßig zu sychronisieren, um all Ihre Geräte auf dem neuesten Stand zu halten und um sicher zu stellen, dass immer eine aktuelle Sicherung in der Cloud vorliegt.",
+    "Synchronize Now": "Jetzt Synchronisieren",
+    "Turn On Auto Sync": "Auto-Sync Aktivieren",
+    "Your Padlock Cloud trial period ends in {0} days!":
+      "Ihre Padlock Cloud Testphase ended in {0} Tagen!",
+    "Would you like to pair this device with Padlock Cloud now?":
+      "Möchten sie diese Gerät nun mit Padlock Cloud verbinden?",
+    "Maybe Later": "Vielleicht Später",
     "App reset successfully. Off to a fresh start!":
-      "Die App wurde erfolgreich zurückgesetzt.",
-    "Master password changed successfully.":
-      "Ihr Masterpassword wurde erfolgreich geändert."
+      "Die App wurde erfolgreich zurückgesetzt."
   },
   es: {
     "Enter Email Address": "",
@@ -404,29 +449,39 @@ $l.loadTranslations({
     Unlock: "",
     "Enter Email (Optional)": "",
     "strength: {0}": "",
+    "New Record": "",
     OK: "",
     "Are you sure you want to do this?": "",
     Confirm: "",
+    Dismiss: "",
     "You have to be connected to a Padlock Cloud account to synchronize your data!":
       "",
-    "Are you sure you want to disconnect from Padlock Cloud?": "",
-    "Please enter a valid email address!": "",
-    "For security reasons only a limited amount of connection request are allowed at a time. Please wait a little before trying again!":
+    "Padlock Cloud master password updated successfully!": "",
+    "Failed to update Padlock Cloud master password. Please try again later!":
       "",
-    "Something went wrong. Please try again later!": "",
+    "You successfully paired this device with Padlock Cloud!": "",
+    "Synchonize Now": "",
+    "You are almost done connecting this device. An email was sent to {0}. Check your inbox and follow the instructions to complete the process!":
+      "",
+    "After this period, your access will be read-only, which means you will be able to access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!":
+      "",
+    "Padlock Cloud provides a convenient way of synchronising your data between all your devices. By securely storing your data in the cloud, it not only allows you to easily access it from anywhere but also acts as a backup in case you should lose your device or accidentally delete the app. Before being sent to our servers, your data is encrypted locally using your master password to make sure that nobody can read it - not even we!":
+      "",
+    "You currently don't have an active subscription! This means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
+      "",
+    "This device is connected to the Padlock Cloud account {0}. Connect all your devices with the same account to easily synchronize your data between them!":
+      "",
     "Do you want to change your Padlock Cloud master password to your local one?":
       "",
     Yes: "",
     No: "",
-    "Padlock Cloud master password updated successfully!": "",
-    "Failed to update Padlock Cloud master password. Please try again later!":
+    "For security reasons only a limited amount of connection request are allowed at a time. Please wait a little before trying again!":
       "",
     "There was a problem authenticating with Padlock Cloud. Please complete the connection process again!":
       "",
     "A newer version of Padlock is available now! You can download it using the button below. Please note that you won't be able to use Padlock Cloud until you install the latest version!":
       "",
     "Update Now": "",
-    Dismiss: "",
     "It seems Padlock Cloud is over capacity right now. Please try again later!":
       "",
     "The data received from Padlock Cloud seems to be corrupt and cannot be decrypted. This might be due to a network error but could also be the result of someone trying to compromise your connection to Padlock Cloud. If the problem persists, please notify Padlock support!":
@@ -434,27 +489,22 @@ $l.loadTranslations({
     "It seems that your Padlock Cloud account uses a different master password than then one you are using on this device. Please provide the correct master password for your Padlock Cloud account!":
       "",
     Submit: "",
+    "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock on this device!":
+      "",
+    "Check For Updates": "",
     "You currently don't have an active subscription which means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
       "",
-    "You successfully paired this device with Padlock Cloud!": "",
-    "Synchonize Now": "",
+    "Something went wrong. Please try again later!": "",
+    "Are you sure you want to disconnect from Padlock Cloud?": "",
+    "Please enter a valid email address!": "",
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "",
     Continue: "",
-    "Padlock Cloud provides a convenient way of synchronising your data between all your devices. By securely storing your data in the cloud, it not only allows you to easily access it from anywhere but also acts as a backup in case you should lose your device or accidentally erase your data. Before being sent to our servers, your data is encrypted locally using your master password to make sure that nobody can read it - not even we!":
-      "",
-    "After this period, your access will be read-only, which means you will be able to access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!":
-      "",
-    "You currently don't have an active subscription! This means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
-      "",
-    "This device is connected to the Padlock Cloud account {0}. Connect all your devices with the same account to easily synchronize your data between them!":
-      "",
-    "You are almost done connecting this device. An email was sent to {0}. Check your inbox and follow the instructions to complete the process!":
-      "",
     "Value copied to clipboard!": "",
     "{0} more {1}": "",
     field: "",
     fields: "",
+    "Enter Content": "",
     "Empty Field": "",
     "Are you sure you want to delete this field?": "",
     Delete: "",
@@ -472,6 +522,7 @@ $l.loadTranslations({
     "Confirm New Password": "",
     "Confirm & Change": "",
     "You failed to confirm the new password. Please try again!": "",
+    "Master password changed successfully.": "",
     "Are you sure you want to delete all your data and reset the app? Enter your master password to continue!":
       "",
     "You entered the wrong master password! Please try again!": "",
@@ -489,6 +540,8 @@ $l.loadTranslations({
     "Try Again": "",
     "Your data has successfully been copied to the system clipboard.": "",
     "Failed to open file. Did you enter the correct password?": "",
+    "It seems the data you are trying to import was exported from a newer version of Padlock and can not be opened with the version you are currently running.":
+      "",
     "Failed to recognize file format.": "",
     "Failed to open file.": "",
     "Failed to decrypt data. Did you enter the correct password?": "",
@@ -504,10 +557,15 @@ $l.loadTranslations({
       "",
     "Repeat Master Password": "",
     "You failed to repeat the password correctly. Try again!": "",
-    "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
-      "",
     "Type 'RESET' to confirm": "",
     "You didn't type 'RESET'. Refusing to reset the app.": "",
+    "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
+      "",
+    "It seems the data stored on this device was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock or reset the data to start over!":
+      "",
+    "Reset Data": "",
+    "Are you sure you want to reset the app? WARNING: This will delete all your data!":
+      "",
     "Padlock uses your email address to connect to the Padlock Cloud service, which allows you to easily and securely store your data online and synchronize it between all your devices. Don't worry, we'll only use it as a method of authentication and won't send you any spam!":
       "",
     "Your master password is a single passphrase that is used to encrypt everything you store in Padlock and the only way to access your data. Without your master password, no one will be able to read your data - not even we! So make sure you don't forget it, because we won't be able to help you recover it in case you do.":
@@ -515,15 +573,24 @@ $l.loadTranslations({
     weak: "",
     medium: "",
     strong: "",
-    "New Record": "",
-    "Would you like to pair this device with Padlock Cloud now?": "",
-    "Maybe Later": "",
+    "Learn More": "",
     "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
       "",
     minutes: "",
     minute: "",
     "Auto-lock in 10 seconds": "",
-    "App reset successfully. Off to a fresh start!": "",
-    "Master password changed successfully.": ""
+    "Have you backed up your data yet? Remember that by default your data is only stored locally and may be lost if you uninstall Padlock, lose your device or accidentally reset your data. Padlock Cloud is a great way to back up your data online and synchronize with other devices. Alternatively, you can export your data and store it somewhere safe.":
+      "",
+    "Sync With Padlock Cloud": "",
+    "Export Data": "",
+    "Do Nothing": "",
+    "The last time you synced your data with Padlock Cloud was {0} days ago! You should synchronize regularly to keep all your devices up-to-date and to make sure you always have a recent backup in the cloud.":
+      "",
+    "Synchronize Now": "",
+    "Turn On Auto Sync": "",
+    "Your Padlock Cloud trial period ends in {0} days!": "",
+    "Would you like to pair this device with Padlock Cloud now?": "",
+    "Maybe Later": "",
+    "App reset successfully. Off to a fresh start!": ""
   }
 });

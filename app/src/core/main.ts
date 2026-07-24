@@ -7,5 +7,6 @@ import * as imp from "./import";
 import * as exp from "./export";
 import * as platform from "./platform";
 import * as file from "./file";
+import * as messages from "./messages";
 
-export { util, crypto, source, data, ajax, imp, exp, platform, file };
+export { util, crypto, source, data, ajax, imp, exp, platform, file, messages };

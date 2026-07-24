@@ -1,6 +1,6 @@
 "use strict";
 
-const { app, shell, BrowserWindow, Menu, dialog } = require("electron");
+const { app, shell, BrowserWindow, Menu, dialog, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const url = require("url");
@@ -92,7 +92,8 @@ function checkForUpdates(manual) {
   autoUpdater.autoDownload = settings.get("autoDownloadUpdates");
   autoUpdater.allowPrerelease = settings.get("allowPrerelease");
 
-  autoUpdater.checkForUpdates().then((result) => {
+  const check = autoUpdater.checkForUpdates();
+  check && check.then((result) => {
     if (result.fileInfo) {
       updateAvailable(result.versionInfo);
     } else if (manual) {
@@ -258,3 +259,5 @@ app.on("before-quit", (e) => {
     autoUpdater.quitAndInstall();
   }
 });
+
+ipcMain.on("check-updates", () => checkForUpdates(true));
