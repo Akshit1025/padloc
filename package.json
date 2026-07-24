@@ -1,6 +1,6 @@
 {
   "name": "padloc",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0-rc.2",
   "description": "A minimalist password manager",
   "author": "Akshit Gupta <problemsolver687@gmail.com>",
   "license": "GPL-3.0",

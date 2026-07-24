@@ -18,7 +18,7 @@
 
                 static get observers() {
                     return [
-                        "_autoLockChanged(settings.autoLock, settings.autoLockDelay, locked)"
+                        "_autoLockChanged(settings.autoLock, settings.autoLockDelay, locked, isSynching)"
                     ];
                 }
 
@@ -35,7 +35,7 @@
                 _autoLockChanged() {
                     this._cancelAutoLock();
 
-                    if (this.settings.autoLock && !this.locked) {
+                    if (this.settings.autoLock && !this.locked && !this.isSynching) {
                         this._lockTimeout = setTimeout(() => {
                             const delay = this.settings.autoLockDelay;
                             this.unloadData();

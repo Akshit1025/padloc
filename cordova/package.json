@@ -1,6 +1,6 @@
 {
   "name": "com.agtech.padlock",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0-rc.2",
   "displayName": "Padlock",
   "cordova": {
     "platforms": [
@@ -26,18 +26,18 @@
         "XWALK_MODE": "embedded",
         "XWALK_MULTIPLEAPK": "true"
       },
-      "cordova-custom-config": {},
       "cordova-plugin-wkwebview-engine": {},
       "cordova-plugin-splashscreen": {},
       "cordova-plugin-migrate-localstorage": {},
       "cordova-clipboard": {},
+      "cordova-custom-config": {},
       "cordova-plugin-pbkdf2": {}
     }
   },
   "dependencies": {
     "cordova-android": "^6.2.3",
     "cordova-clipboard": "1.0.0",
-    "cordova-custom-config": "^3.3.0",
+    "cordova-custom-config": "^4.0.2",
     "cordova-ios": "^4.4.0",
     "cordova-plugin-app-version": "~0.1.9",
     "cordova-plugin-backbutton": "~0.3.0",
@@ -47,7 +47,7 @@
     "cordova-plugin-file": "^4.3.3",
     "cordova-plugin-inappbrowser": "~1.4.0",
     "cordova-plugin-migrate-localstorage": "0.0.2",
-    "cordova-plugin-pbkdf2": "^0.1.0",
+    "cordova-plugin-pbkdf2": "^0.2.0",
     "cordova-plugin-privacyscreen": "~0.3.1",
     "cordova-plugin-splashscreen": "^4.0.3",
     "cordova-plugin-statusbar": "~2.1.3",

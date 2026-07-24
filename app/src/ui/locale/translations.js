@@ -90,8 +90,8 @@ $l.loadTranslations({
     "You currently don't have an active subscription which means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
       "",
     "Something went wrong. Please try again later!": "",
-    "Are you sure you want to disconnect from Padlock Cloud?": "",
     "Please enter a valid email address!": "",
+    "Are you sure you want to disconnect from Padlock Cloud?": "",
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "",
     Continue: "",
@@ -99,6 +99,7 @@ $l.loadTranslations({
     "{0} more {1}": "",
     field: "",
     fields: "",
+    "Cannot lock app while sync is in progress!": "",
     "Enter Content": "",
     "Empty Field": "",
     "Are you sure you want to delete this field?": "",
@@ -154,6 +155,7 @@ $l.loadTranslations({
     "You failed to repeat the password correctly. Try again!": "",
     "Type 'RESET' to confirm": "",
     "You didn't type 'RESET'. Refusing to reset the app.": "",
+    "Please enter your password!": "",
     "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
       "",
     "It seems the data stored on this device was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock or reset the data to start over!":
@@ -168,7 +170,6 @@ $l.loadTranslations({
     weak: "",
     medium: "",
     strong: "",
-    "Learn More": "",
     "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
       "",
     minutes: "",
@@ -184,6 +185,7 @@ $l.loadTranslations({
     "Synchronize Now": "",
     "Turn On Auto Sync": "",
     "Your Padlock Cloud trial period ends in {0} days!": "",
+    "Learn More": "",
     "Would you like to pair this device with Padlock Cloud now?": "",
     "Maybe Later": "",
     "App reset successfully. Off to a fresh start!": ""
@@ -255,7 +257,7 @@ $l.loadTranslations({
       "Der Verbindungsvorgang ist fast abgeschlossen. Es wurde eine Email an {0} gesendet. Prüfen Sie Ihr Postfach und folgen Sie den Anweisungen um den Vorgang abzuschließen!",
     "After this period, your access will be read-only, which means you will be able to access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!":
       "Nach dieser Zeitspanne ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt. Dies bedeutet, dass Sie zwar weiterhin Ihre Daten herunterladen, jedoch weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um um vollen Zugriff auf Padlock Cloud zu erhalten!",
-    undefined:
+    "Padlock Cloud provides a convenient way of synchronising your data between all your devices. By securely storing your data in the cloud, it not only allows you to easily access it from anywhere but also acts as a backup in case you should lose your device or accidentally delete the app. Before being sent to our servers, your data is encrypted locally using your master password to make sure that nobody can read it - not even we!":
       'Padlock Cloud ist der einfachste und bequemste Weg, Ihre Daten zwischen all Ihren Geräten zu synchronisieren. Das sichere Speichern Ihrer Daten in der "Cloud" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus zuzugreifen, sondern dient außerdem als Absicherung im Falle eines Datenverlustes. Ihre Daten werden stets lokal verschlüsselt bevor sie an unsere Server gesendet werden um sicher zu stellen, dass niemand sie lesen kann - nicht einmal wir!',
     "You currently don't have an active subscription! This means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
       "Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können, aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen Zugriff auf Padlock Cloud zu erhalten!",
@@ -286,10 +288,10 @@ $l.loadTranslations({
       "Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können, aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen Zugriff auf Padlock Cloud zu erhalten!",
     "Something went wrong. Please try again later!":
       "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!",
-    "Are you sure you want to disconnect from Padlock Cloud?":
-      "Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?",
     "Please enter a valid email address!":
       "Bitte geben Sie eine gültige Emailadresse ein!",
+    "Are you sure you want to disconnect from Padlock Cloud?":
+      "Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?",
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "Sind Sie sicher, dass Sie einen eigenen Server zur Synchronisation verwenden möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!",
     Continue: "Fortfahren",
@@ -297,6 +299,8 @@ $l.loadTranslations({
     "{0} more {1}": "{0} weitere {1}",
     field: "Feld",
     fields: "Felder",
+    "Cannot lock app while sync is in progress!":
+      "App kann nicht gesperrt werden solange Synchronisierung im Gange ist!",
     "Enter Content": "Inhalt Eingeben",
     "Empty Field": "Leeres Feld",
     "Are you sure you want to delete this field?":
@@ -367,6 +371,7 @@ $l.loadTranslations({
     "Type 'RESET' to confirm": '"RESET" zum Bestätigen Eingeben',
     "You didn't type 'RESET'. Refusing to reset the app.":
       'Sie haben nicht "RESET" eingegeben. Die App wird nicht zurückgesetzt.',
+    "Please enter your password!": "Bitte geben Sie Ihr Passwort ein!",
     "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
       "Haben Sie Ihr Master Passwort vergessen? Sie können die App zurücksetzen um von vorne zu beginnen. WARNUNG: Dadurch werden all Ihre Daten gelöscht!",
     "It seems the data stored on this device was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock or reset the data to start over!":
@@ -381,7 +386,6 @@ $l.loadTranslations({
     weak: "schwach",
     medium: "mittel",
     strong: "stark",
-    "Learn More": "Mehr Erfahren",
     "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
       "Padlock wurde nach {0} {1} Inaktivität automatisch gesperrt. Dieses Verhalten kann bei Bedarf in den Einstellungen der App angepasst werden.",
     minutes: "Minuten",
@@ -398,6 +402,7 @@ $l.loadTranslations({
     "Turn On Auto Sync": "Auto-Sync Aktivieren",
     "Your Padlock Cloud trial period ends in {0} days!":
       "Ihre Padlock Cloud Testphase ended in {0} Tagen!",
+    "Learn More": "Mehr Erfahren",
     "Would you like to pair this device with Padlock Cloud now?":
       "Möchten sie diese Gerät nun mit Padlock Cloud verbinden?",
     "Maybe Later": "Vielleicht Später",
@@ -495,8 +500,8 @@ $l.loadTranslations({
     "You currently don't have an active subscription which means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
       "",
     "Something went wrong. Please try again later!": "",
-    "Are you sure you want to disconnect from Padlock Cloud?": "",
     "Please enter a valid email address!": "",
+    "Are you sure you want to disconnect from Padlock Cloud?": "",
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "",
     Continue: "",
@@ -504,6 +509,7 @@ $l.loadTranslations({
     "{0} more {1}": "",
     field: "",
     fields: "",
+    "Cannot lock app while sync is in progress!": "",
     "Enter Content": "",
     "Empty Field": "",
     "Are you sure you want to delete this field?": "",
@@ -559,6 +565,7 @@ $l.loadTranslations({
     "You failed to repeat the password correctly. Try again!": "",
     "Type 'RESET' to confirm": "",
     "You didn't type 'RESET'. Refusing to reset the app.": "",
+    "Please enter your password!": "",
     "Forgot your master password? You can start over by resetting the app. WARNING: This will delete all your data!":
       "",
     "It seems the data stored on this device was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock or reset the data to start over!":
@@ -573,7 +580,6 @@ $l.loadTranslations({
     weak: "",
     medium: "",
     strong: "",
-    "Learn More": "",
     "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
       "",
     minutes: "",
@@ -589,6 +595,7 @@ $l.loadTranslations({
     "Synchronize Now": "",
     "Turn On Auto Sync": "",
     "Your Padlock Cloud trial period ends in {0} days!": "",
+    "Learn More": "",
     "Would you like to pair this device with Padlock Cloud now?": "",
     "Maybe Later": "",
     "App reset successfully. Off to a fresh start!": ""

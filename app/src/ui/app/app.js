@@ -12,6 +12,10 @@
   } = padlock;
   const { applyMixins } = padlock.util;
 
+  const cordovaReady = new Promise((resolve) => {
+    document.addEventListener("deviceready", resolve);
+  });
+
   class App extends applyMixins(
     BaseElement,
     DataMixin,
@@ -68,6 +72,11 @@
       return this.offsetWidth < 700;
     }
 
+    connectedCallback() {
+      super.connectedCallback();
+      cordovaReady.then(() => navigator.splashscreen.hide());
+    }
+
     recordDeleted(record) {
       if (record === this._selectedRecord) {
         this.$.listView.deselect();
@@ -83,7 +92,7 @@
         ).then((confirm) => {
           if (confirm) {
             this._currentView = "cloudView";
-            this.connectCloud(this.settings.syncEmail);
+            this.$.cloudView.connect();
           }
         });
       }
