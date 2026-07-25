@@ -1,14 +1,22 @@
 "use strict";
 
-const { app, shell, BrowserWindow, Menu, dialog, ipcMain } = require("electron");
+const {
+  app,
+  shell,
+  BrowserWindow,
+  Menu,
+  dialog,
+  ipcMain
+} = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const url = require("url");
 const os = require("os");
+const uuid = require("uuid/v4");
 const { debug, test } = require("yargs").argv;
 const ElectronStore = require("electron-store");
 
-const settings = new ElectronStore({
+const settings = (global.settings = new ElectronStore({
   name: "settings",
   defaults: {
     autoDownloadUpdates: false,
@@ -19,7 +27,11 @@ const settings = new ElectronStore({
     },
     fullscreen: false
   }
-});
+}));
+
+if (!settings.get("uuid")) {
+  settings.set("uuid", uuid());
+}
 
 let win;
 let updateOnQuit = false;
@@ -93,25 +105,26 @@ function checkForUpdates(manual) {
   autoUpdater.allowPrerelease = settings.get("allowPrerelease");
 
   const check = autoUpdater.checkForUpdates();
-  check && check.then((result) => {
-    if (result.fileInfo) {
-      updateAvailable(result.versionInfo);
-    } else if (manual) {
-      dialog.showMessageBox(
-        {
-          type: "info",
-          message: "No Updates Available",
-          detail: "Your version of Padlock is up to date.",
-          checkboxLabel:
-            "Automatically download and install updates in the future (recommended)",
-          checkboxChecked: settings.get("autoDownloadUpdates")
-        },
-        (buttonIndex, checkboxChecked) => {
-          settings.set("autoDownloadUpdates", checkboxChecked);
-        }
-      );
-    }
-  });
+  check &&
+    check.then((result) => {
+      if (result.fileInfo) {
+        updateAvailable(result.versionInfo);
+      } else if (manual) {
+        dialog.showMessageBox(
+          {
+            type: "info",
+            message: "No Updates Available",
+            detail: "Your version of Padlock is up to date.",
+            checkboxLabel:
+              "Automatically download and install updates in the future (recommended)",
+            checkboxChecked: settings.get("autoDownloadUpdates")
+          },
+          (buttonIndex, checkboxChecked) => {
+            settings.set("autoDownloadUpdates", checkboxChecked);
+          }
+        );
+      }
+    });
 }
 
 function createWindow() {
@@ -156,7 +169,6 @@ function createWindow() {
     e.preventDefault();
     shell.openExternal(url);
   });
-
 }
 
 function createApplicationMenu() {

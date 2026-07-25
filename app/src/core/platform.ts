@@ -1,108 +1,15 @@
-declare var cordova: any;
-declare var chrome: any;
+declare var cordova: any | undefined;
+declare var chrome: any | undefined;
+declare var device: any | undefined;
 
 const nodeRequire = window.require;
 const electron = nodeRequire && nodeRequire("electron");
-
-let vPrefix: {
-  lowercase: string;
-  css: string;
-};
-
-/**
- *  Detects the vendor prefix to be used in the current browser
- *
- * @return {Object} object containing the simple lowercase vendor prefix as well as the css prefix
- * @example
- *
- *     {
- *         lowercase: "webkit",
- *         css: "-webkit-"
- *     }
- */
-export function getVendorPrefix() {
-  if (!vPrefix) {
-    var styles = getComputedStyle(document.documentElement, "");
-    var pre = Array.prototype.slice
-      .call(styles)
-      .join("")
-      .match(/-(moz|webkit|ms)-/);
-    vPrefix = {
-      lowercase: pre,
-      css: "-" + pre + "-"
-    };
-  }
-  return vPrefix;
-}
-
-// Names for transition end events on various platforms
-const transitionEndEventNames = {
-  webkit: "webkitTransitionEnd",
-  moz: "transitionend",
-  ms: "MSTransitionEnd",
-  o: "otransitionend"
-};
-
-/**
- * Returns the appropriate transition end event name for the current platform
- * @return {String} Name of the transition end event name on this platform
- */
-export function getTransitionEndEventName() {
-  return transitionEndEventNames[getVendorPrefix().lowercase];
-}
-
-// Names for animation end events on various platforms
-const animationEndEventNames = {
-  webkit: "webkitAnimationEnd",
-  moz: "animationend",
-  ms: "MSAnimationEnd",
-  o: "oanimationend"
-};
-
-/**
- * Returns the appropriate animation end event name for the current platform
- * @return {String} Name of the animation end event name on this platform
- */
-export function getAnimationEndEventName() {
-  return animationEndEventNames[getVendorPrefix().lowercase];
-}
-
-// Names for animation start events on various platforms
-const animationStartEventNames = {
-  webkit: "webkitAnimationStart",
-  moz: "animationstart",
-  ms: "MSAnimationStart",
-  o: "oanimationstart"
-};
-
-/**
- * Returns the appropriate animation start event name for the current platform
- * @return {String} Name of the animation end event name on this platform
- */
-export function getAnimationStartEventName() {
-  return animationStartEventNames[getVendorPrefix().lowercase];
-}
-
-//* Checks if the app is running as a packaged Chrome app
-function isChromeApp(): boolean {
-  return typeof chrome !== "undefined" && chrome.app && !!chrome.app.runtime;
-}
-
-/**
- * Checks the _navigator.platform_ property to see if we are on a device
- * running iOS
- */
-export function isIOS(): boolean {
-  return /ipad|iphone|ipod/i.test(navigator.platform);
-}
-
-export function isAndroid(): boolean {
-  return /android/i.test(navigator.userAgent);
-}
+const cordovaReady = new Promise<void>((r) =>
+  document.addEventListener("deviceready", () => r())
+);
 
 // Textarea used for copying/pasting using the dom
 let clipboardTextArea: HTMLTextAreaElement;
-
 // Set clipboard text using `document.execCommand("cut")`.
 // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
 function domSetClipboard(text: string) {
@@ -113,7 +20,6 @@ function domSetClipboard(text: string) {
   document.execCommand("cut");
   document.body.removeChild(clipboardTextArea);
 }
-
 // Get clipboard text using `document.execCommand("paste")`
 // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
 function domGetClipboard(): string {
@@ -125,34 +31,25 @@ function domGetClipboard(): string {
   document.body.removeChild(clipboardTextArea);
   return clipboardTextArea.value;
 }
-
 export function isCordova(): Boolean {
   return typeof cordova !== "undefined";
 }
 
-//* Sets the clipboard text to a given string
-export function setClipboard(text: string): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
-    if (isCordova() && cordova.plugins && cordova.plugins.clipboard) {
-      cordova.plugins.clipboard.copy(text, resolve, reject);
-    } else {
-      domSetClipboard(text);
-      resolve();
-    }
-  });
+//* Checks if the app is running as a packaged Chrome app
+export function isChromeApp(): boolean {
+  return typeof chrome !== "undefined" && chrome.app && !!chrome.app.runtime;
 }
 
-//* Retrieves the clipboard text
-export function getClipboard(): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
-    if (isCordova() && cordova.plugins && cordova.plugins.clipboard) {
-      cordova.plugins.clipboard.paste(resolve, reject);
-    } else {
-      resolve(domGetClipboard());
-    }
-  });
+export async function isIOS(): Promise<boolean> {
+  return (await getPlatformName()).toLowerCase() === "ios";
+}
+
+export async function isAndroid(): Promise<boolean> {
+  return (await getPlatformName()).toLowerCase() === "android";
+}
+
+export async function isChromeOS(): Promise<boolean> {
+  return (await getPlatformName()).toLowerCase() === "chromeos";
 }
 
 //* Checks if the current environment supports touch events
@@ -165,68 +62,122 @@ export function isTouch() {
   }
 }
 
-//* Disables scrolling the viewport on iOS when virtual keyboard is showing. Does nothing on other
-//* Platforms so can be safely called independtly of the platform
-export function keyboardDisableScroll(disable: boolean) {
-  isCordova() &&
-    cordova.plugins &&
-    cordova.plugins.Keyboard &&
-    cordova.plugins.Keyboard.disableScroll(disable);
+//* Sets the clipboard text to a given string
+export async function setClipboard(text: string): Promise<void> {
+  // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
+  if (isCordova()) {
+    await cordovaReady;
+    return new Promise<void>((resolve, reject) => {
+      cordova.plugins.clipboard.copy(text, resolve, reject);
+    });
+  } else {
+    domSetClipboard(text);
+  }
 }
 
-export function getAppStoreLink(): string {
-  if (isIOS()) {
+//* Retrieves the clipboard text
+export async function getClipboard(): Promise<string> {
+  // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
+  if (isCordova()) {
+    await cordovaReady;
+    return new Promise<string>((resolve, reject) => {
+      cordova.plugins.clipboard.paste(resolve, reject);
+    });
+  } else {
+    return domGetClipboard();
+  }
+}
+
+export async function getAppStoreLink(): Promise<string> {
+  if (await isIOS()) {
     return "https://itunes.apple.com/app/id871710139";
-  } else if (isAndroid()) {
+  } else if (await isAndroid()) {
     return "https://play.google.com/store/apps/details?id=com.maklesoft.padlock";
-  } else if (isChromeApp()) {
+  } else if (await isChromeApp()) {
     return "https://chrome.google.com/webstore/detail/padlock/npkoefjfcjbknoeadfkbcdpbapaamcif";
   } else {
-    return "http://padlock.io";
+    return "https://padlock.io";
   }
 }
 
 export function hasNode(): Boolean {
   return !!nodeRequire;
 }
-
 export function isElectron(): Boolean {
   return !!electron;
 }
-
 export async function getAppVersion(): Promise<string> {
   if (isElectron()) {
     return electron.remote.app.getVersion();
-  } else if (isCordova() && cordova.getAppVersion) {
-    return await new Promise<string>((resolve, reject) => {
+  } else if (isCordova()) {
+    await cordovaReady;
+    return new Promise<string>((resolve, reject) => {
       cordova.getAppVersion.getVersionNumber(resolve, reject);
     });
   } else if (isChromeApp()) {
     return chrome.runtime.getManifest().version;
   }
-
   return "";
 }
 
-export function getPlatformName(): string {
-  if (isElectron() && require("os")) {
-    return nodeRequire("os").platform();
-  } else if (isIOS()) {
-    return "ios";
-  } else if (isAndroid()) {
-    return "android";
+export async function getPlatformName(): Promise<string> {
+  if (isElectron()) {
+    const platform = nodeRequire("os").platform();
+    return (
+      {
+        darwin: "MacOS",
+        win32: "Windows",
+        linux: "Linux"
+      }[platform] || platform
+    );
+  } else if (isCordova()) {
+    return device.platform;
   } else if (isChromeApp()) {
-    return "chrome";
+    const info = await new Promise<{ os: string }>((r) =>
+      chrome.runtime.getPlatformInfo(r)
+    );
+    return (
+      {
+        cros: "ChromeOS",
+        win: "Windows (Chrome)",
+        linux: "Linux (Chrome)",
+        android: "Android (Chrome)",
+        mac: "MacOS (Chrome)",
+        openbsd: "OpenBSD (Chrome)"
+      }[info.os] || info.os
+    );
   } else {
     return "";
   }
 }
 
-export function checkForUpdates(): void {
+export async function getDeviceUUID(): Promise<string> {
+  if (isCordova()) {
+    await cordovaReady;
+    return device.uuid;
+  } else if (isElectron()) {
+    return electron.remote.getGlobal("settings").get("uuid");
+  } else {
+    return "";
+  }
+}
+
+export async function getOSVersion(): Promise<string> {
+  if (isCordova()) {
+    await cordovaReady;
+    return device.version;
+  } else if (hasNode()) {
+    return nodeRequire("os").release();
+  } else {
+    return "";
+  }
+}
+
+export async function checkForUpdates(): Promise<void> {
   if (isElectron()) {
     electron.ipcRenderer.send("check-updates");
   } else {
-    window.open(getAppStoreLink(), "_system");
+    window.open(await getAppStoreLink(), "_system");
   }
 }
 
@@ -234,4 +185,35 @@ export function getLocale(): string {
   // TODO: Is there a more reliable way to get the system locale,
   // e.g. through `electron.remote.app.getLocale()`?
   return navigator.language || "en";
+}
+
+export interface DeviceInfo {
+  platform: string;
+  osVersion: string;
+  uuid: string;
+  appVersion: string;
+  manufacturer?: string;
+  model?: string;
+  hostName?: string;
+}
+
+export async function getDeviceInfo(): Promise<DeviceInfo> {
+  const info: DeviceInfo = {
+    platform: await getPlatformName(),
+    osVersion: await getOSVersion(),
+    appVersion: await getAppVersion(),
+    uuid: await getDeviceUUID()
+  };
+
+  if (isCordova()) {
+    await cordovaReady;
+    info.model = device.model;
+    info.manufacturer = device.manufacturer;
+  }
+
+  if (isElectron()) {
+    info.hostName = nodeRequire("os").hostname();
+  }
+
+  return info;
 }

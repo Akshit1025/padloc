@@ -36,6 +36,7 @@ export class Messages {
     const now = new Date();
     const aa = JSON.parse(data);
     const read = await this.fetchRead();
+    const platform = await getPlatformName();
 
     return aa
       .map((a: any) => {
@@ -63,7 +64,7 @@ export class Messages {
           !read[a.id] &&
           a.from <= now &&
           a.until >= now &&
-          (!a.platform || a.platform.includes(getPlatformName())) &&
+          (!a.platform || a.platform.includes(platform)) &&
           (!a.subStatus || a.subStatus.includes(this.settings.syncSubStatus)) &&
           (!a.version || satisfies(this.settings.version, a.version))
         );

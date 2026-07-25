@@ -36,7 +36,7 @@
                 }
 
                 connectCloud(email) {
-                    return this._requestAuthToken(email);
+                    return this._requestAuthToken(email.toLowerCase());
                 }
 
                 cancelConnect() {
@@ -112,11 +112,11 @@
                 }
 
                 testCredentials(pollInterval) {
-                    if (this._testCredsPromise || !this.isActivationPending()) {
-                        return;
+                    if (!this.isActivationPending()) {
+                        return Promise.reject();
                     }
 
-                    this._testCredsPromise = cloudSource.source.testCredentials()
+                    this._testCredsPromise = this._testCredsPromise || cloudSource.source.testCredentials()
                         .then((connected) => {
                             this._testCredsPromise = null;
                             this.settings.syncConnected = connected;
@@ -141,6 +141,8 @@
                             this._testCredsPromise = null;
                             this._handleCloudError(e);
                         });
+
+                        return this._testCredsPromise;
                 }
 
                 openDashboard() {
@@ -257,7 +259,6 @@
                             this.settings.syncToken = authToken.token;
                             this.settings.syncId = authToken.id;
                             this.dispatch("settings-changed");
-                            this.alert(this.activationPendingText());
                         })
                         .catch((e) => {
                             this.dispatch("settings-changed");
@@ -310,7 +311,6 @@
                         case "rate_limit_exceeded":
                             this.alert($l("It seems Padlock Cloud is over capacity right now. Please try again later!"));
                             return false;
-                        case "json_error":
                         case "invalid_container_data":
                         case "invalid_key_params":
                             this.alert($l(

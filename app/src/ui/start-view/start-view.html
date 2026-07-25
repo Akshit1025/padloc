@@ -59,7 +59,7 @@
                 display: flex;
                 z-index: 5;
                 text-align: center;
-                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
             }
 
             main {
@@ -94,10 +94,9 @@
 
             pl-input {
                 text-align: center;
-            }
-
-            pl-input::-webkit-input-placeholder {
-                color: inherit;
+                --pl-input-placeholder: {
+                    opacity: 0.8;
+                }
             }
 
             .input-wrapper {
@@ -188,7 +187,7 @@
         (() => {
 
             const { DataMixin, LocaleMixin, DialogMixin, BaseElement } = padlock;
-            const { applyMixins } = padlock.util;
+            const { applyMixins, wait } = padlock.util;
 
             class StartView extends applyMixins(
                 BaseElement,
@@ -378,7 +377,7 @@
 
                 _showEmailInfo() {
                     this.$.emailInput.blur();
-                    padlock.util.wait(100)
+                    wait(100)
                         .then(() => {
                             return this.alert($l(
                                 "Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
@@ -392,7 +391,7 @@
 
                 _showPasswordInfo() {
                     this.$.newPasswordInput.blur();
-                    padlock.util.wait(100)
+                    wait(100)
                         .then(() => {
                             return this.alert($l(
                                 "Your master password is a single passphrase that is used to encrypt everything you " +

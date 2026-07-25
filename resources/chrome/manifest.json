@@ -1,9 +1,6 @@
 {
   "manifest_version": 2,
   "name": "Padlock",
-  "version": "2.0.0-rc.2",
-  "description": "A password manager built using web technologies",
-  "author": "Akshit Gupta",
   "app": {
     "background": {
       "scripts": ["background.js"]
@@ -13,7 +10,8 @@
     "storage",
     "clipboardWrite",
     "clipboardRead",
-    "*://cloud.padlock.io/*"
+    "*://cloud.padlock.io/*",
+    "unlimitedStorage"
   ],
   "icons": {
     "16": "icons/icon16.png",

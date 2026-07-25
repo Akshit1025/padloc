@@ -7,7 +7,10 @@ import {
 } from "./file";
 import { Settings } from "./data";
 import { Container } from "./crypto";
-import { isCordova, isElectron } from "./platform";
+import { isCordova, isElectron, getDeviceInfo, isChromeApp } from "./platform";
+
+declare var chrome: any;
+const chromeLocalStorage = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local;
 
 export interface Source {
   get(): Promise<string>;
@@ -31,7 +34,7 @@ export class MemorySource implements Source {
   }
 }
 
-export class LocalStorageSource implements Source {
+export class HTML5LocalStorageSource implements Source {
   constructor(public key: string) {}
 
   async get(): Promise<string> {
@@ -46,6 +49,36 @@ export class LocalStorageSource implements Source {
     localStorage.removeItem(this.key);
   }
 }
+
+export class ChromeLocalStorageSource implements Source {
+  constructor(public key: string) {}
+
+  get(): Promise<string> {
+    return new Promise((resolve) => {
+      chromeLocalStorage.get(this.key, (data: any) => {
+        resolve(data[this.key] || "");
+      });
+    });
+  }
+
+  set(data: string): Promise<void> {
+    const obj = {
+      [this.key]: data
+    };
+
+    return new Promise<void>((resolve) => chromeLocalStorage.set(obj, resolve));
+  }
+
+  clear(): Promise<void> {
+    return new Promise<void>((resolve) =>
+      chromeLocalStorage.remove(this.key, resolve)
+    );
+  }
+}
+
+export const LocalStorageSource = isChromeApp()
+  ? ChromeLocalStorageSource
+  : HTML5LocalStorageSource;
 
 export class AjaxSource implements Source {
   constructor(private _url: string) {}
@@ -132,8 +165,22 @@ export class CloudSource extends AjaxSource {
       );
     }
 
-    // headers.set("X-Client-Version", padlock.version);
-    // headers.set("X-Client-Platform", padlock.platform.getPlatformName());
+    const {
+      uuid,
+      platform,
+      osVersion,
+      appVersion,
+      manufacturer,
+      model,
+      hostName
+    } = await getDeviceInfo();
+    headers.set("X-Device-App-Version", appVersion || "");
+    headers.set("X-Device-Platform", platform || "");
+    headers.set("X-Device-UUID", uuid || "");
+    headers.set("X-Device-Manufacturer", manufacturer || "");
+    headers.set("X-Device-OS-Version", osVersion || "");
+    headers.set("X-Device-Model", model || "");
+    headers.set("X-Device-Hostname", hostName || "");
 
     let req: XMLHttpRequest;
     try {

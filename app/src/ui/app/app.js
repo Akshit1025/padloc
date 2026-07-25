@@ -11,6 +11,7 @@
     BaseElement
   } = padlock;
   const { applyMixins } = padlock.util;
+  const {isAndroid} = padlock.platform;
 
   const cordovaReady = new Promise((resolve) => {
     document.addEventListener("deviceready", resolve);
@@ -204,6 +205,8 @@
         case "cloudView":
           this._cloudViewBack();
           break;
+        default:
+          isAndroid() && navigator.Backbutton.goBack();
       }
     }
 

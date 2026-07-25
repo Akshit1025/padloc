@@ -3,7 +3,7 @@ $l.loadTranslations({
     "Enter Email Address": "",
     "Get Started": "",
     "Activation pending": "",
-    "Connection ID: {0}": "",
+    Refresh: "",
     Cancel: "",
     "Your trial period ends in {0} days.": "",
     "Manage Subscriptions": "",
@@ -133,7 +133,7 @@ $l.loadTranslations({
     "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
       "",
     "Use Anyway": "",
-    "Try Again": "",
+    "Choose Different Password": "",
     "Your data has successfully been copied to the system clipboard.": "",
     "Failed to open file. Did you enter the correct password?": "",
     "It seems the data you are trying to import was exported from a newer version of Padlock and can not be opened with the version you are currently running.":
@@ -148,7 +148,6 @@ $l.loadTranslations({
       "",
     "Review Import Guidelines": "",
     "Successfully imported {0} records.": "",
-    "Choose Different Password": "",
     "Remember your master password! Without it, nobody will be able to access your data, not even we! This is to ensure that your data is as safe as possible but it also means that if you lose your master password, we won't be able to assist you with recovering your data.":
       "",
     "Repeat Master Password": "",
@@ -185,6 +184,8 @@ $l.loadTranslations({
     "Synchronize Now": "",
     "Turn On Auto Sync": "",
     "Your Padlock Cloud trial period ends in {0} days!": "",
+    "In August 2016, Google announced that they will be discontinuing Chrome Apps for all operating systems other than ChromeOS. This means that by early 2018, you will no longer be able to load this app! Don't worry though, because Padlock is now available as a native app for Windows, MacOS and Linux! Head over to our website to find out how to switch now!":
+      "",
     "Learn More": "",
     "Would you like to pair this device with Padlock Cloud now?": "",
     "Maybe Later": "",
@@ -194,7 +195,7 @@ $l.loadTranslations({
     "Enter Email Address": "Emailadresse Eingeben",
     "Get Started": "Starten",
     "Activation pending": "Warte auf Aktivierung",
-    "Connection ID: {0}": "Verbindungsnummer: {0}",
+    Refresh: "Aktualisieren",
     Cancel: "Abbrechen",
     "Your trial period ends in {0} days.":
       "Ihre kostenlose Testphase ended in {0} Tagen",
@@ -341,7 +342,7 @@ $l.loadTranslations({
     "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
       "WARNUNG: Das Passwort dass Sie eingegeben haben ist schwach. Dies macht es einfacher für Angreifer, die zum Schutz Ihrer Daten verwendete Verschlüsselung zu brechen. Versuchen Sie, ein längeres Passwort mit einer Variation von Groß-, und Kleinbuchstaben sowie Sonderzeichen und Zahlen zu verwenden!",
     "Use Anyway": "Trotzdem Verwenden",
-    "Try Again": "Erneut Versuchen",
+    "Choose Different Password": "Anderes Password Wählen",
     "Your data has successfully been copied to the system clipboard.":
       "Ihre Daten wurden erfolgreich in die Zwischenablage kopiert.",
     "Failed to open file. Did you enter the correct password?":
@@ -362,7 +363,6 @@ $l.loadTranslations({
     "Review Import Guidelines": "Tips zum Import Nachlesen",
     "Successfully imported {0} records.":
       "Es wurden erfolgreich {0} Einträge importiert.",
-    "Choose Different Password": "Anderes Password Wählen",
     "Remember your master password! Without it, nobody will be able to access your data, not even we! This is to ensure that your data is as safe as possible but it also means that if you lose your master password, we won't be able to assist you with recovering your data.":
       "Gehen Sie sicher, dass Sie Ihr Master Passwort nicht vergessen! Ohne Ihr Passwort kann niemand auf Ihre Daten zugreifen, nicht einmal wir! Dies ist essentiell für die Sicherung Ihrer Daten aber bedeutet auch, dass wir Ihnen nicht helfen können, sollten Sie Ihr Passwort vergessen!",
     "Repeat Master Password": "Master Passwort Wiederholen",
@@ -402,6 +402,8 @@ $l.loadTranslations({
     "Turn On Auto Sync": "Auto-Sync Aktivieren",
     "Your Padlock Cloud trial period ends in {0} days!":
       "Ihre Padlock Cloud Testphase ended in {0} Tagen!",
+    "In August 2016, Google announced that they will be discontinuing Chrome Apps for all operating systems other than ChromeOS. This means that by early 2018, you will no longer be able to load this app! Don't worry though, because Padlock is now available as a native app for Windows, MacOS and Linux! Head over to our website to find out how to switch now!":
+      "Im August 2016 kündigte Google an, die Unterstützung von Chrome Apps auf sämtlichen Betriebssystemen außer ChromeOS einzustellen. Dies bedeutet, dass diese App ab dem Frühjar 2018 nicht mehr verfügbar sein wird! Aber keine Sorge, denn Padlock ist jetzt auch als native app für Windows, MacOS und Linux verfügbar! Besuchen sie unsere Webseite um zu erfahren, wie Sie einfach wechseln können!",
     "Learn More": "Mehr Erfahren",
     "Would you like to pair this device with Padlock Cloud now?":
       "Möchten sie diese Gerät nun mit Padlock Cloud verbinden?",
@@ -413,7 +415,7 @@ $l.loadTranslations({
     "Enter Email Address": "",
     "Get Started": "",
     "Activation pending": "",
-    "Connection ID: {0}": "",
+    Refresh: "",
     Cancel: "",
     "Your trial period ends in {0} days.": "",
     "Manage Subscriptions": "",
@@ -543,7 +545,7 @@ $l.loadTranslations({
     "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
       "",
     "Use Anyway": "",
-    "Try Again": "",
+    "Choose Different Password": "",
     "Your data has successfully been copied to the system clipboard.": "",
     "Failed to open file. Did you enter the correct password?": "",
     "It seems the data you are trying to import was exported from a newer version of Padlock and can not be opened with the version you are currently running.":
@@ -558,7 +560,6 @@ $l.loadTranslations({
       "",
     "Review Import Guidelines": "",
     "Successfully imported {0} records.": "",
-    "Choose Different Password": "",
     "Remember your master password! Without it, nobody will be able to access your data, not even we! This is to ensure that your data is as safe as possible but it also means that if you lose your master password, we won't be able to assist you with recovering your data.":
       "",
     "Repeat Master Password": "",
@@ -595,6 +596,8 @@ $l.loadTranslations({
     "Synchronize Now": "",
     "Turn On Auto Sync": "",
     "Your Padlock Cloud trial period ends in {0} days!": "",
+    "In August 2016, Google announced that they will be discontinuing Chrome Apps for all operating systems other than ChromeOS. This means that by early 2018, you will no longer be able to load this app! Don't worry though, because Padlock is now available as a native app for Windows, MacOS and Linux! Head over to our website to find out how to switch now!":
+      "",
     "Learn More": "",
     "Would you like to pair this device with Padlock Cloud now?": "",
     "Maybe Later": "",

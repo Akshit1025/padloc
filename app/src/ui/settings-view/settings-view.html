@@ -67,7 +67,7 @@
                 line-height: 0;
             }
 
-            @media (min-width: 700px) {
+            @media (min-width: 600px) {
                 pl-icon[icon=backward] {
                     display: none;
                 }
@@ -139,7 +139,8 @@
             );
 
             const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
-            const { applyMixins } = padlock.util;
+            const { applyMixins, wait } = padlock.util;
+            const {isCordova} = padlock.platform;
 
             class SettingsView extends applyMixins(
                 BaseElement,
@@ -255,7 +256,7 @@
                                     "attackers to break the encryption used to protect your data. Try to use a longer " +
                                     "password or include a variation of uppercase, lowercase and special characters as " +
                                     "well as numbers."
-                                ), $l("Use Anyway"), $l("Try Again")).then((confirm) => {
+                                ), $l("Use Anyway"), $l("Choose Different Password")).then((confirm) => {
                                     if (!confirm) {
                                         return Promise.reject();
                                     }
@@ -268,6 +269,7 @@
                 }
                 _downloadEncrypted() {
                     this._getEncryptedData()
+                        .then(() => wait(500))
                         .then((data) => {
                             const a = document.createElement("a");
                             a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
@@ -388,7 +390,7 @@
                         });
                 }
                 _isMobile() {
-                    return padlock.platform.isIOS() || padlock.platform.isAndroid();
+                    return isCordova();
                 }
 
                 _openHomepage() {
