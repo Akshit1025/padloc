@@ -334,9 +334,10 @@
                             this._unlocking = false;
                         })
                         .catch((e) => {
+                            this.$.enterButton.fail();
+                            this._unlocking = false;
                             switch (e.code) {
                                 case "decryption_failed":
-                                    this.$.enterButton.fail();
                                     this.$.logo.classList.remove("rumble");
                                     this.offsetLeft;
                                     this.$.logo.classList.add("rumble");
@@ -351,7 +352,6 @@
                                     }
                                     break;
                                 case "unsupported_container_version":
-                                    this.$.enterButton.fail();
                                     this.confirm($l(
                                         "It seems the data stored on this device was saved with a newer version " +
                                         "of Padlock and can not be opened with the version you are currently running. " +
@@ -369,6 +369,10 @@
                                         });
                                     break;
                                 default:
+                                    this._promptResetData($l(
+                                        "An error occured while loading your data! If the problem persists, please try " +
+                                        "resetting or reinstalling the app!"
+                                    ));
                                     throw e;
                             }
                             this._unlocking = false;

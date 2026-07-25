@@ -162,6 +162,8 @@ $l.loadTranslations({
     "Reset Data": "",
     "Are you sure you want to reset the app? WARNING: This will delete all your data!":
       "",
+    "An error occured while loading your data! If the problem persists, please try resetting or reinstalling the app!":
+      "",
     "Padlock uses your email address to connect to the Padlock Cloud service, which allows you to easily and securely store your data online and synchronize it between all your devices. Don't worry, we'll only use it as a method of authentication and won't send you any spam!":
       "",
     "Your master password is a single passphrase that is used to encrypt everything you store in Padlock and the only way to access your data. Without your master password, no one will be able to read your data - not even we! So make sure you don't forget it, because we won't be able to help you recover it in case you do.":
@@ -379,6 +381,8 @@ $l.loadTranslations({
     "Reset Data": "Daten Zurücksetzen",
     "Are you sure you want to reset the app? WARNING: This will delete all your data!":
       "Sind Sie sicher, dass Sie die App zurücksetzen wollen? Dabei werden all Ihre Daten gelöscht!",
+    "An error occured while loading your data! If the problem persists, please try resetting or reinstalling the app!":
+      "Beim Laden Ihrer Daten ist ein Fehler aufgetreten! Falls das Problem weiterhin besteht, setzen Sie App zurück oder installieren Padlock neu!",
     "Padlock uses your email address to connect to the Padlock Cloud service, which allows you to easily and securely store your data online and synchronize it between all your devices. Don't worry, we'll only use it as a method of authentication and won't send you any spam!":
       "Padlock verwendet Ihre Emailadresse um sich mit dem Padlock Cloud Service zu verbinden, welcher es Ihnen ermöglicht, Ihre Daten schnell und einfach online zu speichern und zwischen all Ihren Geräten zu synchronisieren. Keine Sorge, wir verwenden Ihre Email nur zu Authentifizierungszwecken und keinesfalls zum versenden von Werbung oder dergleichen.",
     "Your master password is a single passphrase that is used to encrypt everything you store in Padlock and the only way to access your data. Without your master password, no one will be able to read your data - not even we! So make sure you don't forget it, because we won't be able to help you recover it in case you do.":
@@ -573,6 +577,8 @@ $l.loadTranslations({
       "",
     "Reset Data": "",
     "Are you sure you want to reset the app? WARNING: This will delete all your data!":
+      "",
+    "An error occured while loading your data! If the problem persists, please try resetting or reinstalling the app!":
       "",
     "Padlock uses your email address to connect to the Padlock Cloud service, which allows you to easily and securely store your data online and synchronize it between all your devices. Don't worry, we'll only use it as a method of authentication and won't send you any spam!":
       "",
