@@ -1,12 +1,13 @@
 (() => {
-  const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
+  const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
   const { applyMixins } = padlock.util;
 
   class RecordView extends applyMixins(
     BaseElement,
     DataMixin,
     LocaleMixin,
-    DialogMixin
+    DialogMixin,
+    AnimationMixin
   ) {
     static get is() {
       return "pl-record-view";
@@ -14,27 +15,70 @@
 
     static get properties() {
       return {
+        animationOptions: {
+          type: Object,
+          value: {
+            clear: true,
+            fullDuration: 800
+          }
+        },
         record: {
           type: Object,
-          notify: true
+          notify: true,
+          observer: "_recordObserver"
         },
-        _catListShowing: {
+        _showCatList: {
+          type: Boolean,
+          value: false
+        },
+        _catCount: {
+          type: Number,
+          value: 0
+        },
+        _edited: {
           type: Boolean,
           value: false
         }
       };
     }
 
+    static get observers() {
+      return ["_setBackground(record.fields.length)"];
+    }
+
     recordCreated(record) {
       setTimeout(() => {
-        if (record === this.record && !padlock.platform.isTouch()) {
+        if (record === this.record) {
           this.edit();
         }
       }, 500);
     }
 
-    _fireChangeEvent() {
+    _catListShowing() {
+      return this._showCatList && !!this._catCount;
+    }
+
+    _categoryClicked() {
+      this.$.categoryInput.focus();
+    }
+
+    _setEdited() {
       this.dispatch("record-changed", this.record);
+      this._edited = true;
+    }
+
+    _debouncedFinishEditing() {
+      this._deferFinishEditing();
+      this._changeTimeout = setTimeout(() => {
+        if (this._edited) {
+          this.dispatch("record-finished-editing", this.record);
+          this._edited = false;
+        }
+      }, 500);
+    }
+
+    _deferFinishEditing() {
+      clearTimeout(this._changeTimeout);
     }
 
     _deleteField(e) {
@@ -44,32 +88,39 @@
       ).then((confirmed) => {
         if (confirmed) {
           this.splice("record.fields", e.model.index, 1);
-          this._fireChangeEvent();
+          this._setEdited();
         }
       });
+    }
+    _inputFocused() {
+      this._deferFinishEditing();
+      this._hideCategoryList();
     }
     _fieldClass(index) {
       return "tiles-" + (Math.floor((index + 1) % 8) + 1);
     }
-    _spacerClass(nFields) {
-      return this._fieldClass(nFields + 1);
+    _setBackground(nFields) {
+      const shade = 4 - Math.abs(4 - (nFields + (2 % 8)));
+      this.style.background = `var(--shade-${shade + 1}-color)`;
     }
 
     _newFieldEnter() {
       if (!this.record) {
         return;
       }
-
       const newField = this.$.newField.field;
       if (newField.name && newField.value) {
         this.push("record.fields", newField);
+        this.animateElement(this.$.newFieldWrapper);
         if (!padlock.platform.isTouch()) {
-          this.$.newField.edit();
+          setTimeout(() => this.$.newField.edit(), 10);
         }
+        this._setEdited();
       }
+
       this.$.newField.field = { name: "", value: "" };
 
-      setTimeout(() => this._fireChangeEvent(), 500);
+      this._debouncedFinishEditing();
     }
 
     _deleteRecord() {
@@ -95,29 +146,49 @@
     }
 
     _selectCategory(e) {
-      this.set("record.category", e.model.item);
-      this._fireChangeEvent();
+      setTimeout(() => {
+        this.set("record.category", e.model.item);
+        this._setEdited();
+        this.$.categoryInput.focus();
+      }, 300);
+    }
+
+    _categoryInputFocused() {
+      this._deferFinishEditing();
+      this._showCategoryList();
     }
 
     _showCategoryList() {
-      this._catListShowing = true;
+      this._showCatList = true;
     }
 
     _hideCategoryList() {
-      setTimeout(() => (this._catListShowing = false), 100);
+      this._showCatList = false;
     }
 
-    _showFullCategoryList() {
-      this.$.categoryInput.value = "";
-      setTimeout(() => this.$.categoryInput.focus(), 100);
-    }
+    _toggleCategoryList(e) {
+      e.stopPropagation();
 
-    _closeOtherGenerators(e) {
-      for (const field of this.root.querySelectorAll("pl-record-field")) {
-        if (field !== e.target) {
-          field.showGenerator = false;
-        }
+      if (!this._showCatList || this.record.category) {
+        this.$.categoryInput.value = "";
+        this._showCatList = true;
+        this.$.categoryInput.focus();
+      } else {
+        this._showCatList = false;
       }
+    }
+    _dropDownIcon() {
+      return this._catListShowing() && this.record && !this.record.category
+        ? "dropup"
+        : "dropdown";
+    }
+
+    _recordObserver() {
+      this.$.main.style.visibility = "hidden";
+      setTimeout(() => {
+        this.$.main.style.visibility = "";
+        this.animateCascade(this.root.querySelectorAll(".animate"));
+      }, 100);
     }
     close() {
       if (!this.record.name) {

@@ -1,36 +1,41 @@
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../input/input.html">
 
 <dom-module id="pl-dialog">
-
     <template>
         <style include="shared">
             :host {
+                display: block;
+                @apply --fullbleed;
                 position: fixed;
                 z-index: 10;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                background-color: transparent;
+                @apply --scroll;
+            }
+
+            :host(:not(.open)) {
+                pointer-events: none;
+            }
+
+            .outer {
+                min-height: 100%;
                 display: flex;
+                position: relative;
                 flex-direction: column;
                 align-items: center;
-                justify-content: flex-end;
+                justify-content: center;
+                padding: 15px;
+                box-sizing: border-box;
             }
 
             .scrim {
-                content: "";
                 display: block;
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
                 background: var(--color-background);
                 opacity: 0;
-                transition: opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
+                transform: translate3d(0, 0, 0);
+                @apply --fullbleed;
             }
 
             :host(.open) .scrim {
@@ -39,27 +44,25 @@
 
             .inner {
                 width: 100%;
-                max-width: 400px;
-                max-height: 100%;
-                position: relative;
-                z-index: 1;
-                transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                display: flex;
-                flex-direction: column;
-                background: var(--color-background);
                 box-sizing: border-box;
+                max-width: 400px;
+                z-index: 1;
                 overflow: hidden;
-                box-shadow: rgba(0, 0, 0, 0.15) 0 0 4px;
+                --color-background: var(--color-primary);
+                --color-foreground: var(--color-tertiary);
+                --color-highlight: var(--color-secondary);
+                background: var(--color-background);
+                color: var(--color-foreground);
+                border-radius: 8px;
+                border-bottom: solid 2px rgb(64, 143, 184);
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+                transform: translate3d(0, 0, 0);
+                transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
             }
 
             :host(:not(.open)) .inner {
                 opacity: 0;
-                transform: translate3d(0, 50%, 0);
-            }
-
-            .inner ::slotted(.message) {
-                padding: 15px;
-                text-align: center;
+                transform: translate3d(0, 0, 0) scale(0.95);
             }
 
             @media (min-width: 400px) {
@@ -73,21 +76,31 @@
             }
         </style>
 
-        <div class="scrim" on-click="dismiss"></div>
-        <div class="inner" on-tap="_innerTap">
-            <slot></slot>
+        <div class="outer" on-click="dismiss">
+            <div class="scrim"></div>
+
+            <div class="inner" on-click="_preventDismiss">
+                <slot></slot>
+            </div>
         </div>
     </template>
 
     <script>
         (() => {
 
-            class Dialog extends padlock.BaseElement {
+            class Dialog extends padlock.AnimationMixin(padlock.BaseElement) {
 
                 static get is() { return "pl-dialog"; }
 
                 static get properties() {
                     return {
+                        animationOptions: {
+                            type: Object,
+                            value: {
+                                duration: 500,
+                                fullDuration: 700
+                            }
+                        },
                         open: {
                             type: Boolean,
                             value: false,
@@ -105,7 +118,6 @@
                         }
                     };
                 }
-
                 ready() {
                     super.ready();
                     window.addEventListener("keydown", (e) => {
@@ -126,14 +138,12 @@
 
                 //* Changed handler for the _open_ property. Shows/hides the dialog
                 _openChanged() {
+                    clearTimeout(this._hideTimeout);
+
                     // Set _display: block_ if we're showing. If we're hiding
                     // we need to wait until the transitions have finished before we
                     // set _display: none_.
                     if (this.open) {
-                        if (this._hideTimeout) {
-                            clearTimeout(this._hideTimeout);
-                            this._hideTimeout = null;
-                        }
                         if (padlock.Input.activeInput) {
                             padlock.Input.activeInput.blur();
                         }
@@ -143,19 +153,20 @@
                         this._hideTimeout = window.setTimeout(() => {
                             this.style.display = "none";
                             this.isShowing = false;
-                        }, 250);
+                        }, 400);
                     }
 
-                    // Trigger relayout to make sure all elements have been rendered
-                    // when applying the transition
                     this.offsetLeft;
 
                     this.classList.toggle("open", this.open);
-
                     this.dispatchEvent(new CustomEvent(
                         this.open ? "dialog-open" : "dialog-close",
-                        {bubbles: true, composed: true}
+                        { bubbles: true, composed: true }
                     ));
+                }
+
+                _preventDismiss(e) {
+                    e.stopPropagation();
                 }
 
                 dismiss() {
@@ -164,12 +175,8 @@
                         this.open = false;
                     }
                 }
-
             }
-
             window.customElements.define(Dialog.is, Dialog);
-
         })();
     </script>
-
 </dom-module>

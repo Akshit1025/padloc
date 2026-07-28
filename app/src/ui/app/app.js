@@ -125,11 +125,8 @@
       clearTimeout(this._selectedRecordChangedTimeout);
       this._selectedRecordChangedTimeout = setTimeout(() => {
         if (this._selectedRecord) {
-          setTimeout(() => (this._currentView = "recordView"));
-          setTimeout(
-            () => (this.$.recordView.record = this._selectedRecord),
-            this._isNarrow ? 50 : 0
-          );
+          this.$.recordView.record = this._selectedRecord;
+          this._currentView = "recordView";
         } else {
           if (this._currentView == "recordView") {
             this._currentView = "placeholderView";

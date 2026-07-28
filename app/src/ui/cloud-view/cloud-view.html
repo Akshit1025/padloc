@@ -1,4 +1,5 @@
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
@@ -9,11 +10,8 @@
 <link rel="import" href="../notification/notification.html">
 <link rel="import" href="../sync/sync.html">
 <link rel="import" href="../toggle/toggle-button.html">
-
 <dom-module id="pl-cloud-view">
-
     <template>
-
         <style include="shared">
             :host {
                 display: flex;
@@ -28,15 +26,11 @@
                 box-sizing: border-box;
             }
 
-            .note {
-                font-size: var(--font-size-tiny);
-                padding: 15px;
-                text-align: center;
-            }
-
-            .conn-id {
-                margin-top: 10px;
+            .account {
+                font-size: var(--font-size-default);
                 font-weight: bold;
+                margin: 10px 0;
+                overflow-wrap: break-word;
             }
 
             #emailInput {
@@ -71,8 +65,6 @@
                 }
             }
         </style>
-
-
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">Padlock Cloud</div>
@@ -81,60 +73,64 @@
 
         <main>
 
-            <section class="tiles tiles-2" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
-                <div class="note">
-                    [[ generalInfoText() ]]
-                </div>
+            <section class="tiles" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
+                <div class="info">[[ generalInfoText() ]]</div>
                 <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]"
                     value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]"
+                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Pair Device') ]]"
                     on-click="connect"></pl-loading-button>
             </section>
 
-            <section class="tiles tiles-2"
-                hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
-                <div class="note">
-                    <strong>[[ $l("Activation pending") ]]</strong> -
-                    [[ activationPendingText(settings.syncEmail) ]]
+            <section class="tiles" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
+                <div class="info">
+                    <div>[[ $l("Check your email:") ]]</div>
+                    <div class="account">[[ settings.syncEmail ]]</div>
+                    <div>[[ activationPendingText(settings.syncEmail) ]]</div>
                 </div>
-                <pl-loading-button id="refreshButton" label="[[ $l('Refresh') ]]" on-click="_refresh"></pl-loading-button>
+                <pl-loading-button id="refreshButton" label="[[ $l('Refresh') ]]"
+                    on-click="_refresh"></pl-loading-button>
                 <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
-                <div class="note">
+            <section class="tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
                     <strong>[[ $l("Your trial period ends in {0} days.", remainingTrialDays) ]]</strong> -
                     [[ trialInfoText() ]]
                 </div>
                 <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
-                <div class="note">
+            <section class="tiles" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
                     <strong>[[ $l("Read-Only") ]]</strong> -
                     [[ readOnlyInfoText() ]]
                 </div>
                 <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !settings.syncConnected ]]">
-                <div class="note">
-                    <strong>[[ $l("Connected") ]]</strong> -
-                    [[ connectedInfoText(settings.syncEmail) ]]
+            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+                <div class="info">
+                    <div>[[ $l("Paired with:") ]]</div>
+                    <div class="account">[[ settings.syncEmail ]]</div>
+                    <div>[[ connectedInfoText(settings.syncEmail) ]]</div>
                 </div>
                 <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
                     label="[[ $l('Synchronize') ]]"></pl-loading-button>
                 <button class="tap" on-click="openDashboard">[[ $l("Manage Account") ]]</button>
-                <button class="tap" on-click="_disconnect">[[ $l("Disconnect") ]]</button>
-                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Auto Sync') ]]" reverse class="tap"
-                    on-change="settingChanged"></pl-toggle-button>
+                <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
             </section>
 
-            <section class="tiles tiles-2">
-                <div class="note">
+            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+                <div class="info">[[ autoSyncInfoText() ]]</div>
+                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]" reverse
+                    class="tap" on-change="settingChanged"></pl-toggle-button>
+            </section>
+
+            <section class="tiles">
+                <div class="info">
                     [[ $l("By providing a custom URL you can synchronize your data with a server other than the official
                     Padlock Cloud server.") ]]
-                    <strong>[[ $l("WARNING: This is only recommended for advanced users!") ]]</strong>
+                    <div class="warning">[[ $l("WARNING: This is only recommended for advanced users!") ]]</div>
                 </div>
                 <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
                     on-change="_customHostChanged" class="tap" on-change="settingChanged"></pl-toggle-button>
@@ -142,22 +138,19 @@
                     <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
                         value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$" required
                         on-change="settingChanged"></pl-input>
-                    <div class="note warning">
+                    <div class="info warning">
                         <strong>[[ $l("Invalid URL") ]]</strong> -
                         [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https
                         connection is required.") ]]
                     </div>
                 </div>
             </section>
-
         </main>
-
     </template>
-
     <script>
         (() => {
 
-            const { LocaleMixin, DialogMixin, NotificationMixin, DataMixin, SyncMixin, BaseElement } = padlock;
+            const { LocaleMixin, DialogMixin, NotificationMixin, DataMixin, SyncMixin, AnimationMixin, BaseElement } = padlock;
             const { applyMixins } = padlock.util;
 
             class CloudView extends applyMixins(
@@ -166,29 +159,35 @@
                 SyncMixin,
                 LocaleMixin,
                 DialogMixin,
-                NotificationMixin
+                NotificationMixin,
+                AnimationMixin
             ) {
 
                 static get is() { return "pl-cloud-view"; }
-
                 static get observers() {
                     return [
                         "_credentialsChanged(settings.syncToken, settings.syncConnected)"
                     ];
                 }
 
+                ready() {
+                    super.ready();
+                    this.listen("data-loaded", () => this._animateSections());
+                    this.listen("sync-connect-start", () => this._animateSections());
+                    this.listen("sync-connect-cancel", () => this._animateSections());
+                    this.listen("sync-connect-success", () => this._animateSections());
+                    this.listen("sync-disconnect", () => this._animateSections());
+                }
+
                 syncStart() {
                     this.$.syncButton.start();
                 }
-
                 syncSuccess() {
                     this.$.syncButton.success();
                 }
-
                 syncFail() {
                     this.$.syncButton.fail();
                 }
-
                 connect() {
                     if (this.$.emailInput.invalid) {
                         this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
@@ -202,7 +201,6 @@
                             .catch(() => this.$.connectButton.fail());
                     }
                 }
-
                 _credentialsChanged() {
                     if (this.isActivationPending()) {
                         // Wait 1 minute, then poll every 10 seconds
@@ -212,11 +210,9 @@
                         window.addEventListener("focus", () => this.testCredentials(), { once: true });
                     }
                 }
-
                 _back() {
                     this.dispatchEvent(new CustomEvent("cloud-back"));
                 }
-
                 _disconnect() {
                     this.confirm(
                         $l("Are you sure you want to disconnect from Padlock Cloud?"),
@@ -227,7 +223,6 @@
                         }
                     });
                 }
-
                 _customHostChanged() {
                     if (this.settings.syncCustomHost) {
                         this.confirm(
@@ -241,7 +236,6 @@
                             });
                     }
                 }
-
                 _refresh() {
                     if (this.isActivationPending()) {
                         this.$.refreshButton.start();
@@ -259,11 +253,13 @@
                     }
                 }
 
+                _animateSections() {
+                    this.animateCascade(this.root.querySelectorAll("section:not([hidden])"));
+                }
+
             }
 
             window.customElements.define(CloudView.is, CloudView);
-
         })();
     </script>
-
 </dom-module>

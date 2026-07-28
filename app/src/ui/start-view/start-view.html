@@ -1,4 +1,5 @@
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../data/data.html">
@@ -39,9 +40,9 @@
                 }
             }
 
-            @keyframes slideIn {
+            @keyframes reveal {
                 from {
-                    transform: translate(0, 5px);
+                    transform: translate(0, 40px);
                     opacity: 0;
                 }
 
@@ -77,10 +78,6 @@
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
             }
 
-            .shutter.bottom>* {
-                animation: slideIn 1s ease 0.7s backwards;
-            }
-
             .hero {
                 display: block;
                 height: 150px;
@@ -89,7 +86,6 @@
                 margin-bottom: 40px;
                 position: relative;
                 z-index: 1;
-                animation: bounceIn 0.6s ease 0.2s backwards;
             }
 
             pl-input {
@@ -126,10 +122,6 @@
                 font-weight: bold;
             }
 
-            .hero.rumble {
-                animation: rumble 0.2s;
-            }
-
             :host([open]) {
                 pointer-events: none;
             }
@@ -149,10 +141,10 @@
                 <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
             </div>
             <div class="shutter bottom">
-                <pl-input id="passwordInput" type="password" class="tap tiles-3" select-on-focus on-enter="_unlock"
+                <pl-input id="passwordInput" type="password" class="tap tiles-3" select-on-focus on-enter="_unlock" no-tab='[[open]]'
                     placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
                 <pl-loading-button id="enterButton" on-click="_unlock" class="tap tiles-4 enter-button"
-                    label="[[ $l('Unlock') ]]"></pl-loading-button>
+                    label="[[ $l('Unlock') ]]" no-tab='[[open]]'></pl-loading-button>
                 <div class="spacer tiles-5"></div>
             </div>
         </main>
@@ -163,19 +155,19 @@
             </div>
             <div class="shutter bottom">
                 <div class="tap tiles-2 input-wrapper">
-                    <pl-input id="emailInput" type="email" select-on-focus on-focus="_emailInputFocused"
+                    <pl-input id="emailInput" type="email" select-on-focus no-tab='[[open]]' on-focus="_emailInputFocused"
                         on-enter="_emailEnter" placeholder="[[ $l('Enter Email (Optional)') ]]"></pl-input>
                     <pl-icon icon="info" on-click="_showEmailInfo"></pl-icon>
                 </div>
                 <div class="tap tiles-3 input-wrapper">
-                    <pl-input id="newPasswordInput" type="password" select-on-focus on-focus="_newPasswordInputFocused"
+                    <pl-input id="newPasswordInput" type="password" select-on-focus no-tab='[[open]]' on-focus="_newPasswordInputFocused"
                         on-enter="_getStarted" value="{{ newPwd }}"
                         placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
                     <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">[[ $l('strength: {0}', _pwdStrength)
                         ]]</div>
                     <pl-icon icon="info" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
                 </div>
-                <pl-loading-button id="getStartedButton" on-click="_getStarted" class="tap tiles-4 enter-button"
+                <pl-loading-button id="getStartedButton" on-click="_getStarted" no-tab='[[open]]' class="tap tiles-4 enter-button"
                     label="[[ $l('Get Started') ]]"></pl-loading-button>
                 <div class="spacer tiles-5"></div>
             </div>
@@ -186,7 +178,7 @@
         /* global zxcvbn */
         (() => {
 
-            const { DataMixin, LocaleMixin, DialogMixin, BaseElement } = padlock;
+            const { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, BaseElement } = padlock;
             const { applyMixins, wait } = padlock.util;
             const {isTouch} = padlock.platform;
 
@@ -194,13 +186,23 @@
                 BaseElement,
                 DataMixin,
                 LocaleMixin,
-                DialogMixin
+                DialogMixin,
+                AnimationMixin
             ) {
 
                 static get is() { return "pl-start-view"; }
 
                 static get properties() {
                     return {
+                        animationOptions: {
+                            type: Object,
+                            value: {
+                                animation: "reveal",
+                                duration: 800,
+                                fullDuration: 3000,
+                                initialDelay: 200
+                            }
+                        },
                         open: {
                             type: Boolean,
                             value: false,
@@ -220,11 +222,15 @@
                     this._failCount = 0;
                 }
 
+                connectedCallback() {
+                    super.connectedCallback();
+                    this.animateCascade(this.root.querySelectorAll("main:not([hidden]) .shutter > *"));
+                }
+
                 ready() {
                     super.ready();
                     this.dataReady()
                         .then(() => this.reset())
-                        .then(() => wait(500))
                         .then(() => {
                             if (!isTouch() && this._hasData) {
                                 this.$.passwordInput.focus();
@@ -345,9 +351,7 @@
                             this._unlocking = false;
                             switch (e.code) {
                                 case "decryption_failed":
-                                    this.$.logo.classList.remove("rumble");
-                                    this.offsetLeft;
-                                    this.$.logo.classList.add("rumble");
+                                    this.animateElement(this.$.logo, { animation: "rumble", duration: 200, clear: true });
                                     this._failCount++;
                                     if (this._failCount > 2) {
                                         this._promptResetData($l(

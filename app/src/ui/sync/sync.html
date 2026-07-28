@@ -36,12 +36,13 @@
                 }
 
                 connectCloud(email) {
-                    return this._requestAuthToken(email.toLowerCase());
+                    return this._requestAuthToken(email.toLowerCase()).then(() => this.dispatch("sync-connect-start"));
                 }
 
                 cancelConnect() {
                     this.settings.syncToken = "";
                     this.dispatch("settings-changed");
+                    this.dispatch("sync-connect-cancel");
                 }
 
                 disconnectCloud() {
@@ -50,6 +51,7 @@
                     this.settings.syncEmail = "";
                     this.settings.syncReadonly = false;
                     this.dispatch("settings-changed");
+                    this.dispatch("sync-disconnect");
                 }
 
                 synchronize() {
@@ -123,6 +125,7 @@
                             this.dispatch("settings-changed");
 
                             if (connected) {
+                                this.dispatch("sync-connect-success");
                                 this.confirm(
                                     $l("You successfully paired this device with Padlock Cloud!"),
                                     $l("Synchonize Now"), $l("Dismiss")
@@ -139,6 +142,7 @@
                         })
                         .catch((e) => {
                             this._testCredsPromise = null;
+                            this.cancelConnect();
                             this._handleCloudError(e);
                         });
 
@@ -178,10 +182,10 @@
 
                 readOnlyInfoText() {
                     return $l(
-                        "You currently don't have an active subscription! This means you can access " +
+                        "You currently don't have an active subscription which means you can still access " +
                         "your existing data on Padlock Cloud but you won't be able to upload any new data " +
-                        "or synchronize changes between devices. Get a subscription now to regain full access " +
-                        "to Padlock Cloud!"
+                        "or synchronize changes between devices. Get a subscription now to take full advantage " +
+                        "of Padlock Cloud!"
                     );
                 }
 
@@ -190,6 +194,13 @@
                         "This device is connected to the Padlock Cloud account {0}. Connect all your devices " +
                         "with the same account to easily synchronize your data between them!",
                         this.settings.syncEmail
+                    );
+                }
+
+                autoSyncInfoText() {
+                    return $l(
+                        "Enable Auto Sync to automatically synchronize your data with " +
+                        "your Padlock Cloud account every time you make a change!"
                     );
                 }
 
@@ -214,7 +225,7 @@
                                     $l("Yes"), $l("No")
                                 ).then((confirm) => {
                                     if (confirm) {
-                                        this.setRemotePassword(this.localSource.password);
+                                        this.setRemotePassword(this.password);
                                     }
                                 });
                             }

@@ -1,14 +1,12 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
-<link rel="import" href="../generator/generator.html">
+<link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
-
 <dom-module id="pl-record-field">
     <template>
-
         <style include="shared">
             :host {
                 display: block;
@@ -56,57 +54,68 @@
                 flex-direction: column;
             }
 
-            :host(:not(.editing-name)) #nameInput {
+            .field-button {
+                cursor: pointer;
+            }
+
+            :host(:not([_editing-name])) #nameInput {
                 transform: translate(0, -10px) scale(0.8);
             }
 
-            :host(.editing-name) #valueInput {
+            :host([_editing-name]) #valueInput {
                 opacity: 0.5;
                 transform: translate(0, 20px);
             }
         </style>
-
         <div class="container">
             <div class="input-container">
-                <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]" select-on-focus
-                    on-focus="_nameInputFocused" on-blur="_nameInputBlurred" on-enter="_confirmEdit"
+                <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]"
+                    select-on-focus focused="{{ _editingName }}" on-enter="_focusValueInput"
                     on-escape="_cancelEdit"></pl-input>
-                <pl-input multiline id="valueInput" value="[[ field.value ]]"
-                    placeholder="[[ _valuePlaceholder(draft) ]]" select-on-focus on-focus="_valueInputFocused"
-                    on-blur="_valueInputBlurred" on-escape="_cancelEdit" on-mousedown='_valueInputMouseDown'></pl-input>
+                <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ $l('Enter Content') ]]"
+                    select-on-focus focused="{{ _editingValue }}" on-escape="_cancelEdit"
+                    on-mousedown="_valueInputMouseDown"></pl-input>
             </div>
-            <template is="dom-if" if="{{ !draft }}">
-                <div class="field-buttons tiles" hidden$="{{ _editing }}">
-                    <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
-                    <pl-icon icon="delete" class="tap" on-click="_delete"></pl-icon>
-                    <pl-icon icon="generate" class="tap" on-click="_toggleGenerator"></pl-icon>
-                    <div class="spacer"></div>
-                </div>
-            </template>
-            <template is="dom-if" if="{{ draft }}">
-                <div class="field-buttons tiles" hidden$="{{ _editing }}">
-                    <pl-icon icon="add" class="tap" on-click="edit"></pl-icon>
-                    <div class="spacer"></div>
-                </div>
-            </template>
-            <div class="field-buttons tiles" hidden$="{{ !_editing }}">
-                <pl-icon icon="check" class="tap" on-click="_confirmEdit"></pl-icon>
-                <pl-icon icon="cancel" class="tap" on-click="_cancelEdit"></pl-icon>
-                <pl-icon icon="generate" class="tap" on-click="_toggleGenerator"
-                    hidden$="{{ !_editingValue }}"></pl-icon>
-                <div class="spacer"></div>
-            </div>
-        </div>
 
-        <pl-generator id="generator" class="tiles-4" hidden$="[[ !showGenerator ]]"
-            on-generator-confirm="_generatorConfirm" on-generator-cancel="_generatorCancel"></pl-generator>
+            <template is="dom-if" if="[[ !draft ]]">
+                <div class="field-buttons">
+                    <pl-icon icon="copy" class="field-button tiles-1 tap" on-click="_copy"
+                        hidden="[[ _editing ]]"></pl-icon>
+                    <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit"
+                        hidden="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="delete" class="field-button tiles-2" on-click="_delete"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tiles-3" on-click="_showGenerator"></pl-icon>
+                    <div class="spacer tiles-4"></div>
+                </div>
+            </template>
+
+            <template is="dom-if" if="[[ draft ]]">
+                <div class="field-buttons">
+                    <pl-icon icon="add" class="field-button tiles-1 tap" on-click="edit"
+                        hidden="[[ _editing ]]"></pl-icon>
+                    <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit"
+                        hidden="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tiles-2" on-click="_showGenerator"
+                        hidden="[[ !_editing ]]"></pl-icon>
+                    <div class="spacer tiles-3"></div>
+                </div>
+            </template>
+        </div>
 
     </template>
 
     <script>
         (() => {
 
-            class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.BaseElement)) {
+            const { applyMixins } = padlock.util;
+            const { BaseElement, NotificationMixin, LocaleMixin, DialogMixin } = padlock;
+
+            class RecordField extends applyMixins(
+                BaseElement,
+                NotificationMixin,
+                LocaleMixin,
+                DialogMixin
+            ) {
 
                 static get is() { return "pl-record-field"; }
 
@@ -114,20 +123,20 @@
                     return {
                         _editing: {
                             type: Boolean,
-                            computed: "_computeEditing(_editingName, _editingValue)"
+                            value: false
                         },
                         _editingName: {
                             type: Boolean,
-                            value: false
+                            value: false,
+                            reflectToAttribute: true
                         },
                         _editingValue: {
                             type: Boolean,
                             value: false
                         },
-                        showGenerator: {
+                        _generatorShowing: {
                             type: Boolean,
-                            value: false,
-                            observer: "_showGeneratorChanged"
+                            value: false
                         },
                         draft: {
                             type: Boolean,
@@ -142,119 +151,67 @@
 
                 static get observers() {
                     return [
-                        "_editingChanged(_editing, showGenerator)"
+                        "_updateEditing(_editingName, _editingValue, _generatorShowing)",
+                        "_editingChanged(_editing)"
                     ];
                 }
 
-                _computeEditing() {
-                    return this._editingName || this._editingValue;
+                _updateEditing() {
+                    clearTimeout(this._updateEditingTimeout);
+                    const editing = this._editingName || this._editingValue || this._generatorShowing;
+                    this._updateEditingTimeout = setTimeout(() => this._editing = editing, 100);
                 }
 
                 _editingChanged() {
-                    if (!this._editing) {
-                        if (this.draft) {
-                            this.field && (this.field.name = this.$.nameInput.value);
-                            this.field && (this.field.value = this.$.valueInput.value);
-                        } else {
-                            this.notifyPath("field.name");
-                            this.notifyPath("field.value");
-                        }
+                    if (
+                        this.field && !this._editing &&
+                        (this.field.name !== this.$.nameInput.value || this.field.value !== this.$.valueInput.value)
+                    ) {
+                        this.field.name = this.$.nameInput.value;
+                        this.field.value = this.$.valueInput.value;
+                        this.dispatchEvent(new CustomEvent("field-change"));
                     }
 
-                    if (!this.showGenerator) {
-                        this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
-                    }
+                    this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
                 }
 
-                _nameInputFocused() {
-                    this.classList.add("editing-name");
-                    this._editingName = true;
-                    this.showGenerator = false;
-                }
-
-                _nameInputBlurred() {
-                    this.classList.remove("editing-name");
-                    setTimeout(() => {
-                        this._editingName = false;
-                    }, 300);
-                }
-
-                _valueInputFocused() {
-                    if (this.$.nameInput.value) {
-                        this._editingValue = true;
-                        this.showGenerator = false;
-                    } else {
-                        this.$.nameInput.focus();
-                    }
-                }
-
-                _valueInputBlurred() {
-                    setTimeout(() => {
-                        this._editingValue = false;
-                    }, 300);
-                }
-
-                _fireEditEvent() {
-                    this.dispatchEvent(new CustomEvent("field-change"));
-                }
-
-                _confirmEdit() {
-                    if (this._editingName && this.$.nameInput.value) {
-                        this.field && (this.field.name = this.$.nameInput.value);
-                        this.$.valueInput.focus();
-                        this._fireEditEvent();
-                    } else if (this._editingValue) {
-                        this.field && (this.field.name = this.$.nameInput.value);
-                        this.field && (this.field.value = this.$.valueInput.value);
-                        this._fireEditEvent();
-                    }
+                _focusValueInput() {
+                    this.$.valueInput.focus();
                 }
 
                 _cancelEdit() {
+                    this.notifyPath("field.name");
+                    this.notifyPath("field.value");
                     this.$.nameInput.blur();
                     this.$.valueInput.blur();
-                    this._editingName = false;
-                    this._editingValue = false;
                     if (this.draft) {
                         this.$.nameInput.value = this.$.valueInput.value = "";
                     }
                 }
-
                 _delete() {
                     this.dispatchEvent(new CustomEvent("field-delete", { bubbles: true, composed: true }));
                 }
 
-                _valuePlaceholder() {
-                    return this.draft ? $l("Enter Content") : $l("Empty Field");
-                }
-
-                _toggleGenerator() {
-                    this.showGenerator = !this.showGenerator;
-                    if (this.showGenerator) {
-                        this.$.generator.generate();
+                _showGenerator() {
+                    if (!this.$.nameInput.value) {
+                        this.alert($l("Please enter a field name first!"))
+                            .then(() => this.$.nameInput.focus());
+                        return;
                     }
-                }
-
-                _generatorConfirm() {
-                    this.set("field.name", this.$.nameInput.value);
-                    this.set("field.value", this.$.generator.value);
-                    this.showGenerator = false;
-                    this._fireEditEvent();
-                }
-
-                _generatorCancel() {
-                    this.showGenerator = false;
-                }
-
-                _showGeneratorChanged() {
-                    this.dispatchEvent(new CustomEvent(this.showGenerator ? "generator-show" : "generator-hide"));
+                    this._generatorShowing = true;
+                    this.generate()
+                        .then((value) => {
+                            if (value) {
+                                this.$.valueInput.value = value;
+                            }
+                            this._generatorShowing = false;
+                        });
                 }
 
                 _copy() {
                     padlock.platform.setClipboard(this.field.value)
                         .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
                 }
-
                 _valueInputMouseDown(e) {
                     // Prevent focusing value input if name input is still empty; Focus name input instead
                     if (!this.$.nameInput.value) {
@@ -262,16 +219,12 @@
                         this.$.nameInput.focus();
                     }
                 }
-
                 edit() {
                     const input = this.field && this.field.name ? this.$.valueInput : this.$.nameInput;
                     input.focus();
                 }
             }
-
             window.customElements.define(RecordField.is, RecordField);
-
         })();
     </script>
-
 </dom-module>

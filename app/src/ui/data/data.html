@@ -121,7 +121,13 @@
                 }
 
                 createRecord(name) {
-                    const record = new Record(name || $l("New Record"));
+                    const fields = this.settings.defaultFields.map((name) => {
+                        return {
+                            name: name,
+                            value: ""
+                        };
+                    });
+                    const record = new Record(name || $l("New Record"), fields);
                     this.addRecords([record]);
                     this.dispatch("record-created", record);
                     return record;

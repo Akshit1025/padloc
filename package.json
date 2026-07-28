@@ -1,6 +1,6 @@
 {
   "name": "padloc",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "description": "A minimalist password manager",
   "author": "Akshit Gupta <problemsolver687@gmail.com>",
   "license": "GPL-3.0",
@@ -24,7 +24,7 @@
     "core-js": "^2.4.1",
     "crisper": "^2.1.1",
     "electron": "^1.6.10",
-    "electron-builder": "^19.20.1",
+    "electron-builder": "^19.27.7",
     "eslint": "^4.0.0",
     "eslint-plugin-html": "^3.0.0",
     "estraverse": "^4.2.0",
