@@ -1,6 +1,6 @@
 {
   "name": "com.agtech.padlock",
-  "version": "2.3.0-beta.1",
+  "version": "2.3.0-beta.2",
   "displayName": "Padlock",
   "cordova": {
     "platforms": [

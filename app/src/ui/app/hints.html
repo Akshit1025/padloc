@@ -3,21 +3,14 @@
 <script>
     (() => {
 
-        const { FileSource } = padlock.source;
         const { wait } = padlock.util;
         const { isChromeApp, isChromeOS, getReviewLink } = padlock.platform;
 
-        const statsSource = new FileSource("stats.json");
-        let stats;
-        const statsLoaded = statsSource.get().then((data) => {
-            try {
-                stats = JSON.parse(data);
-            } catch (e) {
-                stats = {};
-            }
-        });
-        const saveStats = () => statsSource.set(JSON.stringify(stats));
         const day = 1000 * 60 * 60 * 24;
+
+        let stats;
+        const statsLoaded = padlock.stats.get().then((s) => stats = s);
+
         function daysPassed(date) {
             return (new Date().getTime() - date) / day;
         }
@@ -25,26 +18,10 @@
             return class HintsMixin extends superClass {
                 constructor() {
                     super();
-                    statsLoaded.then(() => {
-                        if (!stats.firstLaunch) {
-                            stats.firstLaunch = new Date().getTime();
-                        }
-                        stats.lastLaunch = new Date().getTime();
-                        stats.launchCount++;
-                        saveStats();
-                    });
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindBackup()));
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindSync()));
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindTrialEnds()));
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._askFeedback()));
-                    this.listen("sync-success", () => statsLoaded.then(() => {
-                        stats.lastSync = new Date().getTime();
-                        saveStats();
-                    }));
-                    this.listen("data-exported", () => statsLoaded.then(() => {
-                        stats.lastExport = new Date().getTime();
-                        saveStats();
-                    }));
                     this.listen("auto-lock", () => statsLoaded.then(() => this._showAutoLockNotice()));
                 }
                 ready() {
@@ -68,6 +45,7 @@
                             .then((choice) => {
                                 switch (choice) {
                                     case 0:
+                                        padlock.stats.set({pairingSource: "Backup Reminder"});
                                         this._openCloudView();
                                         break;
                                     case 1:
@@ -75,8 +53,7 @@
                                         break;
                                 }
                             });
-                        stats.lastBackupReminder = new Date().getTime();
-                        saveStats();
+                        padlock.stats.set({lastBackupReminder: new Date().getTime()});
                     }
                 }
                 _remindSync() {
@@ -104,8 +81,7 @@
                                         break;
                                 }
                             });
-                        stats.lastSyncReminder = new Date().getTime();
-                        saveStats();
+                        padlock.stats.set({lastSyncReminder: new Date().getTime()});
                     }
                 }
                 _remindTrialEnds() {
@@ -117,16 +93,15 @@
                         this.confirm(
                             $l("Your Padlock Cloud trial period ends in {0} days!", this.remainingTrialDays) +
                             " " + this.trialInfoText(),
-                            $l("Manage Subscriptions"),
+                            $l("Buy Subscription"),
                             $l("Dismiss")
                         )
                             .then((confirmed) => {
                                 if (confirmed) {
-                                    this.openDashboard();
+                                    this.openDashboard("subscribe", "app-4");
                                 }
                             });
-                        stats.lastTrialEndsReminder = new Date().getTime();
-                        saveStats();
+                        padlock.stats.set({lastTrialEndsReminder: new Date().getTime()});
                     }
                 }
                 _notifyChromeAppDeprecation() {
@@ -162,10 +137,13 @@
                             $l("Hate it.")
                         ])
                             .then((rating) => {
-                                stats.lastAskedFeedback = new Date().getTime();
-                                stats.lastRating = rating;
-                                stats.lastRatedVersion = this.settings.version;
-                                saveStats();
+                                this.track("Rate App", { "Rating": rating });
+
+                                padlock.stats.set({
+                                    lastAskedFeedback: new Date().getTime(),
+                                    lastRating: rating,
+                                    lastRatedVersion: this.settings.version
+                                });
 
                                 switch (rating) {
                                     case 0:
@@ -179,11 +157,12 @@
                                             .then((choice) => {
                                                 switch (choice) {
                                                     case 0:
+                                                        this.track("Review App", { "Rating": rating });
                                                         this._sendFeedback(rating);
-                                                        stats.lastReviewed = new Date().getTime();
+                                                        padlock.stats.set({ lastReviewed: new Date().getTime() });
                                                         break;
                                                     case 1:
-                                                        stats.dontAskFeedback = true;
+                                                        padlock.stats.set({ dontAskFeedback: true });
                                                         break;
                                                 }
 
@@ -203,6 +182,7 @@
                                         ])
                                             .then((choice) => {
                                                 if (choice === 0) {
+                                                    this.track("Provide Feedback", { "Rating": rating });
                                                     this._sendFeedback(rating);
                                                 }
                                             });
@@ -224,8 +204,7 @@
                                 "of inactivity. You can change this behavior from the settings page.",
                                 minutes, minutes > 1 ? $l("minutes") : $l("minute")));
                         }, 1000);
-                        stats.hasShownAutoLockNotice = true;
-                        saveStats();
+                        padlock.stats.set({ hasShownAutoLockNotice: true });
                     }
                 }
 

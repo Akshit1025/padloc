@@ -219,11 +219,13 @@ export class CloudSource extends AjaxSource {
   async authenticate(
     email: string,
     create = false,
-    authType = "api"
+    authType = "api",
+    redirect = ""
   ): Promise<CloudAuthToken> {
     const params = new URLSearchParams();
     params.set("email", email);
     params.set("type", authType);
+    params.set("redirect", redirect);
 
     const req = await this.request(
       create ? "POST" : "PUT",
@@ -246,15 +248,16 @@ export class CloudSource extends AjaxSource {
 
   async requestAuthToken(
     email: string,
-    create = false
+    create = false,
+    redirect = ""
   ): Promise<CloudAuthToken> {
-    const authToken = await this.authenticate(email, create, "api");
+    const authToken = await this.authenticate(email, create, "api", redirect);
     this.settings.syncEmail = authToken.email;
     this.settings.syncToken = authToken.token;
     return authToken;
   }
 
-  async getLoginUrl() {
+  async getLoginUrl(redirect: string) {
     if (!this.settings.syncConnected) {
       throw new CloudError(
         "invalid_auth_token",
@@ -265,7 +268,8 @@ export class CloudSource extends AjaxSource {
     const authToken = await this.authenticate(
       this.settings.syncEmail,
       false,
-      "web"
+      "web",
+      redirect
     );
     return authToken.actUrl;
   }

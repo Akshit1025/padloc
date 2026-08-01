@@ -145,6 +145,7 @@ export async function getPlatformName(): Promise<string> {
       }[platform] || platform
     );
   } else if (isCordova()) {
+    await cordovaReady;
     return device.platform;
   } else if (isChromeApp()) {
     const info = await new Promise<{ os: string }>((r) =>

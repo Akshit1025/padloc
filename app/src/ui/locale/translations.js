@@ -9,7 +9,7 @@ $l.loadTranslations({
     Refresh: "",
     Cancel: "",
     "Your trial period ends in {0} days.": "",
-    "Manage Subscriptions": "",
+    "Buy Subscription": "",
     "Read-Only": "",
     "Paired with:": "",
     Synchronize: "",
@@ -24,22 +24,24 @@ $l.loadTranslations({
     "Invalid URL": "",
     "Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.":
       "",
+    "Export {0} Records": "",
     "No Fields": "",
     copied: "",
+    "{0} records selected": "",
     "You don't have any data yet! Start by creating your first record!": "",
     "Empty Field": "",
     "Enter New Field Name": "",
     "Enter Content": "",
     "Enter Record Name": "",
     "No Category": "",
+    "As CSV": "",
+    "As Encrypted File": "",
     Settings: "",
     "Enable Auto Lock": "",
     " min": "",
     After: "",
     "Peek Values": "",
     Export: "",
-    "As CSV": "",
-    "As Encrypted File": "",
     Import: "",
     "Paste From Clipboard": "",
     "Select a File": "",
@@ -98,8 +100,6 @@ $l.loadTranslations({
     "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock on this device!":
       "",
     "Check For Updates": "",
-    "You currently don't have an active subscription which means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
-      "",
     "Something went wrong. Please try again later!": "",
     "Please enter a valid email address!": "",
     "Are you sure you want to disconnect from Padlock Cloud?": "",
@@ -109,6 +109,10 @@ $l.loadTranslations({
     Continue: "",
     "Click To Copy": "",
     "Cannot lock app while sync is in progress!": "",
+    "Recently Used": "",
+    "Are you sure you want to delete these records? This action can not be undone!":
+      "",
+    "Delete {0} Records": "",
     "Please enter a field name first!": "",
     "Value copied to clipboard!": "",
     "Are you sure you want to delete this field?": "",
@@ -116,6 +120,19 @@ $l.loadTranslations({
     "Are you sure you want to delete this record?": "",
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead! Are you sure you want to proceed?":
       "",
+    Download: "",
+    "Copy to Clipboard": "",
+    "Your data has successfully been copied to the system clipboard. You can now paste it into the spreadsheet program of your choice.":
+      "",
+    "Please choose a password to protect your data. This may be the same as your master password or something else, but make sure it is sufficiently strong!":
+      "",
+    "Enter Password": "",
+    "Please enter a password!": "",
+    "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
+      "",
+    "Use Anyway": "",
+    "Choose Different Password": "",
+    "Your data has successfully been copied to the system clipboard.": "",
     "Are you sure you want to change your master password? Enter your current password to continue!":
       "",
     "Enter Current Password": "",
@@ -130,19 +147,6 @@ $l.loadTranslations({
     "Are you sure you want to delete all your data and reset the app? Enter your master password to continue!":
       "",
     "You entered the wrong master password! Please try again!": "",
-    Download: "",
-    "Copy to Clipboard": "",
-    "Your data has successfully been copied to the system clipboard. You can now paste it into the spreadsheet program of your choice.":
-      "",
-    "Please choose a password to protect your data. This may be the same as your master password or something else, but make sure it is sufficiently strong!":
-      "",
-    "Enter Password": "",
-    "Please enter a password!": "",
-    "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
-      "",
-    "Use Anyway": "",
-    "Choose Different Password": "",
-    "Your data has successfully been copied to the system clipboard.": "",
     "Failed to open file. Did you enter the correct password?": "",
     "It seems the data you are trying to import was exported from a newer version of Padlock and can not be opened with the version you are currently running.":
       "",
@@ -215,8 +219,7 @@ $l.loadTranslations({
       "",
     minutes: "",
     minute: "",
-    "Would you like to pair this device with Padlock Cloud now?": "",
-    "Maybe Later": "",
+    "Activation link sent. Check your email!": "",
     "App reset successfully. Off to a fresh start!": ""
   },
   de: {
@@ -230,7 +233,7 @@ $l.loadTranslations({
     Cancel: "Abbrechen",
     "Your trial period ends in {0} days.":
       "Ihre kostenlose Testphase ended in {0} Tagen",
-    "Manage Subscriptions": "Abonnement Verwalten",
+    "Buy Subscription": "Abonnement Kaufen",
     "Read-Only": "Nur Lesezugriff",
     "Paired with:": "Verbunden mit:",
     Synchronize: "Synchronisieren",
@@ -246,8 +249,10 @@ $l.loadTranslations({
     "Invalid URL": "Ungültige URL",
     "Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.":
       "Die URL muss von der Form https://myserver.tld:port. Eine sichere Verbindung über https ist erforderlich.",
+    "Export {0} Records": "{0} Einträge Exportieren",
     "No Fields": "Keine Felder",
     copied: "kopiert",
+    "{0} records selected": "{0} Einträge ausgewählt",
     "You don't have any data yet! Start by creating your first record!":
       "Es sind noch keine Einträge vorhanden. Fangen Sie an, indem Sie Ihren ersten Eintrag erstellen!",
     "Empty Field": "Leeres Feld",
@@ -255,14 +260,14 @@ $l.loadTranslations({
     "Enter Content": "Inhalt Eingeben",
     "Enter Record Name": "Namen Eingeben",
     "No Category": "Ohne Kategory",
+    "As CSV": "Als CSV",
+    "As Encrypted File": "Als Verschlüsselte Datei",
     Settings: "Einstellungen",
     "Enable Auto Lock": "Auto Lock Aktivieren",
     " min": " Min",
     After: "Nach",
     "Peek Values": "Schneller Blick",
     Export: "Exportieren",
-    "As CSV": "Als CSV",
-    "As Encrypted File": "Als Verschlüsselte Datei",
     Import: "Importieren",
     "Paste From Clipboard": "Aus Der Zwischenablage",
     "Select a File": "Datei Auswählen",
@@ -324,8 +329,6 @@ $l.loadTranslations({
     "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock on this device!":
       "Die auf Padlock Cloud liegeneden daten scheinen mit einer neueren Version von Padlock gespeichert worden zu sein und können deshalb nicht geöffnet werden. Bitte installieren Sie die neueste Version von Padlock auf diesem Gerät!",
     "Check For Updates": "Auf Updates Prüfen",
-    "You currently don't have an active subscription which means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
-      "Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können, aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen Zugriff auf Padlock Cloud zu erhalten!",
     "Something went wrong. Please try again later!":
       "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!",
     "Please enter a valid email address!":
@@ -339,6 +342,10 @@ $l.loadTranslations({
     "Click To Copy": "Zum Kopieren Klicken",
     "Cannot lock app while sync is in progress!":
       "App kann nicht gesperrt werden solange Synchronisierung im Gange ist!",
+    "Recently Used": "Kürzlich Verwendet",
+    "Are you sure you want to delete these records? This action can not be undone!":
+      "Sind Sie sicher, dass Sie diese Einträge löschen wollen? Diese Aktion kann nicht rückgänging gemacht werden!",
+    "Delete {0} Records": "{0} Einträge Löschen",
     "Please enter a field name first!":
       "Bitte geben Sie zuerst einen Feldnamen ein!",
     "Value copied to clipboard!": "Daten in Zwischenablage kopiert!",
@@ -349,6 +356,20 @@ $l.loadTranslations({
       "Sind Sie sicher, dass Sie diesen Eintrag löschen wollen?",
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead! Are you sure you want to proceed?":
       "WARNUNG: Das Exportieren als CSV speichert Ihre Daten unverschlüsselt ab, was sie leicht für andere lesbar macht! Es wird dringend geraten, Ihre Daten stattdessen als sichere, verschlüsselte Datei abzuspeichern! Sind Sie sicher dass Sie fortfahren möchten?",
+    Download: "Herunterladen",
+    "Copy to Clipboard": "In Zwischenablage Kopieren",
+    "Your data has successfully been copied to the system clipboard. You can now paste it into the spreadsheet program of your choice.":
+      "Ihre Daten wurden erfolgreich in die Zwischenablage kopiert. Sie können sie nun in ein Tabellenprogramm Ihrer Wahl kopieren.",
+    "Please choose a password to protect your data. This may be the same as your master password or something else, but make sure it is sufficiently strong!":
+      "Bitte wählen Sie ein Passwort um Ihre Daten zu schützen. Dies kann das gleiche wie Ihr Master Passwort sein, sollte aber auf jeden Fall hinreichend stark sein.",
+    "Enter Password": "Passwort Eingeben",
+    "Please enter a password!": "Bitten geben Sie ein Passwort ein!",
+    "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
+      "WARNUNG: Das Passwort dass Sie eingegeben haben ist schwach. Dies macht es einfacher für Angreifer, die zum Schutz Ihrer Daten verwendete Verschlüsselung zu brechen. Versuchen Sie, ein längeres Passwort mit einer Variation von Groß-, und Kleinbuchstaben sowie Sonderzeichen und Zahlen zu verwenden!",
+    "Use Anyway": "Trotzdem Verwenden",
+    "Choose Different Password": "Anderes Password Wählen",
+    "Your data has successfully been copied to the system clipboard.":
+      "Ihre Daten wurden erfolgreich in die Zwischenablage kopiert.",
     "Are you sure you want to change your master password? Enter your current password to continue!":
       "Sind Sie sicher, dass Sie Ihr Master Passwort ändern wollen? Geben Sie Ihr jetziges Passwort ein um fortzufahren!",
     "Enter Current Password": "Jetziges Passwort Eingeben",
@@ -368,20 +389,6 @@ $l.loadTranslations({
       "Sind Sie sicher dass Sie all Ihre Daten löschen und die App zurücksetzen wollen? Geben Sie Ihr Master Passwort ein um fortzufahren!",
     "You entered the wrong master password! Please try again!":
       "Sie haben das falsche Master Passwort eigegeben! Bitte versuchen Sie es erneut!",
-    Download: "Herunterladen",
-    "Copy to Clipboard": "In Zwischenablage Kopieren",
-    "Your data has successfully been copied to the system clipboard. You can now paste it into the spreadsheet program of your choice.":
-      "Ihre Daten wurden erfolgreich in die Zwischenablage kopiert. Sie können sie nun in ein Tabellenprogramm Ihrer Wahl kopieren.",
-    "Please choose a password to protect your data. This may be the same as your master password or something else, but make sure it is sufficiently strong!":
-      "Bitte wählen Sie ein Passwort um Ihre Daten zu schützen. Dies kann das gleiche wie Ihr Master Passwort sein, sollte aber auf jeden Fall hinreichend stark sein.",
-    "Enter Password": "Passwort Eingeben",
-    "Please enter a password!": "Bitten geben Sie ein Passwort ein!",
-    "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
-      "WARNUNG: Das Passwort dass Sie eingegeben haben ist schwach. Dies macht es einfacher für Angreifer, die zum Schutz Ihrer Daten verwendete Verschlüsselung zu brechen. Versuchen Sie, ein längeres Passwort mit einer Variation von Groß-, und Kleinbuchstaben sowie Sonderzeichen und Zahlen zu verwenden!",
-    "Use Anyway": "Trotzdem Verwenden",
-    "Choose Different Password": "Anderes Password Wählen",
-    "Your data has successfully been copied to the system clipboard.":
-      "Ihre Daten wurden erfolgreich in die Zwischenablage kopiert.",
     "Failed to open file. Did you enter the correct password?":
       "Datei konnte nicht geöffnet werden. Haben Sie das richtige Passwort eingegeben?",
     "It seems the data you are trying to import was exported from a newer version of Padlock and can not be opened with the version you are currently running.":
@@ -462,9 +469,8 @@ $l.loadTranslations({
       "Padlock wurde nach {0} {1} Inaktivität automatisch gesperrt. Dieses Verhalten kann bei Bedarf in den Einstellungen der App angepasst werden.",
     minutes: "Minuten",
     minute: "Minute",
-    "Would you like to pair this device with Padlock Cloud now?":
-      "Möchten sie diese Gerät nun mit Padlock Cloud verbinden?",
-    "Maybe Later": "Vielleicht Später",
+    "Activation link sent. Check your email!":
+      "Aktivierungs-Link gesendet. Prüfen Sie Ihr Postfach!",
     "App reset successfully. Off to a fresh start!":
       "Die App wurde erfolgreich zurückgesetzt."
   },
@@ -478,7 +484,7 @@ $l.loadTranslations({
     Refresh: "",
     Cancel: "",
     "Your trial period ends in {0} days.": "",
-    "Manage Subscriptions": "",
+    "Buy Subscription": "",
     "Read-Only": "",
     "Paired with:": "",
     Synchronize: "",
@@ -493,22 +499,24 @@ $l.loadTranslations({
     "Invalid URL": "",
     "Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.":
       "",
+    "Export {0} Records": "",
     "No Fields": "",
     copied: "",
+    "{0} records selected": "",
     "You don't have any data yet! Start by creating your first record!": "",
     "Empty Field": "",
     "Enter New Field Name": "",
     "Enter Content": "",
     "Enter Record Name": "",
     "No Category": "",
+    "As CSV": "",
+    "As Encrypted File": "",
     Settings: "",
     "Enable Auto Lock": "",
     " min": "",
     After: "",
     "Peek Values": "",
     Export: "",
-    "As CSV": "",
-    "As Encrypted File": "",
     Import: "",
     "Paste From Clipboard": "",
     "Select a File": "",
@@ -567,8 +575,6 @@ $l.loadTranslations({
     "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock and can not be opened with the version you are currently running. Please install the latest version of Padlock on this device!":
       "",
     "Check For Updates": "",
-    "You currently don't have an active subscription which means you can access your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize changes between devices. Get a subscription now to regain full access to Padlock Cloud!":
-      "",
     "Something went wrong. Please try again later!": "",
     "Please enter a valid email address!": "",
     "Are you sure you want to disconnect from Padlock Cloud?": "",
@@ -578,6 +584,10 @@ $l.loadTranslations({
     Continue: "",
     "Click To Copy": "",
     "Cannot lock app while sync is in progress!": "",
+    "Recently Used": "",
+    "Are you sure you want to delete these records? This action can not be undone!":
+      "",
+    "Delete {0} Records": "",
     "Please enter a field name first!": "",
     "Value copied to clipboard!": "",
     "Are you sure you want to delete this field?": "",
@@ -585,6 +595,19 @@ $l.loadTranslations({
     "Are you sure you want to delete this record?": "",
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead! Are you sure you want to proceed?":
       "",
+    Download: "",
+    "Copy to Clipboard": "",
+    "Your data has successfully been copied to the system clipboard. You can now paste it into the spreadsheet program of your choice.":
+      "",
+    "Please choose a password to protect your data. This may be the same as your master password or something else, but make sure it is sufficiently strong!":
+      "",
+    "Enter Password": "",
+    "Please enter a password!": "",
+    "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
+      "",
+    "Use Anyway": "",
+    "Choose Different Password": "",
+    "Your data has successfully been copied to the system clipboard.": "",
     "Are you sure you want to change your master password? Enter your current password to continue!":
       "",
     "Enter Current Password": "",
@@ -599,19 +622,6 @@ $l.loadTranslations({
     "Are you sure you want to delete all your data and reset the app? Enter your master password to continue!":
       "",
     "You entered the wrong master password! Please try again!": "",
-    Download: "",
-    "Copy to Clipboard": "",
-    "Your data has successfully been copied to the system clipboard. You can now paste it into the spreadsheet program of your choice.":
-      "",
-    "Please choose a password to protect your data. This may be the same as your master password or something else, but make sure it is sufficiently strong!":
-      "",
-    "Enter Password": "",
-    "Please enter a password!": "",
-    "WARNING: The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers.":
-      "",
-    "Use Anyway": "",
-    "Choose Different Password": "",
-    "Your data has successfully been copied to the system clipboard.": "",
     "Failed to open file. Did you enter the correct password?": "",
     "It seems the data you are trying to import was exported from a newer version of Padlock and can not be opened with the version you are currently running.":
       "",
@@ -684,8 +694,7 @@ $l.loadTranslations({
       "",
     minutes: "",
     minute: "",
-    "Would you like to pair this device with Padlock Cloud now?": "",
-    "Maybe Later": "",
+    "Activation link sent. Check your email!": "",
     "App reset successfully. Off to a fresh start!": ""
   }
 });

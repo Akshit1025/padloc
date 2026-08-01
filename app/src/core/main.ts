@@ -8,5 +8,6 @@ import * as exp from "./export";
 import * as platform from "./platform";
 import * as file from "./file";
 import * as messages from "./messages";
+import * as stats from "./stats";
 
-export { util, crypto, source, data, ajax, imp, exp, platform, file, messages };
+export { util, crypto, source, data, ajax, imp, exp, platform, file, messages, stats };
