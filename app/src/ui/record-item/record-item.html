@@ -146,7 +146,7 @@
                 <div class="field" on-click="_copyField">
                     <div class="label-value">
                         <div class="field-label">[[ item.name ]]</div>
-                        <div class="field-value">[[ item.value ]]</div>
+                        <div class="field-value">[[ _value(item.value, settings.peekValues) ]]</div>
                     </div>
                     <div class="copied-message">[[ $l("copied") ]]</div>
                 </div>
@@ -163,13 +163,14 @@
     <script>
         (() => {
 
-            const { NotificationMixin, LocaleMixin, BaseElement } = padlock;
+            const { NotificationMixin, LocaleMixin, DataMixin, BaseElement } = padlock;
             const { MutableData } = Polymer;
             const { applyMixins } = padlock.util;
             const { isTouch, setClipboard } = padlock.platform;
 
             class RecordItem extends applyMixins(
                 BaseElement,
+                DataMixin,
                 MutableData,
                 NotificationMixin,
                 LocaleMixin
@@ -223,6 +224,10 @@
                     e.stopPropagation();
                     e.preventDefault();
                     this.dispatchEvent(new CustomEvent("search-category", { detail: this.record.category }));
+                }
+
+                _value(val, peekValues) {
+                    return peekValues ? val : $l("Click to Copy");
                 }
 
             }

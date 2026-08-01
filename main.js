@@ -101,12 +101,6 @@ function updateAvailable(versionInfo) {
 }
 
 function checkForUpdates(manual) {
-  if (os.platform() === "linux") {
-    if (manual) {
-      shell.openExternal("https://padlock.io/downloads");
-    }
-    return;
-  }
   autoUpdater.autoDownload = settings.get("autoDownloadUpdates");
   autoUpdater.allowPrerelease = settings.get("allowPrerelease");
 
@@ -210,7 +204,6 @@ function createApplicationMenu() {
               type: "checkbox",
               label: "Automatically Download and Install Updates",
               checked: settings.get("autoDownloadUpdates"),
-              enabled: os.platform() !== "linux",
               click(item) {
                 settings.set("autoDownloadUpdates", item.checked);
               }
@@ -220,7 +213,6 @@ function createApplicationMenu() {
               type: "radio",
               label: "Only Download Stable Releases (recommended)",
               checked: !settings.get("allowPrerelease"),
-              enabled: os.platform() !== "linux",
               click(item) {
                 settings.set("allowPrerelease", !item.checked);
               }
@@ -229,7 +221,6 @@ function createApplicationMenu() {
               type: "radio",
               label: "Download Stable and Beta Releases",
               checked: settings.get("allowPrerelease"),
-              enabled: os.platform() !== "linux",
               click(item) {
                 settings.set("allowPrerelease", item.checked);
               }

@@ -45,6 +45,7 @@
                         stats.lastExport = new Date().getTime();
                         saveStats();
                     }));
+                    this.listen("auto-lock", () => statsLoaded.then(() => this._showAutoLockNotice()));
                 }
                 ready() {
                     super.ready();
@@ -213,6 +214,19 @@
 
                 _sendFeedback(rating) {
                     getReviewLink(rating).then((link) => window.open(link, "_system"));
+                }
+
+                _showAutoLockNotice() {
+                    if (!stats.hasShownAutoLockNotice) {
+                        const minutes = this.settings.autoLockDelay;
+                        setTimeout(() => {
+                            this.alert($l("Padlock was automatically locked after {0} {1} " +
+                                "of inactivity. You can change this behavior from the settings page.",
+                                minutes, minutes > 1 ? $l("minutes") : $l("minute")));
+                        }, 1000);
+                        stats.hasShownAutoLockNotice = true;
+                        saveStats();
+                    }
                 }
 
             };

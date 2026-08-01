@@ -157,7 +157,7 @@
                 <div class="tap tiles-2 input-wrapper">
                     <pl-input id="emailInput" type="email" select-on-focus no-tab='[[open]]' on-focus="_emailInputFocused"
                         on-enter="_emailEnter" placeholder="[[ $l('Enter Email (Optional)') ]]"></pl-input>
-                    <pl-icon icon="info" on-click="_showEmailInfo"></pl-icon>
+                    <pl-icon icon="info-round" on-click="_showEmailInfo"></pl-icon>
                 </div>
                 <div class="tap tiles-3 input-wrapper">
                     <pl-input id="newPasswordInput" type="password" select-on-focus no-tab='[[open]]' on-focus="_newPasswordInputFocused"
@@ -165,7 +165,7 @@
                         placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
                     <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">[[ $l('strength: {0}', _pwdStrength)
                         ]]</div>
-                    <pl-icon icon="info" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
+                    <pl-icon icon="info-round" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
                 </div>
                 <pl-loading-button id="getStartedButton" on-click="_getStarted" no-tab='[[open]]' class="tap tiles-4 enter-button"
                     label="[[ $l('Get Started') ]]"></pl-loading-button>

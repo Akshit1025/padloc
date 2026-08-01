@@ -146,11 +146,13 @@
                             this._handleCloudError(e);
                         });
 
-                        return this._testCredsPromise;
+                    return this._testCredsPromise;
                 }
 
                 openDashboard() {
-                    window.open(this.settings.syncHostUrl + "/dashboard/", "_system");
+                    cloudSource.source.getLoginUrl()
+                        .then((url) => window.open(url, "_system"))
+                        .catch(() => window.open(`${this.settings.syncHostUrl}/dashboard/`, "_system"));
                 }
 
                 activationPendingText() {

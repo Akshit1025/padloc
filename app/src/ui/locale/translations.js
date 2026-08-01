@@ -27,6 +27,7 @@ $l.loadTranslations({
     "No Fields": "",
     copied: "",
     "You don't have any data yet! Start by creating your first record!": "",
+    "Empty Field": "",
     "Enter New Field Name": "",
     "Enter Content": "",
     "Enter Record Name": "",
@@ -35,6 +36,7 @@ $l.loadTranslations({
     "Enable Auto Lock": "",
     " min": "",
     After: "",
+    "Peek Values": "",
     Export: "",
     "As CSV": "",
     "As Encrypted File": "",
@@ -105,13 +107,13 @@ $l.loadTranslations({
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "",
     Continue: "",
+    "Click To Copy": "",
     "Cannot lock app while sync is in progress!": "",
     "Please enter a field name first!": "",
     "Value copied to clipboard!": "",
     "Are you sure you want to delete this field?": "",
     Delete: "",
     "Are you sure you want to delete this record?": "",
-    "Please enter a record name!": "",
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead! Are you sure you want to proceed?":
       "",
     "Are you sure you want to change your master password? Enter your current password to continue!":
@@ -156,6 +158,8 @@ $l.loadTranslations({
     "Successfully imported {0} records.": "",
     "Tell Padlock to automatically lock the app after a certain period of inactivity in case you leave your device unattended for a while.":
       "",
+    "If enabled allows peeking at field values in the record list by moving the mouse cursor over the corresponding field.":
+      "",
     "Want to start fresh? Reseting Padlock will delete all your locally stored data and settings and will restore the app to the state it was when you first launched it.":
       "",
     "So glad to hear you like our app! Would you mind taking a second to let others know what you think about Padlock?":
@@ -185,10 +189,6 @@ $l.loadTranslations({
     weak: "",
     medium: "",
     strong: "",
-    "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
-      "",
-    minutes: "",
-    minute: "",
     "Auto-lock in 10 seconds": "",
     "Have you backed up your data yet? Remember that by default your data is only stored locally and may be lost if you uninstall Padlock, lose your device or accidentally reset your data. Padlock Cloud is a great way to back up your data online and synchronize with other devices. Alternatively, you can export your data and store it somewhere safe.":
       "",
@@ -211,6 +211,10 @@ $l.loadTranslations({
     "Your opinion as a user is very important to us and we're always looking for feedback and suggestions on how to improve Padlock. Would you mind taking a second to let us know what you think about the app?":
       "",
     "Send Feedback": "",
+    "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
+      "",
+    minutes: "",
+    minute: "",
     "Would you like to pair this device with Padlock Cloud now?": "",
     "Maybe Later": "",
     "App reset successfully. Off to a fresh start!": ""
@@ -246,6 +250,7 @@ $l.loadTranslations({
     copied: "kopiert",
     "You don't have any data yet! Start by creating your first record!":
       "Es sind noch keine Einträge vorhanden. Fangen Sie an, indem Sie Ihren ersten Eintrag erstellen!",
+    "Empty Field": "Leeres Feld",
     "Enter New Field Name": "Neuen Feldnamen Eingeben",
     "Enter Content": "Inhalt Eingeben",
     "Enter Record Name": "Namen Eingeben",
@@ -254,6 +259,7 @@ $l.loadTranslations({
     "Enable Auto Lock": "Auto Lock Aktivieren",
     " min": " Min",
     After: "Nach",
+    "Peek Values": "Schneller Blick",
     Export: "Exportieren",
     "As CSV": "Als CSV",
     "As Encrypted File": "Als Verschlüsselte Datei",
@@ -330,6 +336,7 @@ $l.loadTranslations({
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "Sind Sie sicher, dass Sie einen eigenen Server zur Synchronisation verwenden möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!",
     Continue: "Fortfahren",
+    "Click To Copy": "Zum Kopieren Klicken",
     "Cannot lock app while sync is in progress!":
       "App kann nicht gesperrt werden solange Synchronisierung im Gange ist!",
     "Please enter a field name first!":
@@ -340,7 +347,6 @@ $l.loadTranslations({
     Delete: "Löschen",
     "Are you sure you want to delete this record?":
       "Sind Sie sicher, dass Sie diesen Eintrag löschen wollen?",
-    "Please enter a record name!": "Bitte geben Sie einen Namen ein!",
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead! Are you sure you want to proceed?":
       "WARNUNG: Das Exportieren als CSV speichert Ihre Daten unverschlüsselt ab, was sie leicht für andere lesbar macht! Es wird dringend geraten, Ihre Daten stattdessen als sichere, verschlüsselte Datei abzuspeichern! Sind Sie sicher dass Sie fortfahren möchten?",
     "Are you sure you want to change your master password? Enter your current password to continue!":
@@ -396,6 +402,8 @@ $l.loadTranslations({
       "Es wurden erfolgreich {0} Einträge importiert.",
     "Tell Padlock to automatically lock the app after a certain period of inactivity in case you leave your device unattended for a while.":
       "Falls Sie Ihr Gerät einmal unbeaufsichtigt lassen kann Padlock nach einer bestimmten Zeit ohne Interaktion automatisch die App zu sperren.",
+    "If enabled allows peeking at field values in the record list by moving the mouse cursor over the corresponding field.":
+      "Wenn diese Option aktiviert ist können Sie in der Listenansicht einen schnellen Blick auf Feldinhalte werfen indem Sie Ihre Maus über das entsprechende Feld bewegen.",
     "Want to start fresh? Reseting Padlock will delete all your locally stored data and settings and will restore the app to the state it was when you first launched it.":
       "Hier können Sie Ihre Daten und Einstellungen zurücksetzen und den ursprünglichen Zustand der App wiederherstellen.",
     "So glad to hear you like our app! Would you mind taking a second to let others know what you think about Padlock?":
@@ -427,10 +435,6 @@ $l.loadTranslations({
     weak: "schwach",
     medium: "mittel",
     strong: "stark",
-    "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
-      "Padlock wurde nach {0} {1} Inaktivität automatisch gesperrt. Dieses Verhalten kann bei Bedarf in den Einstellungen der App angepasst werden.",
-    minutes: "Minuten",
-    minute: "Minute",
     "Auto-lock in 10 seconds": "Automatische Sperrung in 10 Sekunden",
     "Have you backed up your data yet? Remember that by default your data is only stored locally and may be lost if you uninstall Padlock, lose your device or accidentally reset your data. Padlock Cloud is a great way to back up your data online and synchronize with other devices. Alternatively, you can export your data and store it somewhere safe.":
       "Haben Sie bereits eine Sicherung Ihrer Daten erstellt? Denken Sie daran, dass Ihre Daten standartmäßig nur lokal auf Ihrem Gerät gespeichert werden und verloren gehen können, sollten Sie Ihr Gerät verlieren oder versehentlich die Applikation entfernen. Padlock Cloud bietet eine gute Möglichkeit, Ihre Daten online zu sichern und mit anderen Geräten zu synchronisieren. Alternativ können Sie Ihre Daten auch exportieren und an einem sicheren Ort speichern.",
@@ -454,6 +458,10 @@ $l.loadTranslations({
     "Your opinion as a user is very important to us and we're always looking for feedback and suggestions on how to improve Padlock. Would you mind taking a second to let us know what you think about the app?":
       "Ihre Meinung als Nutzer ist uns sehr wichtig und wir sind immer auf der Suche nach Feedback und Verbessungsvorschlägen. Würden Sie sich einen Moment Zeit nehmen, um uns Ihre Meinung zu Padlock mitzuteilen?",
     "Send Feedback": "Feedback Senden",
+    "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
+      "Padlock wurde nach {0} {1} Inaktivität automatisch gesperrt. Dieses Verhalten kann bei Bedarf in den Einstellungen der App angepasst werden.",
+    minutes: "Minuten",
+    minute: "Minute",
     "Would you like to pair this device with Padlock Cloud now?":
       "Möchten sie diese Gerät nun mit Padlock Cloud verbinden?",
     "Maybe Later": "Vielleicht Später",
@@ -488,6 +496,7 @@ $l.loadTranslations({
     "No Fields": "",
     copied: "",
     "You don't have any data yet! Start by creating your first record!": "",
+    "Empty Field": "",
     "Enter New Field Name": "",
     "Enter Content": "",
     "Enter Record Name": "",
@@ -496,6 +505,7 @@ $l.loadTranslations({
     "Enable Auto Lock": "",
     " min": "",
     After: "",
+    "Peek Values": "",
     Export: "",
     "As CSV": "",
     "As Encrypted File": "",
@@ -566,13 +576,13 @@ $l.loadTranslations({
     "Are you sure you want to use a custom server for synchronization? This option is only recommended for advanced users!":
       "",
     Continue: "",
+    "Click To Copy": "",
     "Cannot lock app while sync is in progress!": "",
     "Please enter a field name first!": "",
     "Value copied to clipboard!": "",
     "Are you sure you want to delete this field?": "",
     Delete: "",
     "Are you sure you want to delete this record?": "",
-    "Please enter a record name!": "",
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead! Are you sure you want to proceed?":
       "",
     "Are you sure you want to change your master password? Enter your current password to continue!":
@@ -617,6 +627,8 @@ $l.loadTranslations({
     "Successfully imported {0} records.": "",
     "Tell Padlock to automatically lock the app after a certain period of inactivity in case you leave your device unattended for a while.":
       "",
+    "If enabled allows peeking at field values in the record list by moving the mouse cursor over the corresponding field.":
+      "",
     "Want to start fresh? Reseting Padlock will delete all your locally stored data and settings and will restore the app to the state it was when you first launched it.":
       "",
     "So glad to hear you like our app! Would you mind taking a second to let others know what you think about Padlock?":
@@ -646,10 +658,6 @@ $l.loadTranslations({
     weak: "",
     medium: "",
     strong: "",
-    "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
-      "",
-    minutes: "",
-    minute: "",
     "Auto-lock in 10 seconds": "",
     "Have you backed up your data yet? Remember that by default your data is only stored locally and may be lost if you uninstall Padlock, lose your device or accidentally reset your data. Padlock Cloud is a great way to back up your data online and synchronize with other devices. Alternatively, you can export your data and store it somewhere safe.":
       "",
@@ -672,6 +680,10 @@ $l.loadTranslations({
     "Your opinion as a user is very important to us and we're always looking for feedback and suggestions on how to improve Padlock. Would you mind taking a second to let us know what you think about the app?":
       "",
     "Send Feedback": "",
+    "Padlock was automatically locked after {0} {1} of inactivity. You can change this behavior from the settings page.":
+      "",
+    minutes: "",
+    minute: "",
     "Would you like to pair this device with Padlock Cloud now?": "",
     "Maybe Later": "",
     "App reset successfully. Off to a fresh start!": ""

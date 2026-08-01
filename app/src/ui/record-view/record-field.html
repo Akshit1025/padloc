@@ -5,6 +5,7 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="./record-field-dialog.html">
 <dom-module id="pl-record-field">
     <template>
         <style include="shared">
@@ -12,6 +13,7 @@
                 display: block;
                 color: inherit;
                 font-size: var(--font-size-small);
+                overflow: hidden;
             }
 
             .container {
@@ -74,17 +76,17 @@
                     on-escape="_cancelEdit"></pl-input>
                 <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ $l('Enter Content') ]]"
                     select-on-focus focused="{{ _editingValue }}" on-escape="_cancelEdit"
-                    on-mousedown="_valueInputMouseDown"></pl-input>
+                    on-mousedown="_valueInputMouseDown" masked='[[_masked]]'></pl-input>
             </div>
 
             <template is="dom-if" if="[[ !draft ]]">
                 <div class="field-buttons">
-                    <pl-icon icon="copy" class="field-button tiles-1 tap" on-click="_copy"
-                        hidden="[[ _editing ]]"></pl-icon>
+                    <pl-icon icon="[[ _toggleMaskIcon(_masked) ]]" class="field-button tiles-1 tap" on-click="_toggleMask"
+                        hidden$="[[ _editing ]]"></pl-icon>
                     <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit"
-                        hidden="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="delete" class="field-button tiles-2" on-click="_delete"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tiles-3" on-click="_showGenerator"></pl-icon>
+                        hidden$="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="copy" class="field-button tiles-2 tap" on-click="_copy"></pl-icon>
+                    <pl-icon icon="info" class="field-button tiles-3" on-click="_showFieldInfo"></pl-icon>
                     <div class="spacer tiles-4"></div>
                 </div>
             </template>
@@ -92,11 +94,11 @@
             <template is="dom-if" if="[[ draft ]]">
                 <div class="field-buttons">
                     <pl-icon icon="add" class="field-button tiles-1 tap" on-click="edit"
-                        hidden="[[ _editing ]]"></pl-icon>
+                        hidden$="[[ _editing ]]"></pl-icon>
                     <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit"
-                        hidden="[[ !_editing ]]"></pl-icon>
+                        hidden$="[[ !_editing ]]"></pl-icon>
                     <pl-icon icon="generate" class="field-button tiles-2" on-click="_showGenerator"
-                        hidden="[[ !_editing ]]"></pl-icon>
+                        hidden$="[[ !_editing ]]"></pl-icon>
                     <div class="spacer tiles-3"></div>
                 </div>
             </template>
@@ -138,13 +140,18 @@
                             type: Boolean,
                             value: false
                         },
+                        _masked: {
+                            type: Boolean,
+                            value: true
+                        },
                         draft: {
                             type: Boolean,
                             value: false
                         },
                         field: {
                             type: Object,
-                            value: () => { return { name: "", value: "" }; }
+                            value: () => { return { name: "", value: "" }; },
+                            observer: "_fieldChanged"
                         }
                     };
                 }
@@ -219,9 +226,43 @@
                         this.$.nameInput.focus();
                     }
                 }
+                _toggleMaskIcon() {
+                    return this._masked ? "show" : "hide";
+                }
+                _toggleMask() {
+                    this._masked = !this._masked;
+                }
+                _fieldChanged() {
+                    this._masked = true;
+                }
+                _showFieldInfo() {
+                    this.getSingleton("pl-record-field-dialog")
+                        .openField(this.field)
+                        .then((action) => {
+                            switch (action) {
+                                case "copy":
+                                    this._copy();
+                                    break;
+                                case "edit":
+                                    this.edit();
+                                    break;
+                                case "generate":
+                                    this._showGenerator();
+                                    break;
+                                case "delete":
+                                    this._delete();
+                                    break;
+                            }
+                        });
+                }
                 edit() {
                     const input = this.field && this.field.name ? this.$.valueInput : this.$.nameInput;
                     input.focus();
+                }
+                finishEditing() {
+                    this.$.nameInput.blur();
+                    this.$.valueInput.blur();
+                    this._editing = false;
                 }
             }
             window.customElements.define(RecordField.is, RecordField);

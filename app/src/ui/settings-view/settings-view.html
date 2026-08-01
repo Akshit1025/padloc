@@ -102,6 +102,12 @@
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
+
+            <section class="tiles" hidden$="[[ _isTouch() ]]">
+                <div class="info">[[ _peekValuesInfo() ]]</div>
+                <pl-toggle-button active="{{ settings.peekValues }}" label="[[ $l('Peek Values') ]]" class="tap" reverse
+                    on-change="settingChanged"></pl-toggle-button>
+            </section>
         
             <section class="tiles">
                 <div class="section-header">[[ $l("Export") ]]</div>
@@ -170,7 +176,7 @@
 
             const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
             const { applyMixins } = padlock.util;
-            const { isCordova, getReviewLink } = padlock.platform;
+            const { isCordova, getReviewLink, isTouch } = padlock.platform;
 
             class SettingsView extends applyMixins(
                 BaseElement,
@@ -436,6 +442,10 @@
                     return isCordova();
                 }
 
+                _isTouch(){
+                    return isTouch();
+                }
+
                 _openSource() {
                     window.open("https://github.com/Akshit1025/padloc/", "_system");
                 }
@@ -444,6 +454,13 @@
                     return this.$l(
                         "Tell Padlock to automatically lock the app after a certain period of " +
                         "inactivity in case you leave your device unattended for a while."
+                    );
+                }
+
+                _peekValuesInfo() {
+                    return this.$l(
+                        "If enabled allows peeking at field values in the record list " +
+                        "by moving the mouse cursor over the corresponding field."
                     );
                 }
 
