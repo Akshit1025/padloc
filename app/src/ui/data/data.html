@@ -139,6 +139,12 @@
                     this.dispatch("record-deleted", record);
                 }
 
+                deleteRecords(records) {
+                    records.forEach((r) => r.remove());
+                    this.saveCollection();
+                    this.dispatch("records-changed");
+                }
+
                 addRecords(records) {
                     this.collection.add(records);
                     this.saveCollection();

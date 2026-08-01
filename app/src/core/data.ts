@@ -26,6 +26,7 @@ export class Record {
   uuid: string;
   updated: Date;
   removed: boolean;
+  lastUsed?: Date;
 
   constructor(
     name = "",
@@ -33,7 +34,8 @@ export class Record {
     category?: string,
     id?: string,
     updated?: Date,
-    removed = false
+    removed = false,
+    lastUsed?: Date
   ) {
     this.name = name;
     this.fields = fields || new Array<Field>();
@@ -41,6 +43,7 @@ export class Record {
     this.uuid = id || uuid();
     this.updated = updated || new Date();
     this.removed = removed;
+    this.lastUsed = lastUsed;
   }
 
   static fromRaw(obj: any): Record {
@@ -48,13 +51,17 @@ export class Record {
     let updated =
       obj.updated &&
       (obj.updated instanceof Date ? obj.updated : new Date(obj.updated));
+    let lastUsed =
+      obj.lastUsed &&
+      (obj.lastUsed instanceof Date ? obj.lastUsed : new Date(obj.lastUsed));
     return new Record(
       obj.name,
       fields,
       obj.category,
       obj.uuid,
       updated,
-      obj.removed
+      obj.removed,
+      lastUsed
     );
   }
 
@@ -77,7 +84,8 @@ export class Record {
       category: this.category,
       uuid: this.uuid,
       updated: this.updated,
-      removed: this.removed
+      removed: this.removed,
+      lastUsed: this.lastUsed
     };
   }
 }
