@@ -264,7 +264,7 @@
                     }
 
                     const newField = this.$.newField.field;
-                    if (newField.name && newField.value) {
+                    if (newField.name) {
                         this.push("record.fields", newField);
                         this.animateElement(this.$.newFieldWrapper);
                         if (!padlock.platform.isTouch()) {
