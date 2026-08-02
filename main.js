@@ -22,7 +22,7 @@ const settings = (global.settings = new ElectronStore({
     autoDownloadUpdates: false,
     allowPrerelease: autoUpdater.allowPrerelease,
     windowBounds: {
-      width: 900,
+      width: 800,
       height: 600
     },
     fullscreen: false
@@ -135,8 +135,12 @@ function createWindow() {
     x: settings.get("windowBounds.x"),
     y: settings.get("windowBounds.y"),
     fullscreen: settings.get("fullscreen"),
+    fullscreenable: true,
     backgroundColor: "#59c6ff",
-    fullscreenable: true
+    frame: false,
+    transparent: false,
+    hasShadow: true,
+    show: false
   });
 
   // and load the index.html of the app.
@@ -150,6 +154,10 @@ function createWindow() {
       slashes: true
     })
   );
+
+  win.once("ready-to-show", () => {
+    win.show();
+  });
 
   if (debug) {
     // Open the DevTools.
@@ -251,6 +259,8 @@ app.on("ready", () => {
   createWindow();
   createApplicationMenu();
 
+  app.setAsDefaultProtocolClient("padlock");
+  
   checkForUpdates();
 });
 

@@ -57,6 +57,7 @@
 
                 choose(message, options) {
                     const dialog = getDialog("pl-dialog-options");
+                    dialog.preventDismiss = true;
                     return lineUpDialog(dialog, () => dialog.choose(message, options));
                 }
 

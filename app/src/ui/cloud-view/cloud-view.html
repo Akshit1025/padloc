@@ -19,6 +19,10 @@
                 @apply --fullbleed;
             }
 
+            main {
+                background: var(--color-quaternary);
+            }
+
             button,
             pl-toggle-button {
                 display: block;
@@ -26,11 +30,21 @@
                 box-sizing: border-box;
             }
 
+            section {
+                transform: translate3d(0, 0, 0);
+            }
+
             .account {
                 font-size: var(--font-size-default);
                 font-weight: bold;
                 margin: 10px 0;
                 overflow-wrap: break-word;
+            }
+
+            .subscription-status {
+                font-size: 150%;
+                font-weight: bold;
+                margin: 10px 0;
             }
 
             #emailInput {
@@ -58,17 +72,12 @@
             pl-icon[spin]::before {
                 display: none !important;
             }
-
-            @media (min-width: 600px) {
-                pl-icon[icon=backward] {
-                    display: none;
-                }
-            }
         </style>
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">Padlock Cloud</div>
-            <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]"></pl-icon>
+            <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]"
+                hidden$='[[!settings.syncConnected]]'></pl-icon>
         </header>
 
         <main>
@@ -77,8 +86,7 @@
                 <div class="info">[[ generalInfoText() ]]</div>
                 <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]"
                     value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Pair Device') ]]"
-                    on-click="connect"></pl-loading-button>
+                <pl-loading-button id="connectButton" class="tap" on-click="connect">[[$l('Pair Device')]]</pl-loading-button>
             </section>
 
             <section class="tiles" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
@@ -87,25 +95,27 @@
                     <div class="account">[[ settings.syncEmail ]]</div>
                     <div>[[ activationPendingText(settings.syncEmail) ]]</div>
                 </div>
-                <pl-loading-button id="refreshButton" label="[[ $l('Refresh') ]]"
-                    on-click="_refresh"></pl-loading-button>
+                <pl-loading-button id="refreshButton"
+                    on-click="_refresh">[[$l('Refresh')]]</pl-loading-button>
                 <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
             </section>
 
             <section class="tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <strong>[[ $l("Your trial period ends in {0} days.", remainingTrialDays) ]]</strong> -
-                    [[ trialInfoText() ]]
+                    <div>[[ $l("Subscription Status:") ]]</div>
+                    <div class="subscription-status">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
+                    <div>[[ trialInfoText(remainingTrialDays) ]]</div>
                 </div>
-                <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscriptions") ]]</button>
+                <button class="tap" on-click="_trialingBuySubscription">[[ $l("Buy Subscriptions") ]]</button>
             </section>
 
             <section class="tiles" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <strong>[[ $l("Read-Only") ]]</strong> -
-                    [[ readOnlyInfoText() ]]
+                    <div>[[ $l("Subscription Status:") ]]</div>
+                    <div class="subscription-status">[[ $l("Read-Only") ]]</div>
+                    <div>[[ readOnlyInfoText() ]]</div>
                 </div>
-                <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscriptions") ]]</button>
+                <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Buy Subscriptions") ]]</button>
             </section>
 
             <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
@@ -115,18 +125,18 @@
                     <div>[[ connectedInfoText(settings.syncEmail) ]]</div>
                 </div>
                 <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
-                    label="[[ $l('Synchronize') ]]"></pl-loading-button>
+                    >[[$l('Synchronize')]]</pl-loading-button>
                 <button class="tap" on-click="_manageAccount">[[ $l("Manage Account") ]]</button>
                 <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
             </section>
 
-            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+            <section class="tiles" disabled$="[[ !settings.syncConnected ]]">
                 <div class="info">[[ autoSyncInfoText() ]]</div>
                 <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]" reverse
                     class="tap" on-change="settingChanged"></pl-toggle-button>
             </section>
 
-            <section class="tiles">
+            <section class="tiles" disabled$='[[ settings.syncConnected ]]'>
                 <div class="info">
                     [[ $l("By providing a custom URL you can synchronize your data with a server other than the official
                     Padlock Cloud server.") ]]
@@ -146,6 +156,7 @@
                 </div>
             </section>
         </main>
+        <div class="rounded-corners"></div>
     </template>
     <script>
         (() => {
@@ -172,11 +183,15 @@
 
                 ready() {
                     super.ready();
-                    this.listen("data-loaded", () => this._animateSections());
-                    this.listen("sync-connect-start", () => this._animateSections());
-                    this.listen("sync-connect-cancel", () => this._animateSections());
-                    this.listen("sync-connect-success", () => this._animateSections());
-                    this.listen("sync-disconnect", () => this._animateSections());
+                    this.listen("data-loaded", () => this.animate());
+                    this.listen("sync-connect-start", () => this.animate());
+                    this.listen("sync-connect-cancel", () => this.animate());
+                    this.listen("sync-connect-success", () => this.animate());
+                    this.listen("sync-disconnect", () => this.animate());
+                }
+
+                animate() {
+                    this.animateCascade(this.root.querySelectorAll("section:not([hidden])"), { initialDelay: 200 });
                 }
 
                 syncStart() {
@@ -258,10 +273,6 @@
                     } else {
                         this.synchronize();
                     }
-                }
-
-                _animateSections() {
-                    this.animateCascade(this.root.querySelectorAll("section:not([hidden])"));
                 }
 
                 _trialingBuySubscription() {

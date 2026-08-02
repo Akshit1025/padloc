@@ -11,7 +11,8 @@
             fill: "backwards",
             initialDelay: 0,
             fullDuration: 1000,
-            clear: false
+            clear: false,
+            direction: "normal"
         };
 
         padlock.AnimationMixin = (superClass) => {
@@ -28,12 +29,12 @@
                 }
 
                 animateElement(el, opts = {}) {
-                    const { animation, duration, easing, delay, fill, clear } =
+                    const { animation, duration, direction, easing, delay, fill, clear } =
                         Object.assign({}, defaults, this.animationOptions, opts);
                     clearTimeout(el.clearAnimation);
                     el.style.animation = "";
                     el.offsetLeft;
-                    el.style.animation = `${animation} ${duration}ms ${easing} ${delay}ms ${fill}`;
+                    el.style.animation = `${animation} ${direction} ${duration}ms ${easing} ${delay}ms ${fill}`;
                     if (clear) {
                         el.clearAnimation = setTimeout(() => el.style.animation = "", delay + duration);
                     }

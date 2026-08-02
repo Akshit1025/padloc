@@ -1,6 +1,6 @@
 {
   "name": "padloc",
-  "version": "2.3.1",
+  "version": "2.4.0-beta.0",
   "description": "A minimalist password manager",
   "author": "Akshit Gupta <problemsolver687@gmail.com>",
   "license": "GPL-3.0",
@@ -64,6 +64,6 @@
     "build:mac": "gulp build --mac --silent",
     "build:win": "gulp build --win --silent",
     "build:linux": "gulp build --linux --silent",
-    "//": "npm run bower-install && npm run compile && mkdir -p cordova/www"
+    "postinstall": "npm run bower-install && npm run compile && mkdir -p cordova/www"
   }
 }

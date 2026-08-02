@@ -31,6 +31,14 @@
                 flex-direction: column;
             }
 
+            main {
+                background: var(--color-quaternary);
+            }
+
+            section {
+                transform: translate3d(0, 0, 0);
+            }
+
             button {
                 width: 100%;
                 box-sizing: border-box;
@@ -82,12 +90,6 @@
             .padlock-heart::before {
                 font-family: "FontAwesome";
                 content: "\f004";
-            }
-
-            @media (min-width: 600px) {
-                pl-icon[icon=backward] {
-                    display: none;
-                }
             }
         </style>
         <header class="tiles">
@@ -146,6 +148,14 @@
                     <div class="padlock-heart"></div><span>Padlock</span>
                 </button>
             </section>
+
+            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Updates") ]]</div>
+                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap" reverse
+                    on-change="_desktopSettingsChanged"></pl-toggle-button>
+                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap" reverse
+                    on-change="_desktopSettingsChanged"></pl-toggle-button>
+            </section>
         
             <section class="tiles">
                 <button class="info tap" on-click="_openSource">
@@ -154,14 +164,16 @@
                 </button>
                 <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
                 <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
+                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates") ]]</button>
             </section>
         </main>
+        <div class="rounded-corners"></div>
     </template>
     <script>
         (() => {
             const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
             const { applyMixins } = padlock.util;
-            const { isCordova, getReviewLink, isTouch } = padlock.platform;
+            const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, isElectron } = padlock.platform;
 
             class SettingsView extends applyMixins(
                 BaseElement,
@@ -175,7 +187,15 @@
 
                 connectedCallback() {
                     super.connectedCallback();
-                    this.animateCascade(this.root.querySelectorAll("section"));
+                    if (isElectron()) {
+                        const desktopSettings = getDesktopSettings().get();
+                        this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
+                        this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
+                    }
+                }
+
+                animate() {
+                    this.animateCascade(this.root.querySelectorAll("section"), { initialDelay: 200 });
                 }
 
                 _back() {
@@ -339,6 +359,7 @@
                         .then((records) => {
                             if (records) {
                                 this.addRecords(records);
+                                this.dispatch("data-imported", { records: records });
                                 this.alert($l("Successfully imported {0} records.", records.length));
                             }
                         });
@@ -386,6 +407,21 @@
                                 getReviewLink(0).then((link) => window.open(link, "_system"));
                             }
                         });
+                }
+
+                _isDesktop() {
+                    return isElectron();
+                }
+
+                _desktopSettingsChanged() {
+                    getDesktopSettings().set({
+                        autoDownloadUpdates: this.$.autoUpdatesButton.active,
+                        allowPrerelease: this.$.betaReleasesButton.active
+                    });
+                }
+
+                _checkForUpdates() {
+                    checkForUpdates();
                 }
 
             }

@@ -9,5 +9,6 @@ import * as platform from "./platform";
 import * as file from "./file";
 import * as messages from "./messages";
 import * as stats from "./stats";
+import * as tracking from "./tracking";
 
-export { util, crypto, source, data, ajax, imp, exp, platform, file, messages, stats };
+export { util, crypto, source, data, ajax, imp, exp, platform, file, messages, stats, tracking };

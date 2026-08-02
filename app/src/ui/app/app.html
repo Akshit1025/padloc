@@ -1,6 +1,8 @@
+<script src="../../padlock.js"></script>
+
 <link rel="import" href="./analytics.html">
-<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../cloud-view/cloud-view.html">
 <link rel="import" href="../data/data.html">
@@ -12,6 +14,7 @@
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../start-view/start-view.html">
 <link rel="import" href="../sync/sync.html">
+<link rel="import" href="../title-bar/title-bar.html">
 <link rel="import" href="./auto-lock.html">
 <link rel="import" href="./auto-sync.html">
 <link rel="import" href="./hints.html">
@@ -20,30 +23,109 @@
 <dom-module id="pl-app">
     <template>
         <style include="shared">
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes viewIn {
+                from {
+                    transform: translate3d(100%, 0, 0);
+                    z-index: 1;
+                }
+
+                to {
+                    transform: translate3d(0, 0, 0);
+                    z-index: 1;
+                }
+            }
+
+            @keyframes viewOutBack {
+                from {
+                    transform: translate3d(0, 0, 0);
+                }
+
+                to {
+                    transform: translate3d(0, 0, -100px);
+                }
+            }
+
+            @keyframes viewOutSide {
+                from {
+                    transform: translate3d(0, 0, 0);
+                }
+
+                to {
+                    transform: translate3d(100%, 0, 0);
+                }
+            }
+
             :host {
+                --color-gutter: #222;
+                --title-bar-height: 25px;
                 overflow: hidden;
                 color: var(--color-foreground);
-                background: #eee;
-                @apply --fullbleed;
+                background: var(--color-gutter);
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                animation: fadeIn 0.5s backwards;
+                perspective: 1000px;
+            }
+
+            :host(.windows) {
+                --title-bar-height: 40px;
+            }
+
+            :host(.ios),
+            :host(.android) {
+                --color-gutter: black;
             }
 
             #main {
                 @apply --fullbleed;
                 display: flex;
                 overflow: hidden;
+                perspective: 1000px;
             }
 
-            :host,
+            :host(:not(.ios):not(.android)) #main {
+                top: var(--gutter-width);
+                left: var(--gutter-width);
+                right: var(--gutter-width);
+                bottom: var(--gutter-width);
+            }
+
+            :host(.macos) #main,
+            :host(.windows) #main,
+            :host(.linux) #main {
+                top: var(--title-bar-height) !important;
+            }
+
+            :host(.ios) #main {
+                top: 20px;
+                top: constant(safe-area-inset-top);
+                top: env(safe-area-inset-top);
+            }
+
             #main,
-            #pages,
             #listView {
                 transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
             #main:not(.active),
-            :host(.dialog-open) {
-                transform: translate3d(0, 0, 0) scale(0.95);
+            :host(.dialog-open) #main {
+                transform: translate3d(0, 0, -100px);
+            }
+
+            :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
+                display: none;
             }
 
             #listView {
@@ -54,8 +136,21 @@
                 position: relative;
                 flex: 1.62;
                 /* Golden Ratio ;) */
-                box-shadow: rgba(0, 0, 0, 0.15) -1px 0 1px;
-                background: var(--color-background);
+                margin-left: var(--gutter-width);
+                pointer-events: none;
+                perspective: 1000px;
+            }
+
+            .view {
+                transform: translate3d(0, 0, 0);
+            }
+
+            .view.showing {
+                pointer-events: auto;
+            }
+
+            .view:not(.showing) {
+                opacity: 0;
             }
 
             #placeholderView {
@@ -64,16 +159,17 @@
                 align-items: center;
                 justify-content: center;
                 text-align: center;
-                color: var(--color-background);
             }
 
             .placeholder-icon {
                 display: block;
-                font-size: 150px;
+                font-size: 120px;
                 width: 150px;
+                color: var(--color-foreground);
+                opacity: 0.5;
             }
 
-            @media (max-width: 800px) {
+            @media (max-width: 900px) {
                 #pages {
                     flex: 1;
                 }
@@ -81,17 +177,18 @@
 
             @media (max-width: 600px) {
                 .showing-pages #listView {
-                    transform: translate3d(0, 0, 0) scale(0.95);
+                    transform: translate3d(0, 0, -100px);
                 }
 
                 #pages {
                     @apply --fullbleed;
                     box-shadow: none;
                     z-index: 1;
+                    margin-left: 0;
                 }
 
-                :not(.showing-pages) #pages {
-                    transform: translate3d(100%, 0, 0);
+                #placeholderView {
+                    display: none;
                 }
             }
         </style>
@@ -103,28 +200,35 @@
             <pl-list-view id="listView" selected-record="{{ _selectedRecord }}" on-open-settings="_openSettings"
                 on-open-cloud-view="_openCloudView"></pl-list-view>
 
-            <iron-pages id="pages" attr-for-selected="id">
+            <div id="pages">
 
-                <div id="placeholderView" class="tiles-2">
+                <div id="placeholderView">
                     <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
                 </div>
 
-                <pl-record-view id="recordView" on-record-close="_closeRecord"></pl-record-view>
+                <pl-record-view id="recordView" class="view" on-record-close="_closeRecord"></pl-record-view>
 
-                <pl-settings-view id="settingsView" on-settings-back="_settingsBack"></pl-settings-view>
+                <pl-settings-view id="settingsView" class="view" on-settings-back="_settingsBack"></pl-settings-view>
 
-                <pl-cloud-view id="cloudView" on-cloud-back="_cloudViewBack"></pl-cloud-view>
+                <pl-cloud-view id="cloudView" class="view" on-cloud-back="_cloudViewBack"></pl-cloud-view>
 
-            </iron-pages>
+            </div>
 
         </div>
+
+        <pl-title-bar></pl-title-bar>
+
     </template>
+
     <script>
         (() => {
 
-            const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin,
+            /* global cordova, StatusBar */
+
+            const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin,
                 SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, BaseElement } = padlock;
             const { applyMixins } = padlock.util;
+            const { getPlatformName, getDeviceInfo } = padlock.platform;
 
             const cordovaReady = new Promise((resolve) => {
                 document.addEventListener("deviceready", resolve);
@@ -140,7 +244,8 @@
                 MessagesMixin,
                 NotificationMixin,
                 HintsMixin,
-                AnalyticsMixin
+                AnalyticsMixin,
+                AnimationMixin
             ) {
 
                 static get is() { return "pl-app"; }
@@ -154,7 +259,7 @@
                         },
                         _currentView: {
                             type: String,
-                            value: "placeholderView",
+                            value: "",
                             observer: "_currentViewChanged"
                         },
                         _selectedRecord: {
@@ -179,12 +284,35 @@
                 }
 
                 get _isNarrow() {
-                    return this.offsetWidth < 700;
+                    return this.offsetWidth < 600;
                 }
 
                 connectedCallback() {
                     super.connectedCallback();
-                    cordovaReady.then(() => navigator.splashscreen.hide());
+                    cordovaReady.then(() => {
+                        // Replace window.open method with the inappbrowser equivalent
+                        window.open = cordova.InAppBrowser.open;
+                        StatusBar.show();
+                        navigator.splashscreen.hide();
+                    });
+
+                    Promise.all([
+                        getPlatformName(),
+                        getDeviceInfo()
+                    ]).then(([platform, device]) => {
+                        const isIPhoneX = device.model === "iPhone10,3" || device.model === "iPhone10,6";
+
+                        this.classList.add(platform.toLowerCase());
+                        this.root.querySelector("pl-title-bar").classList.add(platform.toLowerCase());
+
+                        if (isIPhoneX) {
+                            Object.assign(document.body.style, {
+                                margin: 0,
+                                height: "812px",
+                                position: "relative"
+                            });
+                        }
+                    });
                 }
 
                 recordDeleted(record) {
@@ -197,7 +325,7 @@
                     if (this.settings.syncEmail) {
                         padlock.stats.set({ pairingSource: "Setup" });
                         this.connectCloud(this.settings.syncEmail)
-                            .then(() => this.notify($l("Activation link sent. Check your email!"), "info", 3000))
+                            .then(() => this.notify($l("Activation link sent. Check your email!"), "info", 4000))
                             .then((clicked) => {
                                 if (clicked) {
                                     this._openCloudView();
@@ -235,10 +363,8 @@
                             this._currentView = "recordView";
                             this._selectedRecord.lastUsed = new Date();
                             this.saveCollection();
-                        } else {
-                            if (this._currentView == "recordView") {
-                                this._currentView = "placeholderView";
-                            }
+                        } else if (this._currentView == "recordView") {
+                            this._currentView = "";
                         }
                     }, 10);
                 }
@@ -249,7 +375,7 @@
                 }
 
                 _settingsBack() {
-                    this._currentView = "placeholderView";
+                    this._currentView = "";
                 }
 
                 _openCloudView() {
@@ -258,15 +384,33 @@
                 }
 
                 _cloudViewBack() {
-                    this._currentView = "placeholderView";
+                    this._currentView = "";
                 }
 
-                _currentViewChanged() {
-                    this.$.main.classList.toggle("showing-pages", this._currentView !== "placeholderView");
-                    clearTimeout(this._switchPagesTimeout);
-                    // If we're in narrow layout, wait for animation to finish before switching to placeholder view
-                    this._switchPagesTimeout = setTimeout(() => this.$.pages.select(this._currentView),
-                        this._currentView === "placeholderView" && this._isNarrow ? 300 : 0);
+                _currentViewChanged(curr, prev) {
+                    this.$.main.classList.toggle("showing-pages", !!curr);
+
+                    const currView = this.$[curr];
+                    const prevView = this.$[prev];
+                    if (currView) {
+                        this.animateElement(currView, {
+                            animation: "viewIn",
+                            duration: 400,
+                            easing: "cubic-bezier(0.6, 0, 0.2, 1)",
+                            fill: "backwards"
+                        });
+                        currView.classList.add("showing");
+                        currView.animate();
+                    }
+                    if (prevView) {
+                        this.animateElement(prevView, {
+                            animation: !curr || this._isNarrow ? "viewOutSide" : "viewOutBack",
+                            duration: 400,
+                            easing: "cubic-bezier(0.6, 0, 0.2, 1)",
+                            fill: "forwards"
+                        });
+                        setTimeout(() => prevView.classList.remove("showing"), 350);
+                    }
                 }
 
                 //* Keyboard shortcuts
@@ -315,7 +459,14 @@
                 }
 
                 _lockedChanged() {
-                    this.$.main.classList.toggle("active", !this.locked);
+                    if (this.locked) {
+                        this._currentView = "";
+                        this.$.main.classList.remove("active");
+                    } else {
+                        setTimeout(() => {
+                            this.$.main.classList.add("active");
+                        }, 600);
+                    }
                 }
             }
 
