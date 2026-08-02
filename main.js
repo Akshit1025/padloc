@@ -192,7 +192,18 @@ function createApplicationMenu() {
       ? [{ role: "about" }]
       : [{ label: `Padlock v${app.getVersion()}`, enabled: false }];
 
-  appSubMenu.push(checkForUpdatesItem, { type: "separator" }, { role: "quit" });
+  appSubMenu.push(checkForUpdatesItem);
+
+  if (os.platform() == "darwin") {
+    appSubMenu.push(
+      { type: "separator" },
+      { role: "hide" },
+      { role: "hideothers" },
+      { role: "unhide" }
+    );
+  }
+
+  appSubMenu.push({ type: "separator" }, { role: "quit" });
 
   // Set up menu
   const template = [
