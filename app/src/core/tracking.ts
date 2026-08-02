@@ -102,8 +102,7 @@ export function track(
     .then(() =>
       cloudSource.request(
         "POST",
-        // "https://cloud.padlock.io/track/",
-        "http://127.0.0.1:3000/track/",
+        "https://cloud.padlock.io/track/",
         JSON.stringify(data)
       )
     )
