@@ -17,6 +17,7 @@ const compareUuid = compareProperty("uuid");
 export interface Field {
   name: string;
   value: string;
+  masked?: boolean;
 }
 
 export class Record {
@@ -145,7 +146,6 @@ export class Collection {
 export class Settings {
   static defaults = {
     autoLock: true,
-    peekValues: false,
     // Auto lock delay in minutes
     autoLockDelay: 5,
     syncHostUrl: "https://cloud.padlock.io",

@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../clipboard/clipboard.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
@@ -59,6 +60,7 @@
 
             .field-button {
                 cursor: pointer;
+                font-size: 110%;
             }
 
             :host(:not([_editing-name])) #nameInput {
@@ -77,21 +79,20 @@
                     on-escape="_cancelEdit"></pl-input>
                 <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ $l('Enter Content') ]]"
                     select-on-focus focused="{{ _editingValue }}" on-escape="_cancelEdit"
-                    on-mousedown="_valueInputMouseDown" masked='[[_masked]]'></pl-input>
+                    on-mousedown="_valueInputMouseDown" masked='[[field.masked]]'></pl-input>
             </div>
 
             <template is="dom-if" if="[[ !draft ]]">
                 <div class="field-buttons">
-                    <pl-icon icon="[[ _toggleMaskIcon(_masked) ]]" class="field-button tiles-1 tap"
+                    <pl-icon icon="[[ _toggleMaskIcon(field.masked) ]]" class="field-button tiles-1 tap"
                         on-click="_toggleMask" hidden$="[[ _editing ]]"></pl-icon>
                     <pl-icon icon="cancel" class="field-button tap" on-click="_cancelEdit"
                         hidden$="[[ !_editing ]]"></pl-icon>
                     <pl-icon icon="copy" class="field-button tap" on-click="_copy"
-                        hidden$="[[ !_isEmpty(field.value) ]]"></pl-icon>
+                        hidden$="[[ !_showCopyButton(_editing, field.value) ]]"></pl-icon>
                     <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator"
-                        hidden$="[[ _isEmpty(field.value) ]]"></pl-icon>
+                        hidden$="[[ _showGenerateButton(_editing, field.value) ]]"></pl-icon>
                     <pl-icon icon="more" class="field-button tap" on-click="_showFieldInfo"></pl-icon>
-                    <div class="spacer tiles-4"></div>
                 </div>
             </template>
 
@@ -112,13 +113,14 @@
         (() => {
 
             const { applyMixins } = padlock.util;
-            const { BaseElement, NotificationMixin, LocaleMixin, DialogMixin } = padlock;
+            const { BaseElement, NotificationMixin, LocaleMixin, DialogMixin, ClipboardMixin } = padlock;
 
             class RecordField extends applyMixins(
                 BaseElement,
                 NotificationMixin,
                 LocaleMixin,
-                DialogMixin
+                DialogMixin,
+                ClipboardMixin
             ) {
 
                 static get is() { return "pl-record-field"; }
@@ -150,10 +152,10 @@
                             type: Boolean,
                             value: false
                         },
+                        record: Object,
                         field: {
                             type: Object,
-                            value: () => { return { name: "", value: "" }; },
-                            observer: "_fieldChanged"
+                            value: () => { return { name: "", value: "", masked: false }; }
                         }
                     };
                 }
@@ -218,8 +220,7 @@
                 }
 
                 _copy() {
-                    padlock.platform.setClipboard(this.field.value)
-                        .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
+                    this.setClipboard(this.record, this.field);
                 }
                 _valueInputMouseDown(e) {
                     // Prevent focusing value input if name input is still empty; Focus name input instead
@@ -229,13 +230,11 @@
                     }
                 }
                 _toggleMaskIcon() {
-                    return this._masked ? "show" : "hide";
+                    return this.field.masked ? "show" : "hide";
                 }
                 _toggleMask() {
-                    this._masked = !this._masked;
-                }
-                _fieldChanged() {
-                    this._masked = true;
+                    this.set("field.masked", !this.field.masked);
+                    this.dispatchEvent(new CustomEvent("field-change"));
                 }
                 _showFieldInfo() {
                     this.getSingleton("pl-record-field-dialog")
@@ -258,7 +257,13 @@
                         });
                 }
                 _isEmpty() {
-                    return !!this.field.value;
+                    return !this.field.value;
+                }
+                _showCopyButton() {
+                    return !this._editing && this._isEmpty();
+                }
+                _showGenerateButton() {
+                    return !this._editing || this._isEmpty();
                 }
                 edit() {
                     const input = this.field && this.field.name ? this.$.valueInput : this.$.nameInput;

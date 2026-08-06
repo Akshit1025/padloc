@@ -478,7 +478,8 @@
                             fullDuration: 600,
                             initialDelay: 0,
                             fill: "forwards",
-                            easing: "cubic-bezier(1, 0, 0.2, 1)"
+                            easing: "cubic-bezier(1, 0, 0.2, 1)",
+                            clear: 3000
                         });
                     } else {
                         this.animateCascade(this.root.querySelectorAll(`main.${this._mode} .animate-in`), {
@@ -486,7 +487,8 @@
                             duration: 1000,
                             fullDuration: 1500,
                             initialDelay: 300,
-                            fill: "backwards"
+                            fill: "backwards",
+                            clear: 3000
                         });
                     }
                 }

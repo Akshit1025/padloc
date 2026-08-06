@@ -106,7 +106,9 @@ export class NodeFileManager implements FileManager {
   }
 
   resolvePath(path: string): string {
-    return nodePath.resolve(this.basePath, path);
+    return nodePath.isAbsolute(path)
+      ? path
+      : nodePath.resolve(this.basePath, path);
   }
 
   read(path: string): Promise<string> {

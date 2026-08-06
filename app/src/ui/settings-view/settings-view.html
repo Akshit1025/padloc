@@ -106,18 +106,11 @@
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
-
-            <section class="tiles" hidden$="[[ _isTouch() ]]">
-                <div class="info">[[ _peekValuesInfo() ]]</div>
-                <pl-toggle-button active="{{ settings.peekValues }}" label="[[ $l('Peek Values') ]]" class="tap" reverse
-                    on-change="settingChanged"></pl-toggle-button>
-            </section>
         
             <section class="tiles">
                 <div class="section-header">[[ $l("Export") ]]</div>
                 <pl-export records="[[ collection.records ]]"></pl-export>
             </section>
-        
             <section class="tiles">
                 <div class="section-header">[[ $l("Import") ]]</div>
                 <div class="section-row tiles">
@@ -133,29 +126,18 @@
                     </label>
                 </div>
             </section>
-        
             <section class="tiles">
                 <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
             </section>
-        
             <section class="tiles">
                 <div class="info">[[ _resetDataInfo() ]]</div>
                 <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
             </section>
-        
             <section>
                 <button on-click="_promptReview" class="tap">
                     <span>[[ $l("I") ]]</span>
                     <div class="padlock-heart"></div><span>Padlock</span>
                 </button>
-            </section>
-
-            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
-                <div class="section-header">[[ $l("Updates") ]]</div>
-                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap" reverse
-                    on-change="_desktopSettingsChanged"></pl-toggle-button>
-                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap" reverse
-                    on-change="_desktopSettingsChanged"></pl-toggle-button>
             </section>
         
             <section class="tiles">
@@ -165,7 +147,25 @@
                 </button>
                 <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
                 <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
-                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates") ]]</button>
+            </section>
+        
+            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Updates") ]]</div>
+                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
+                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap" reverse
+                    on-change="_desktopSettingsChanged"></pl-toggle-button>
+                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap" reverse
+                    on-change="_desktopSettingsChanged"></pl-toggle-button>
+            </section>
+        
+            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Database") ]]</div>
+                <div class="info">
+                    <div>[[ $l("Current Location:") ]]</div>
+                    <strong>[[ _dbPath ]]</strong>
+                </div>
+                <button on-click="_saveDBAs" class="tap">[[ $l("Change Location...") ]]</button>
+                <button on-click="_loadDB" class="tap">[[ $l("Load Different Database...") ]]</button>
             </section>
         </main>
         <div class="rounded-corners"></div>
@@ -174,7 +174,7 @@
         (() => {
             const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
             const { applyMixins } = padlock.util;
-            const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, isElectron } = padlock.platform;
+            const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, saveDBAs, loadDB, isElectron } = padlock.platform;
 
             class SettingsView extends applyMixins(
                 BaseElement,
@@ -192,6 +192,7 @@
                         const desktopSettings = getDesktopSettings().get();
                         this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
                         this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
+                        this._dbPath = desktopSettings.dbPath;
                     }
                 }
 
@@ -423,6 +424,14 @@
 
                 _checkForUpdates() {
                     checkForUpdates();
+                }
+
+                _saveDBAs() {
+                    saveDBAs();
+                }
+
+                _loadDB() {
+                    loadDB();
                 }
 
             }

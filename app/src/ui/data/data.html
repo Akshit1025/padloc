@@ -7,10 +7,14 @@
 
         const { Collection, Record, Settings } = padlock.data;
         const { FileSource, EncryptedSource } = padlock.source;
+        const { getDesktopSettings } = padlock.platform;
         const { MutableData } = Polymer;
 
+        const desktopSettings = getDesktopSettings();
+        const dbPath = desktopSettings ? desktopSettings.get("dbPath") : "data.pls";
+
         const collection = new Collection();
-        const localSource = new EncryptedSource(new FileSource("data.pls"));
+        const localSource = new EncryptedSource(new FileSource(dbPath));
         const settings = new Settings();
         const settingsSource = new EncryptedSource(new FileSource("settings.pls"));
 
@@ -34,7 +38,7 @@
         }
 
         const legacyDataTransfered = Promise.all([
-            transferData("coll_default", "data.pls"),
+            transferData("coll_default", dbPath),
             transferData("settings_encrypted", "settings.pls")
         ]);
 
@@ -121,12 +125,10 @@
                 }
 
                 createRecord(name) {
-                    const fields = this.settings.defaultFields.map((name) => {
-                        return {
-                            name: name,
-                            value: ""
-                        };
-                    });
+                    const fields = [
+                        { name: $l("Username"), value: "", masked: false },
+                        { name: $l("Password"), value: "", masked: true },
+                    ];
                     const record = new Record(name || $l("New Record"), fields);
                     this.addRecords([record]);
                     this.dispatch("record-created", record);

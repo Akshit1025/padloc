@@ -4,6 +4,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../clipboard/clipboard.html">
 <link rel="import" href="../cloud-view/cloud-view.html">
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
@@ -227,7 +228,7 @@
 
             /* global cordova, StatusBar */
 
-            const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin,
+            const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin, ClipboardMixin,
                 SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, BaseElement } = padlock;
             const { applyMixins } = padlock.util;
             const { getPlatformName, getDeviceInfo } = padlock.platform;
@@ -247,7 +248,8 @@
                 NotificationMixin,
                 HintsMixin,
                 AnalyticsMixin,
-                AnimationMixin
+                AnimationMixin,
+                ClipboardMixin
             ) {
 
                 static get is() { return "pl-app"; }
@@ -311,8 +313,9 @@
                         });
 
                     getPlatformName().then((platform) => {
-                        this.classList.add(platform.toLowerCase());
-                        this.root.querySelector("pl-title-bar").classList.add(platform.toLowerCase());
+                        const className = platform.toLowerCase().replace(/ /g, "-");
+                        this.classList.add(className);
+                        this.root.querySelector("pl-title-bar").classList.add(className);
                     });
                 }
 
@@ -345,6 +348,7 @@
                     this.$.startView.reset();
                     this.locked = true;
                     this.$.startView.open = false;
+                    this.clearClipboard();
                 }
 
                 dataReset() {

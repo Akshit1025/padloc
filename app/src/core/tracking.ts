@@ -44,7 +44,6 @@ let ready = Promise.all([getStats(), getAppVersion(), initialized]).then(
   }
 );
 
-let lastTrack: Promise<any> = ready;
 export function track(
   event: string,
   props?: { [prop: string]: number | string }
@@ -111,5 +110,5 @@ export function track(
     })
     .catch(() => {});
 
-  return lastTrack;
+  return ready;
 }
