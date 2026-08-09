@@ -109,7 +109,7 @@ export class AjaxSource implements Source {
   }
 
   clear(): Promise<void> {
-    return this.request("DELETE", this.url).then(() => {});
+    return this.set("").then(() => {});
   }
 }
 
@@ -141,7 +141,8 @@ export class CloudSource extends AjaxSource {
     // Remove trailing slashes
     const host = this.settings.syncCustomHost
       ? this.settings.syncHostUrl.replace(/\/+$/, "")
-      : "https://cloud.padlock.io";
+      : // "https://cloud.padlock.io"
+        "http://127.0.0.1:3000";
     return `${host}/${path}/`;
   }
 
@@ -204,7 +205,10 @@ export class CloudSource extends AjaxSource {
       }
     }
 
-    this.settings.syncSubStatus = req.getResponseHeader("X-Sub-Status") || "";
+    const subStatus = req.getResponseHeader("X-Sub-Status");
+    if (subStatus !== null) {
+      this.settings.syncSubStatus = subStatus;
+    }
     try {
       this.settings.syncTrialEnd = parseInt(
         req.getResponseHeader("X-Sub-Trial-End") || "0",
@@ -220,12 +224,14 @@ export class CloudSource extends AjaxSource {
     email: string,
     create = false,
     authType = "api",
-    redirect = ""
+    redirect = "",
+    actType = ""
   ): Promise<CloudAuthToken> {
     const params = new URLSearchParams();
     params.set("email", email);
     params.set("type", authType);
     params.set("redirect", redirect);
+    params.set("actType", actType);
 
     const req = await this.request(
       create ? "POST" : "PUT",
@@ -249,9 +255,16 @@ export class CloudSource extends AjaxSource {
   async requestAuthToken(
     email: string,
     create = false,
-    redirect = ""
+    redirect = "",
+    actType?: string
   ): Promise<CloudAuthToken> {
-    const authToken = await this.authenticate(email, create, "api", redirect);
+    const authToken = await this.authenticate(
+      email,
+      create,
+      "api",
+      redirect,
+      actType
+    );
     this.settings.syncEmail = authToken.email;
     this.settings.syncToken = authToken.token;
     return authToken;
@@ -286,6 +299,85 @@ export class CloudSource extends AjaxSource {
         throw err;
       }
     }
+  }
+
+  activateToken(code: string): Promise<Boolean> {
+    const params = new URLSearchParams();
+    params.set("code", code);
+    params.set("email", this.settings.syncEmail);
+
+    return this.request(
+      "POST",
+      this.urlForPath("activate"),
+      params.toString(),
+      new Map<string, string>().set(
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+      )
+    )
+      .then(() => true)
+      .catch((e) => {
+        if (e.code === "bad_request") {
+          return false;
+        } else {
+          throw e;
+        }
+      });
+  }
+
+  logout(): Promise<XMLHttpRequest> {
+    return this.request("GET", this.urlForPath("logout"));
+  }
+
+  async getAccountInfo(): Promise<Account> {
+    const res = await this.request("GET", this.urlForPath("account"));
+    const account = JSON.parse(res.responseText);
+    this.settings.account = account;
+    return account;
+  }
+
+  revokeAuthToken(tokenId: string): Promise<XMLHttpRequest> {
+    const params = new URLSearchParams();
+    params.set("id", tokenId);
+    return this.request(
+      "POST",
+      this.urlForPath("revoke"),
+      params.toString(),
+      new Map<string, string>().set(
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+      )
+    );
+  }
+
+  subscribe(
+    stripeToken = "",
+    coupon = "",
+    source = ""
+  ): Promise<XMLHttpRequest> {
+    const params = new URLSearchParams();
+    params.set("stripeToken", stripeToken);
+    params.set("coupon", coupon);
+    params.set("source", source);
+    return this.request(
+      "POST",
+      this.urlForPath("subscribe"),
+      params.toString(),
+      new Map<string, string>().set(
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+      )
+    );
+  }
+
+  cancelSubscription(): Promise<XMLHttpRequest> {
+    return this.request("POST", this.urlForPath("unsubscribe"));
+  }
+
+  getPlans(): Promise<any[]> {
+    return this.request("GET", this.urlForPath("plans")).then(
+      (res) => <any[]>JSON.parse(res.responseText)
+    );
   }
 }
 

@@ -7,6 +7,7 @@
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../slider/slider.html">
+<link rel="import" href="../sync/sync.html">
 <link rel="import" href="../toggle/toggle-button.html">
 <dom-module id="pl-settings-view">
     <template>
@@ -39,6 +40,15 @@
                 transform: translate3d(0, 0, 0);
             }
 
+            section .info {
+                display: block;
+                font-size: var(--font-size-small);
+                text-align: center;
+                line-height: normal;
+                padding: 15px;
+                height: auto;
+            }
+
             button {
                 width: 100%;
                 box-sizing: border-box;
@@ -50,27 +60,6 @@
 
             pl-toggle-button {
                 display: block;
-            }
-
-            .section-header {
-                text-align: center;
-                font-weight: bold;
-                line-height: var(--row-height);
-            }
-
-            .section-row {
-                display: flex;
-                align-items: center;
-            }
-
-            .section-row-label {
-                padding: 0 15px;
-                flex: 1;
-            }
-
-            .section-row pl-icon {
-                width: 50px;
-                height: 50px;
             }
 
             input[type="file"] {
@@ -101,6 +90,25 @@
                 font-weight: bold;
                 margin-top: 5px;
                 word-wrap: break-word;
+                font-size: var(--font-size-tiny);
+            }
+
+            #customUrlInput:not([invalid]) + .warning {
+                display: none;
+            }
+
+            .url-warning {
+                font-size: var(--font-size-small);
+                text-align: center;
+                padding: 15px;
+                border-top: solid 1px var(--border-color);
+                color: var(--color-error);
+            }
+
+            .feature-locked {
+                font-size: var(--font-size-tiny);
+                color: var(--color-error);
+                margin: -14px 15px 12px 15px;
             }
         </style>
         <header>

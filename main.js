@@ -152,7 +152,6 @@ function saveDBAs() {
     settings.set("dbPath", newPath);
 
     if (fs.pathExistsSync(oldPath)) {
-      console.log(`moving file from ${oldPath} to ${newPath}`);
       fs.moveSync(oldPath, newPath, { overwrite: true });
     }
 
@@ -205,7 +204,10 @@ function createWindow() {
     frame: false,
     transparent: false,
     hasShadow: true,
-    show: false
+    show: false,
+    webPreferences: {
+      devTools: !!debug
+    }
   });
 
   // and load the index.html of the app.
@@ -265,6 +267,20 @@ function createApplicationMenu() {
       { role: "hide" },
       { role: "hideothers" },
       { role: "unhide" }
+    );
+  }
+
+  if (debug) {
+    appSubMenu.push(
+      { type: "separator" },
+      {
+        label: "Debug",
+        submenu: [{
+          label: "Open Dev Tools",
+          accelerator: "CmdOrCtrl+Shift+I",
+          click: () => win.webContents.toggleDevTools()
+        }]
+      }
     );
   }
 

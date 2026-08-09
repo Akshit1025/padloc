@@ -2,15 +2,11 @@
 <link rel="import" href="../locale/locale.html">
 <script>
     (() => {
-
         const { wait } = padlock.util;
         const { isChromeApp, isChromeOS, getReviewLink } = padlock.platform;
-
         const day = 1000 * 60 * 60 * 24;
-
         let stats;
         const statsLoaded = padlock.stats.get().then((s) => stats = s);
-
         function daysPassed(date) {
             return (new Date().getTime() - date) / day;
         }
@@ -22,8 +18,13 @@
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindSync()));
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindTrialEnds()));
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._askFeedback()));
+                    this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._crossPlatformHint()));
                     this.listen("auto-lock", () => statsLoaded.then(() => this._showAutoLockNotice()));
+                    this.listen("settings-changed", () => this._notifySubStatus());
+                    this.listen("sync-connect-success", () => this._notifySubStatus());
+                    this.listen("data-loaded", () => wait(1000).then(() => this._notifySubStatus()));
                 }
+
                 ready() {
                     super.ready();
                     statsLoaded
@@ -38,22 +39,19 @@
                     ) {
                         this.choose($l(
                             "Have you backed up your data yet? Remember that by default your data is only stored " +
-                            "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
-                            "reset your data. Padlock Cloud is a great way to back up your data online and synchronize " +
-                            "with other devices. Alternatively, you can export your data and store it somewhere safe."
-                        ), [$l("Sync With Padlock Cloud"), $l("Export Data"), $l("Do Nothing")])
+                            "locally and can not be recovered in case your device gets damaged or lost. " +
+                            "Log in now to enable automatic online backups!"
+                        ), [$l("Log In"), $l("Do Nothing")], { type: "warning" })
                             .then((choice) => {
                                 switch (choice) {
                                     case 0:
-                                        padlock.stats.set({pairingSource: "Backup Reminder"});
+                                        padlock.stats.set({ pairingSource: "Backup Reminder" });
                                         this._openCloudView();
-                                        break;
-                                    case 1:
-                                        this._openSettings();
                                         break;
                                 }
                             });
-                        padlock.stats.set({lastBackupReminder: new Date().getTime()});
+
+                        padlock.stats.set({ lastBackupReminder: new Date().getTime() });
                     }
                 }
                 _remindSync() {
@@ -64,11 +62,11 @@
                         daysPassed(stats.lastSyncReminder || stats.firstLaunch) > 7
                     ) {
                         this.choose($l(
-                            "The last time you synced your data with Padlock Cloud was {0} days ago! You should " +
+                            "The last time you synced your data with your account was {0} days ago! You should " +
                             "synchronize regularly to keep all your devices up-to-date and to make sure you always " +
                             "have a recent backup in the cloud.",
                             Math.floor(daysSinceLastSync)
-                        ), [$l("Synchronize Now"), $l("Turn On Auto Sync"), $l("Do Nothing")])
+                        ), [$l("Synchronize Now"), $l("Turn On Auto Sync"), $l("Do Nothing")], { type: "warning" })
                             .then((choice) => {
                                 switch (choice) {
                                     case 0:
@@ -81,28 +79,18 @@
                                         break;
                                 }
                             });
-                        padlock.stats.set({lastSyncReminder: new Date().getTime()});
+                        padlock.stats.set({ lastSyncReminder: new Date().getTime() });
                     }
                 }
                 _remindTrialEnds() {
                     if (
                         this.settings.syncSubStatus === "trialing" &&
-                        this.remainingTrialDays <= 7 &&
-                        (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 1)
+                        (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 7)
                     ) {
-                        this.confirm(
-                            $l("Your Padlock Cloud trial period ends in {0} days!", this.remainingTrialDays) +
-                            " " + this.trialInfoText(),
-                            $l("Buy Subscription"),
-                            $l("Dismiss")
-                        )
-                            .then((confirmed) => {
-                                if (confirmed) {
-                                    this.openDashboard("subscribe", "app-4");
-                                }
-                            });
-                        padlock.stats.set({lastTrialEndsReminder: new Date().getTime()});
+                        this.buySubscription("App - Trialing (Alert)");
+                        padlock.stats.set({ lastTrialEndsReminder: new Date().getTime() });
                     }
+
                 }
                 _notifyChromeAppDeprecation() {
                     isChromeOS().then((yes) => {
@@ -113,7 +101,7 @@
                                 "longer be able to load this app! Don't worry though, because Padlock is now available " +
                                 "as a native app for Windows, MacOS and Linux! Head over to our website to find out " +
                                 "how to switch now!"
-                            ), $l("Learn More"), $l("Dismiss"))
+                            ), $l("Learn More"), $l("Dismiss"), { type: "info", hideIcon: true })
                                 .then((confirmed) => {
                                     if (confirmed) {
                                         window.open("https://padlock.io/news/discontinuing-chrome/", "_system");
@@ -122,7 +110,6 @@
                         }
                     });
                 }
-
                 _askFeedback() {
                     if (
                         stats.launchCount > 20 &&
@@ -138,13 +125,11 @@
                         ])
                             .then((rating) => {
                                 this.track("Rate App", { "Rating": rating });
-
                                 padlock.stats.set({
                                     lastAskedFeedback: new Date().getTime(),
                                     lastRating: rating,
                                     lastRatedVersion: this.settings.version
                                 });
-
                                 switch (rating) {
                                     case 0:
                                         this.choose($l(
@@ -165,8 +150,6 @@
                                                         padlock.stats.set({ dontAskFeedback: true });
                                                         break;
                                                 }
-
-                                                saveStats();
                                             });
                                         break;
                                     case 1:
@@ -191,11 +174,9 @@
                             });
                     }
                 }
-
                 _sendFeedback(rating) {
                     getReviewLink(rating).then((link) => window.open(link, "_system"));
                 }
-
                 _showAutoLockNotice() {
                     if (!stats.hasShownAutoLockNotice) {
                         const minutes = this.settings.autoLockDelay;
@@ -205,6 +186,61 @@
                                 minutes, minutes > 1 ? $l("minutes") : $l("minute")));
                         }, 1000);
                         padlock.stats.set({ hasShownAutoLockNotice: true });
+                    }
+                }
+
+                _notifySubStatus() {
+                    if (this.settings.syncConnected && this.settings.syncSubStatus !== this._lastSubStatus) {
+                        this._lastSubStatus = this.settings.syncSubStatus;
+
+                        if (this.isTrialExpired()) {
+                            this.alert(this.trialExpiredMessage(), {
+                                type: "warning",
+                                title: $l("Trial Expired"),
+                                options: [$l("Upgrade Now")]
+                            }).then((choice) => {
+                                if (choice === 0) {
+                                    this.buySubscription("App - Trial Expired (Alert)");
+                                }
+                            });
+                        } else if (this.isSubUnpaid()) {
+                            this.alert(this.subUnpaidMessage(), {
+                                type: "warning",
+                                title: $l("Payment Failed"),
+                                options: [$l("Update Payment Method"), $l("Contact Support")]
+                            }).then((choice) => {
+                                if (choice === 0) {
+                                    this.updatePaymentMethod("App - Payment Failed (Alert)");
+                                } else if (choice === 1) {
+                                    window.open("mailto:support@padlock.io", "_system");
+                                }
+                            });
+                        }
+                    }
+                }
+
+                _crossPlatformHint() {
+                    if (
+                        !this.settings.syncConnected &&
+                        !stats.hasShownCrossPlatformHint
+                    ) {
+                        this.confirm(
+                            $l(
+                                "Padlock lets you share your data seamlessly across all your devices like phones, " +
+                                "tablets and computers! Log in now and we'll get you set up in just few steps!"
+                            ),
+                            $l("Log In"),
+                            $l("No Thanks"),
+                            { title: $l("Did You Know?"), type: "question" }
+                        )
+                            .then((confirmed) => {
+                                if (confirmed) {
+                                    padlock.stats.set({ pairingSource: "Cross-Platform Hint" });
+                                    this._openCloudView();
+                                }
+                            });
+
+                        padlock.stats.set({ hasShownCrossPlatformHint: new Date().getTime() });
                     }
                 }
 

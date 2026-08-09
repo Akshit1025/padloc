@@ -1,5 +1,4 @@
 <script src="../../padlock.js"></script>
-
 <link rel="import" href="./analytics.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../animation/animation.html">
@@ -10,6 +9,7 @@
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../list-view/list-view.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
 <link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
@@ -20,7 +20,6 @@
 <link rel="import" href="./auto-sync.html">
 <link rel="import" href="./hints.html">
 <link rel="import" href="./messages.html">
-
 <dom-module id="pl-app">
     <template>
         <style include="shared">
@@ -36,7 +35,7 @@
 
             @keyframes viewIn {
                 from {
-                    transform: translate3d(100%, 0, 0);
+                    transform: translate3d(100%, 0, 0) rotateY(-30deg);
                     z-index: 1;
                 }
 
@@ -52,7 +51,7 @@
                 }
 
                 to {
-                    transform: translate3d(0, 0, -100px);
+                    transform: translate3d(0, 0, -200px) rotateX(10deg);
                 }
             }
 
@@ -62,13 +61,28 @@
                 }
 
                 to {
-                    transform: translate3d(100%, 0, 0);
+                    transform: translate3d(100%, 0, 0) rotateY(-30deg);
+                }
+            }
+
+            @keyframes menuItemIn {
+                to {
+                    transform: translate3d(0, 0, 0);
+                }
+            }
+
+            @keyframes menuItemOut {
+                from {
+                    transform: translate3d(0, 0, 0);
                 }
             }
 
             :host {
                 --color-gutter: #222;
                 --title-bar-height: 30px;
+                --menu-width: 200px;
+                --menu-icon-width: 40px;
+                --main-padding: 0px;
                 overflow: hidden;
                 color: var(--color-foreground);
                 background: var(--color-gutter);
@@ -77,6 +91,10 @@
                 height: 100%;
                 animation: fadeIn 0.5s backwards 0.2s;
                 perspective: 1000px;
+            }
+
+            :host(:not(.ios):not(.android)) {
+                --main-padding: var(--gutter-width);
             }
 
             :host(.windows) {
@@ -93,14 +111,10 @@
                 display: flex;
                 overflow: hidden;
                 perspective: 1000px;
-            }
-
-            :host(:not(.ios):not(.android)) #main {
-                top: var(--gutter-width);
-                left: var(--gutter-width);
-                right: var(--gutter-width);
-                bottom: var(--gutter-width);
-                overflow: visible;
+                top: var(--main-padding);
+                left: calc(var(--main-padding) + var(--menu-icon-width));
+                right: var(--main-padding);
+                bottom: var(--main-padding);
             }
 
             :host(.macos) #main,
@@ -118,12 +132,17 @@
             #main,
             #listView {
                 transform: translate3d(0, 0, 0);
+                transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
             #main:not(.active),
             :host(.dialog-open) #main {
-                transform: translate3d(0, 0, -100px);
+                transform: translate3d(0, 0, -150px) rotateX(5deg);
+            }
+
+            :host(.show-menu) #main {
+                transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-10deg);
             }
 
             :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
@@ -171,15 +190,102 @@
                 opacity: 0.5;
             }
 
+            .menu {
+                position: absolute;
+                top: 0;
+                left: var(--main-padding);
+                bottom: 0;
+                z-index: -2;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                width: var(--menu-width);
+                box-sizing: border-box;
+                color: var(--color-background);
+            }
+
+            .menu-item {
+                transform-origin: 0 center;
+                transform: translate3d(calc(var(--menu-icon-width) - var(--menu-width)), 0, 0);
+                display: flex;
+                align-items: center;
+                height: 45px;
+                justify-content: flex-end;
+                position: relative;
+                text-align: right;
+            }
+
+            .menu-item:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .menu-item>pl-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 120%;
+
+            }
+
+            .menu-item-hint {
+                font-size: 12px;
+            }
+
+            .last-sync {
+                opacity: 0.6;
+            }
+
+            .last-sync::before {
+                font-family: "FontAwesome";
+                font-size: 90%;
+                content: "\f017\ ";
+            }
+
+            .menu-wrapper {
+                @apply --fullbleed;
+                z-index: -1;
+            }
+
+            :host(.show-menu) .menu-wrapper {
+                z-index: 10;
+            }
+
+            .menu-item-hint.warning {
+                color: var(--color-error);
+            }
+
+            .menu-item-hint.warning::before {
+                font-family: "FontAwesome";
+                font-size: 85%;
+                content: "\f071\ ";
+                position: relative;
+                top: -1px;
+            }
+
+            .menu-info {
+                font-size: var(--font-size-tiny);
+                text-align: center;
+                padding: 20px;
+                color: rgba(255, 255, 255, 0.5);
+                transition: opacity 400ms;
+            }
+
+            :host(:not(.show-menu)) .menu-info {
+                opacity: 0;
+            }
+
             @media (max-width: 900px) {
                 #pages {
                     flex: 1;
                 }
             }
 
-            @media (max-width: 600px) {
+            @media (max-width: 700px) {
+                :host {
+                    --menu-icon-width: 0px;
+                }
+
                 .showing-pages #listView {
-                    transform: translate3d(0, 0, -100px);
+                    transform: translate3d(0, 0, -150px) rotateX(10deg);
                 }
 
                 #pages {
@@ -198,45 +304,89 @@
 
         <pl-start-view id="startView"></pl-start-view>
 
+        <div class="menu-wrapper" on-click="_menuWrapperClicked">
+            <div id="menu" class="menu">
+                <div class="spacer"></div>
+                <div class="account menu-item tap" on-click="_openCloudView">
+                    <div>
+                        <div hidden$="[[ settings.syncConnected ]]">[[ $l("Log In") ]]</div>
+                        <div hidden$="[[ !settings.syncConnected ]]">[[ $l("My Account") ]]</div>
+                        <div class="menu-item-hint warning"
+                            hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Trial
+                            Expired") ]]</div>
+                        <div class="menu-item-hint warning"
+                            hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Payment
+                            Failed") ]]</div>
+                        <div class="menu-item-hint warning"
+                            hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[
+                            $l("Subscr. Canceled") ]]</div>
+                    </div>
+                    <pl-icon icon="cloud" class="account-icon"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="synchronize"
+                    disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">
+                    <div>
+                        <div>[[ $l("Synchronize") ]]</div>
+                        <div class="menu-item-hint" hidden$="[[ settings.syncConnected ]]">[[ $l("Log In To Sync") ]]
+                        </div>
+                        <div class="menu-item-hint last-sync" hidden$="[[ !settings.syncConnected ]]">[[ lastSync ]]
+                        </div>
+                    </div>
+                    <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="_newRecord">
+                    <div>[[ $l("Add Record") ]]</div>
+                    <pl-icon icon="add"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="_openSettings">
+                    <div>[[ $l("Settings") ]]</div>
+                    <pl-icon icon="settings"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="_enableMultiSelect">
+                    <div>[[ $l("Multi-Select") ]]</div>
+                    <pl-icon icon="checked"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="_lock">
+                    <div>[[ $l("Lock App") ]]</div>
+                    <pl-icon icon="lock"></pl-icon>
+                </div>
+                <div class="spacer"></div>
+                <div class="menu-info">
+                    <div><strong>Padlock {{ settings.version }}</strong></div>
+                    <div>Made with &#9829; in India</div>
+                </div>
+            </div>
+        </div>
+
         <div id="main">
 
             <pl-list-view id="listView" selected-record="{{ _selectedRecord }}" on-open-settings="_openSettings"
-                on-open-cloud-view="_openCloudView"></pl-list-view>
+                on-open-cloud-view="_openCloudView" on-toggle-menu="_toggleMenu"></pl-list-view>
 
             <div id="pages">
 
                 <div id="placeholderView">
                     <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
                 </div>
-
                 <pl-record-view id="recordView" class="view" on-record-close="_closeRecord"></pl-record-view>
-
                 <pl-settings-view id="settingsView" class="view" on-settings-back="_settingsBack"></pl-settings-view>
-
                 <pl-cloud-view id="cloudView" class="view" on-cloud-back="_cloudViewBack"></pl-cloud-view>
-
             </div>
-
         </div>
-
         <pl-title-bar></pl-title-bar>
-
     </template>
-
     <script>
         (() => {
-
             /* global cordova, StatusBar */
 
             const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin, ClipboardMixin,
-                SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, BaseElement } = padlock;
+                SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, LocaleMixin, BaseElement } = padlock;
             const { applyMixins } = padlock.util;
-            const { getPlatformName, getDeviceInfo } = padlock.platform;
+            const { getPlatformName, getDeviceInfo, isTouch } = padlock.platform;
 
             const cordovaReady = new Promise((resolve) => {
                 document.addEventListener("deviceready", resolve);
             });
-
             class App extends applyMixins(
                 BaseElement,
                 DataMixin,
@@ -249,11 +399,11 @@
                 HintsMixin,
                 AnalyticsMixin,
                 AnimationMixin,
-                ClipboardMixin
+                ClipboardMixin,
+                LocaleMixin
             ) {
 
                 static get is() { return "pl-app"; }
-
                 static get properties() {
                     return {
                         locked: {
@@ -269,28 +419,28 @@
                         _selectedRecord: {
                             type: Object,
                             observer: "_selectedRecordChanged"
+                        },
+                        _menuOpen: {
+                            type: Boolean,
+                            value: false,
+                            observer: "_menuOpenChanged"
                         }
                     };
                 }
 
                 constructor() {
                     super();
-
                     // If we want to capture all keydown events, we have to add the listener
                     // directly to the document
                     document.addEventListener("keydown", this._keydown.bind(this), false);
-
                     // Listen for android back button
                     document.addEventListener("backbutton", this._back.bind(this), false);
-
                     document.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
                     document.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
                 }
-
                 get _isNarrow() {
                     return this.offsetWidth < 600;
                 }
-
                 connectedCallback() {
                     super.connectedCallback();
                     getDeviceInfo()
@@ -303,7 +453,7 @@
                                     position: "relative"
                                 });
                             }
-                            return cordovaReady
+                            return cordovaReady;
                         })
                         .then(() => {
                             // Replace window.open method with the inappbrowser equivalent
@@ -311,30 +461,15 @@
                             StatusBar.show();
                             navigator.splashscreen.hide();
                         });
-
                     getPlatformName().then((platform) => {
                         const className = platform.toLowerCase().replace(/ /g, "-");
                         this.classList.add(className);
                         this.root.querySelector("pl-title-bar").classList.add(className);
                     });
                 }
-
                 recordDeleted(record) {
                     if (record === this._selectedRecord) {
                         this.$.listView.deselect();
-                    }
-                }
-
-                dataInitialized() {
-                    if (this.settings.syncEmail) {
-                        padlock.stats.set({ pairingSource: "Setup" });
-                        this.connectCloud(this.settings.syncEmail)
-                            .then(() => this.notify($l("Activation link sent. Check your email!"), "info", 4000))
-                            .then((clicked) => {
-                                if (clicked) {
-                                    this._openCloudView();
-                                }
-                            });
                     }
                 }
 
@@ -342,7 +477,6 @@
                     this.locked = false;
                     this.$.startView.open = true;
                 }
-
                 dataUnloaded() {
                     this.clearDialogs();
                     this.$.startView.reset();
@@ -352,13 +486,12 @@
                 }
 
                 dataReset() {
-                    setTimeout(() => this.alert($l("App reset successfully. Off to a fresh start!")), 500);
+                    setTimeout(() => this.alert($l("App reset successfully. Off to a fresh start!"), { type: "success" }), 500);
                 }
 
                 _closeRecord() {
                     this.$.listView.deselect();
                 }
-
                 _selectedRecordChanged() {
                     clearTimeout(this._selectedRecordChangedTimeout);
                     this._selectedRecordChangedTimeout = setTimeout(() => {
@@ -373,28 +506,28 @@
                         }
                     }, 10);
                 }
-
                 _openSettings() {
                     this._currentView = "settingsView";
                     this.$.listView.deselect();
                 }
-
                 _settingsBack() {
                     this._currentView = "";
                 }
 
                 _openCloudView() {
                     this._currentView = "cloudView";
+                    this.refreshAccount();
                     this.$.listView.deselect();
+                    if (!this.settings.syncConnected && !isTouch()) {
+                        setTimeout(() => this.$.cloudView.focusEmailInput(), 500);
+                    }
                 }
 
                 _cloudViewBack() {
                     this._currentView = "";
                 }
-
                 _currentViewChanged(curr, prev) {
                     this.$.main.classList.toggle("showing-pages", !!curr);
-
                     const currView = this.$[curr];
                     const prevView = this.$[prev];
                     if (currView) {
@@ -420,6 +553,10 @@
 
                 //* Keyboard shortcuts
                 _keydown(event) {
+                    if (this.locked || padlock.Input.activeInput) {
+                        return;
+                    }
+
                     let shortcut;
                     const control = event.ctrlKey || event.metaKey;
 
@@ -429,17 +566,18 @@
                     }
                     // CTRL/CMD + F -> Filter
                     else if (control && event.key === "f") {
-                        shortcut = () => this.$.listView.focusFilterInput();
+                        shortcut = () => this.$.listView.search();
                     }
                     // CTRL/CMD + N -> New Record
                     else if (control && event.key === "n") {
                         shortcut = () => this.createRecord();
                     }
-
                     // If one of the shortcuts matches, execute it and prevent the default behaviour
                     if (shortcut) {
                         shortcut();
                         event.preventDefault();
+                    } else if (event.key.length === 1) {
+                        this.$.listView.search();
                     }
                 }
 
@@ -462,7 +600,6 @@
                             }
                     }
                 }
-
                 _lockedChanged() {
                     if (this.locked) {
                         this._currentView = "";
@@ -473,10 +610,45 @@
                         }, 600);
                     }
                 }
+
+                _menuOpenChanged() {
+                    this.classList.toggle("show-menu", this._menuOpen);
+                    this.animateCascade(this.root.querySelectorAll(".menu-item"), {
+                        animation: this._menuOpen ? "menuItemIn" : "menuItemOut",
+                        duration: 400,
+                        fullDuration: 600,
+                        initialDelay: 50,
+                        fill: "both"
+                    });
+                }
+
+                _toggleMenu() {
+                    this._menuOpen = !this._menuOpen;
+                }
+
+                _lock() {
+                    if (this.isSynching) {
+                        this.alert($l("Cannot lock app while sync is in progress!"));
+                    } else {
+                        this.unloadData();
+                    }
+                }
+
+                _newRecord() {
+                    this.createRecord();
+                }
+
+                _enableMultiSelect() {
+                    this.$.listView.multiSelect = true;
+                }
+
+                _menuWrapperClicked() {
+                    setTimeout(() => this._menuOpen = false, 50);
+                }
+
             }
 
             window.customElements.define(App.is, App);
-
         })();
     </script>
 </dom-module>

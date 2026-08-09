@@ -1,3 +1,5 @@
+const moment = require("moment");
+
 // RFC4122-compliant uuid generator
 export function uuid(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -73,4 +75,8 @@ export function applyMixins(
   ...mixins: ((cls: any) => any)[]
 ): any {
   return mixins.reduce((cls, mixin) => mixin(cls), baseClass);
+}
+
+export function formatDateFromNow(date: Date) {
+  return moment(date).fromNow();
 }

@@ -74,7 +74,7 @@
                 }
 
                 _downloadCSV() {
-                    this.confirm(exportCSVWarning, $l("Download"), $l("Cancel"))
+                    this.confirm(exportCSVWarning, $l("Download"), $l("Cancel"), {type: "warning"})
                         .then((confirm) => {
                             if (confirm) {
                                 setTimeout(() => {
@@ -92,7 +92,7 @@
                 }
 
                 _copyCSV() {
-                    this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"))
+                    this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"), {type: "warning"})
                         .then((confirm) => {
                             if (confirm) {
                                 setClipboard(toCSV(this.records))
@@ -120,7 +120,7 @@
                                     "attackers to break the encryption used to protect your data. Try to use a longer " +
                                     "password or include a variation of uppercase, lowercase and special characters as " +
                                     "well as numbers."
-                                ), $l("Use Anyway"), $l("Choose Different Password")).then((confirm) => {
+                                ), $l("Use Anyway"), $l("Choose Different Password"), {type: "warning"}).then((confirm) => {
                                     if (!confirm) {
                                         return Promise.reject();
                                     }
@@ -152,7 +152,10 @@
                     this._getEncryptedData()
                         .then((data) => {
                             setClipboard(data)
-                                .then(() => this.alert($l("Your data has successfully been copied to the system clipboard.")));
+                                .then(() => {
+                                    this.alert($l("Your data has successfully been copied to the system clipboard."),
+                                        { type: "success" });
+                                });
                             this.dispatch("data-exported");
                         });
                 }
