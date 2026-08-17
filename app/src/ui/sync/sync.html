@@ -557,6 +557,7 @@
                 openPaymentDialog(plan, source) {
                     return this.lineUpDialog("pl-payment-dialog", (dialog) => {
                         dialog.plan = plan;
+                        dialog.stripePubKey = this.settings.stripePubKey;
                         dialog.source = this.cloudSource.source;
                         dialog.remainingTrialDays = this.remainingTrialDays;
                         return dialog.show(source);
