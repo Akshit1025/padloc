@@ -122,7 +122,7 @@
                 font-weight: bold;
                 border-radius: 12px;
                 overflow: hidden;
-                will-change: transform:
+                will-change: transform;
             }
 
             .account {
@@ -232,7 +232,7 @@
 
         <main>
 
-            <section class="highlight tiles"
+            <section class="highlight tiles warning"
                 hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="time"></pl-icon>
