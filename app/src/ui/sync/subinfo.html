@@ -21,7 +21,8 @@
                         },
                         subStatus: {
                             type: String,
-                            computed: "identity(account.subscription.status)"
+                            computed: "identity(account.subscription.status)",
+                            value: ""
                         }
                     };
                 }
@@ -49,7 +50,7 @@
 
                 isSubValid() {
                     const s = this.subStatus;
-                    return this.settings.syncConnected && (s === "" || s === "active" || s === "trialing");
+                    return this.settings.syncConnected && (!s === "" || s === "active" || s === "trialing");
                 }
 
                 trialingMessage() {
