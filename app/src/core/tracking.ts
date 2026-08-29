@@ -64,10 +64,6 @@ export function track(
     trackingID: trackingID
   };
 
-  if (data.props.Email) {
-    ready = statsApi.set({ email: data.props.Email });
-  }
-
   ready = ready
     .then(() => statsApi.get())
     .then((stats) => {
@@ -76,8 +72,7 @@ export function track(
           stats.firstLaunch &&
           new Date(stats.firstLaunch as number).toISOString(),
         "Launch Count": stats.launchCount,
-        "Custom Server": stats.syncCustomHost || false,
-        Email: stats.email
+        "Custom Server": stats.syncCustomHost || false
       });
 
       if (stats.lastSync) {

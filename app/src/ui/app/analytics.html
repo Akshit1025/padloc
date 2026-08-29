@@ -22,8 +22,7 @@
 
                     this.listen("settings-changed", () => {
                         padlock.stats.set({
-                            syncCustomHost: this.settings.syncCustomHost,
-                            email: this.settings.syncEmail
+                            syncCustomHost: this.settings.syncCustomHost
                         });
                     });
 
