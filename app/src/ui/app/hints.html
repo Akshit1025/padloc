@@ -16,7 +16,6 @@
                     super();
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindBackup()));
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindSync()));
-                    this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindTrialEnds()));
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._askFeedback()));
                     this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._crossPlatformHint()));
                     this.listen("auto-lock", () => statsLoaded.then(() => this._showAutoLockNotice()));
@@ -81,16 +80,6 @@
                             });
                         padlock.stats.set({ lastSyncReminder: new Date().getTime() });
                     }
-                }
-                _remindTrialEnds() {
-                    if (
-                        this.settings.syncSubStatus === "trialing" &&
-                        (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 7)
-                    ) {
-                        this.buySubscription("App - Trialing (Alert)");
-                        padlock.stats.set({ lastTrialEndsReminder: new Date().getTime() });
-                    }
-
                 }
                 _notifyChromeAppDeprecation() {
                     isChromeOS().then((yes) => {
@@ -190,6 +179,21 @@
                 }
 
                 _notifySubStatus() {
+                    if (this.promo && !this._hasShownPromo) {
+                        this.alertPromo();
+                        this._hasShownPromo = true;
+                        return;
+                    }
+
+                    if (
+                        this.settings.syncSubStatus === "trialing" &&
+                        (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 7)
+                    ) {
+                        this.buySubscription("App - Trialing (Alert)");
+                        padlock.stats.set({ lastTrialEndsReminder: new Date().getTime() });
+                        return;
+                    }
+
                     if (this.settings.syncConnected && this.settings.syncSubStatus !== this._lastSubStatus) {
                         this._lastSubStatus = this.settings.syncSubStatus;
 

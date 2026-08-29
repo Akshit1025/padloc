@@ -69,18 +69,18 @@
 
                 static get properties() {
                     return {
-                        records: Array
+                        exportRecords: Array
                     };
                 }
 
                 _downloadCSV() {
-                    this.confirm(exportCSVWarning, $l("Download"), $l("Cancel"), {type: "warning"})
+                    this.confirm(exportCSVWarning, $l("Download"), $l("Cancel"), { type: "warning" })
                         .then((confirm) => {
                             if (confirm) {
                                 setTimeout(() => {
                                     const date = new Date().toISOString().substr(0, 10);
                                     const fileName = `padlock-export-${date}.csv`;
-                                    const csv = toCSV(this.records);
+                                    const csv = toCSV(this.exportRecords);
                                     const a = document.createElement("a");
                                     a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
                                     a.download = fileName;
@@ -92,10 +92,10 @@
                 }
 
                 _copyCSV() {
-                    this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"), {type: "warning"})
+                    this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"), { type: "warning" })
                         .then((confirm) => {
                             if (confirm) {
-                                setClipboard(toCSV(this.records))
+                                setClipboard(toCSV(this.exportRecords))
                                     .then(() => this.alert($l("Your data has successfully been copied to the system " +
                                         "clipboard. You can now paste it into the spreadsheet program of your choice.")));
                                 this.dispatch("data-exported");
@@ -120,15 +120,15 @@
                                     "attackers to break the encryption used to protect your data. Try to use a longer " +
                                     "password or include a variation of uppercase, lowercase and special characters as " +
                                     "well as numbers."
-                                ), $l("Use Anyway"), $l("Choose Different Password"), {type: "warning"}).then((confirm) => {
+                                ), $l("Use Anyway"), $l("Choose Different Password"), { type: "warning" }).then((confirm) => {
                                     if (!confirm) {
                                         return Promise.reject();
                                     }
 
-                                    return toPadlock(this.records, pwd);
+                                    return toPadlock(this.exportRecords, pwd);
                                 });
                             } else {
-                                return toPadlock(this.records, pwd);
+                                return toPadlock(this.exportRecords, pwd);
                             }
                         });
                 }

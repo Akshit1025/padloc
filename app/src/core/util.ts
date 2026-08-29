@@ -1,4 +1,5 @@
 const moment = require("moment");
+require("moment-duration-format");
 
 // RFC4122-compliant uuid generator
 export function uuid(): string {
@@ -79,4 +80,18 @@ export function applyMixins(
 
 export function formatDateFromNow(date: Date) {
   return moment(date).fromNow();
+}
+
+export function formatDateUntil(
+  startDate: Date | string | number,
+  duration: number
+) {
+  const d = moment.duration(
+    moment(startDate).add(duration, "hours").diff(moment())
+  );
+  return d.format("hh:mm:ss");
+}
+
+export function isFuture(date: Date | string | number, duration: number) {
+  return moment(date).add(duration, "hours").isAfter();
 }

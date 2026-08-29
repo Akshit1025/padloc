@@ -7,7 +7,6 @@
 <link rel="import" href="dialog-options.html">
 <script>
     (() => {
-        const { wait } = padlock.util;
         const dialogElements = {};
         let lastDialogPromise = Promise.resolve();
         let currentDialog;
@@ -35,8 +34,7 @@
                             return fn(dialog);
                         });
 
-                    lastDialogPromise = promise
-                        .then(() => wait(400));
+                    lastDialogPromise = promise;
 
                     return promise;
                 }

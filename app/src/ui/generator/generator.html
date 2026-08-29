@@ -18,13 +18,10 @@
                     text-shadow: none;
                     border: none;
                     overflow: hidden;
+                    position: relative;
                 }
 
                 ;
-            }
-
-            pl-dialog>* {
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
             .charsets {
@@ -63,15 +60,25 @@
 
             pl-toggle-button {
                 display: block;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
             pl-slider {
                 display: flex;
                 height: var(--row-height);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
             .confirm-button {
                 font-weight: bold;
+            }
+
+            .close-button {
+                position: absolute;
+                top: 0;
+                right: 0;
+                color: var(--color-quaternary);
+                text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
             }
         </style>
 
@@ -86,8 +93,9 @@
             <pl-toggle-button label="A-Z" active="{{ upper }}" class="tap" reverse></pl-toggle-button>
             <pl-toggle-button label="0-9" active="{{ numbers }}" class="tap" reverse></pl-toggle-button>
             <pl-toggle-button label="?()/%..." active="{{ other }}" class="tap" reverse></pl-toggle-button>
-            <pl-slider label="[[ $l('length') ]]" min="5" max="50" value="{{ length }}" class="tap"></pl-slider>
-            <button class="confirm-button tap" on-click="_confirm">[[ $l("Confirm") ]]</button>
+            <pl-slider label="[[ $l('length') ]]" min="5" max="50" value="{{ length }}"></pl-slider>
+            <button class="confirm-button tap" on-click="_confirm">[[ $l("Apply") ]]</button>
+            <pl-icon icon="cancel" class="close-button tap" on-click="_dismiss"></pl-icon>
         </pl-dialog>
 
     </template>
@@ -151,6 +159,7 @@
                     this.upper && (charSet += padlock.util.chars.upper);
                     this.numbers && (charSet += padlock.util.chars.numbers);
                     this.other && (charSet += padlock.util.chars.other);
+
                     this.value = charSet ? padlock.util.randomString(this.length, charSet) : "";
                 }
 
@@ -161,11 +170,14 @@
 
                 _dismiss() {
                     typeof this._resolve === "function" && this._resolve(undefined);
+                    this.$.dialog.open = false;
                 }
 
             }
 
             window.customElements.define(Generator.is, Generator);
+
         })();
     </script>
+
 </dom-module>

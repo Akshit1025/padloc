@@ -183,6 +183,7 @@
                 bottom: 20px;
                 display: flex;
                 justify-content: center;
+                width: 100%;
             }
 
             .get-started-thumbs>* {
@@ -418,8 +419,6 @@
 
     </template>
 
-    <script src="../../../bower_components/zxcvbn/lib/zxcvbn.js"></script>
-
     <script>
         /* global zxcvbn */
         (() => {
@@ -486,6 +485,12 @@
                             }
                             this._openChanged();
                         });
+
+                    if (!isTouch()) {
+                        window.addEventListener("focus", () => setTimeout(() => {
+                            this.$.passwordInput.focus();
+                        }, 100));
+                    }
                 }
 
                 reset() {

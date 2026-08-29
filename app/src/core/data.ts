@@ -9,10 +9,7 @@ function compareProperty(p: string): (a: Object, b: Object) => number {
     return x > y ? 1 : x < y ? -1 : 0;
   };
 }
-
-const compareCategory = compareProperty("category");
 const compareName = compareProperty("name");
-const compareUuid = compareProperty("uuid");
 
 export interface Field {
   name: string;
@@ -20,10 +17,14 @@ export interface Field {
   masked?: boolean;
 }
 
+function normalizeTag(tag: string): string {
+  return tag.replace(",", "");
+}
+
 export class Record {
+  private _tags: Set<string>;
   name: string;
   fields: Array<Field>;
-  category: string;
   uuid: string;
   updated: Date;
   removed: boolean;
@@ -32,7 +33,7 @@ export class Record {
   constructor(
     name = "",
     fields?: Array<Field>,
-    category?: string,
+    tags?: string[],
     id?: string,
     updated?: Date,
     removed = false,
@@ -40,7 +41,10 @@ export class Record {
   ) {
     this.name = name;
     this.fields = fields || new Array<Field>();
-    this.category = category || "";
+    if (!Array.isArray(tags)) {
+      tags = [];
+    }
+    this._tags = new Set<string>(tags.map(normalizeTag));
     this.uuid = id || uuid();
     this.updated = updated || new Date();
     this.removed = removed;
@@ -48,17 +52,18 @@ export class Record {
   }
 
   static fromRaw(obj: any): Record {
-    let fields = obj.fields && <Array<Field>>obj.fields;
-    let updated =
+    const fields = obj.fields && <Array<Field>>obj.fields;
+    const updated =
       obj.updated &&
       (obj.updated instanceof Date ? obj.updated : new Date(obj.updated));
-    let lastUsed =
+    const lastUsed =
       obj.lastUsed &&
       (obj.lastUsed instanceof Date ? obj.lastUsed : new Date(obj.lastUsed));
+    const tags = obj.tags || (obj.category && [obj.category]);
     return new Record(
       obj.name,
       fields,
-      obj.category,
+      tags,
       obj.uuid,
       updated,
       obj.removed,
@@ -67,13 +72,29 @@ export class Record {
   }
 
   static compare(a: Record, b: Record): number {
-    return compareName(a, b) || compareCategory(a, b) || compareUuid(a, b);
+    return compareName(a, b);
+  }
+
+  get tags() {
+    return [...this._tags];
+  }
+
+  addTag(tag: string) {
+    this._tags.add(normalizeTag(tag));
+  }
+
+  removeTag(tag: string) {
+    this._tags.delete(tag);
+  }
+
+  hasTag(tag: string) {
+    return this._tags.has(tag);
   }
 
   remove(): void {
     this.name = "";
     this.fields = [];
-    this.category = "";
+    this._tags = new Set<string>();
     this.removed = true;
     this.updated = new Date();
   }
@@ -82,7 +103,7 @@ export class Record {
     return {
       name: this.name,
       fields: this.fields,
-      category: this.category,
+      tags: this.tags,
       uuid: this.uuid,
       updated: this.updated,
       removed: this.removed,
@@ -106,10 +127,14 @@ export class Collection {
     return Array.from(this._records.values());
   }
 
-  get categories(): string[] {
-    const categories = new Set(this.records.map((r) => r.category));
-    categories.delete("");
-    return [...categories];
+  get tags(): string[] {
+    const tags = new Set<string>();
+    for (const r of this.records) {
+      for (const t of r.tags) {
+        tags.add(t);
+      }
+    }
+    return [...tags];
   }
 
   async fetch(source: Source): Promise<void> {
@@ -186,7 +211,7 @@ export class Settings {
 
   peekValues: boolean;
 
-  // Stripe Settings
+  // Stripe settings
   stripePubKey: string;
 
   // Synchronization settings
